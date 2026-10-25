@@ -1,0 +1,11 @@
+const {test}=require('node:test'),a=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const E=require('../dist/engine.js');let context={window:{},Engine:E};vm.runInNewContext(fs.readFileSync('dist/xlsx.js','utf8'),context);const parse=context.window.WorkbookReader.importRows;
+const ah=Object.values(E.labels),th=['Territory ID','City','State','Pin codes covered','City tier','Open slots','Priority'];
+const app=['APP-003','Test partner','Mysuru','Karnataka',570001,null,0,'No previous business','Not yet identified',null,'Not known',3,'Kannada',''];
+const terr=['TER-01','Mysuru','Karnataka','570001','Tier 2',1,'High'];
+const sheets={Applications:[{row:2,values:ah},{row:3,values:app},{row:4,values:app}],Territories:[{row:2,values:th},{row:3,values:terr},{row:4,values:terr}]};
+test('template examples excluded while incomplete actual row retained',()=>{let r=parse(sheets);a.equal(r.apps.length,1);a.equal(r.apps[0].investment,null);a.equal(r.territories.length,1);});
+test('example rows can explicitly be included',()=>{let r=parse(sheets,true);a.equal(r.apps.length,2);a.equal(r.territories.length,2);a.ok(r.territories.every(t=>t.issues.includes('Duplicate territory ID')));});
+test('missing territory header does not discard applications',()=>{let r=parse({Applications:sheets.Applications});a.equal(r.apps.length,1);a.equal(r.territories.length,0);a.ok(r.warnings.length);});
+test('empty rows ignored',()=>{let r=parse({...sheets,Applications:[...sheets.Applications,{row:9,values:[null,null]}]});a.equal(r.apps.length,1);});
+test('negative slots produce territory issue',()=>{let r=parse({...sheets,Territories:[{row:2,values:th},{row:4,values:[...terr.slice(0,5),-1,'High']}]});a.ok(r.territories[0].issues.includes('Invalid open slots'));});

@@ -31,11 +31,22 @@
     const lead = element(doc,'div','mi-lead');
     lead.append(element(doc,'div','mi-kicker','MARKET SNAPSHOT'), element(doc,'h2','',name));
     const annual = valueOf(geographic.apparelExpenditure);
-    lead.append(element(doc,'p','',annual === null ? 'No supported annual clothing and footwear market expenditure is available for this geography.' : `${money(annual)} estimated annual clothing and footwear market expenditure. This is market expenditure, not store revenue.`));
+    const monthlyBenchmark = valueOf(geographic.monthlyPerCapitaSpend);
+    lead.append(element(doc,'p','',annual === null && monthlyBenchmark !== null
+      ? `${money(monthlyBenchmark)} per person per month is available as a regional HCES benchmark. Total PIN expenditure is unestimated because this PIN has no defensible population crosswalk.`
+      : annual === null ? 'No supported annual clothing and footwear market expenditure is available for this geography.' : `${money(annual)} estimated annual clothing and footwear market expenditure. This is market expenditure, not store revenue.`));
+    if (location?.postOffices?.length) {
+      lead.append(element(doc,'p','mi-note',`India Post postal resolution · ${location.postalRegion || 'Bengaluru'} · ${location.postalDivision || 'postal division unavailable'}. Offices: ${location.postOffices.map(item=>`${item.name} (${item.delivery})`).join('; ')}. The directory gives no PIN boundary or coordinate.`));
+    }
     target.append(lead);
     const grid = element(doc,'div','mi-snapshot-grid');
     const demand = element(doc,'article','mi-card'); demand.append(element(doc,'h3','','Demand and purchasing capacity'));
     demand.append(metricLine(doc,'Geographic population',geographic.population,count), metricLine(doc,'Monthly clothing & footwear spend/person',geographic.monthlyPerCapitaSpend), metricLine(doc,'Annual market expenditure',geographic.apparelExpenditure));
+    if (location?.benchmarkComparison) {
+      demand.append(metricLine(doc,'Karnataka rural HCES benchmark',location.benchmarkComparison.rural));
+      demand.append(metricLine(doc,'Karnataka urban HCES benchmark',location.benchmarkComparison.urban));
+      demand.append(element(doc,'p','mi-note','Regional state-sector survey benchmarks (2023–24), not PIN observations. PIN income, rural/urban population mix and total population are not available, so no PIN-level spend adjustment or TAM is calculated.'));
+    }
     demand.append(metricLine(doc,'Store catchment TAM',metrics.tam), metricLine(doc,'Serviceable market',metrics.sam), metricLine(doc,'Capturable market',metrics.som));
     const catchment = valueOf(metrics.tam);
     demand.append(element(doc,'p','mi-note',catchment === null ? 'Store catchment TAM needs a supported catchment population and comparable spending assumptions.' : 'TAM, SAM and SOM are deterministic model outputs from saved inputs.'));
@@ -55,7 +66,7 @@
     grid.append(demand,competition,feasibility); target.append(grid);
     const insights = element(doc,'div','mi-insights');
     const opportunity = element(doc,'article','mi-insight'); opportunity.append(element(doc,'h3','','Key opportunities'));
-    opportunity.append(element(doc,'p','',valueOf(metrics.som) !== null ? `The saved assumptions yield ${money(valueOf(metrics.som))} in capturable annual market expenditure; compare that with store operating costs.` : annual !== null ? `The geography has ${money(annual)} in estimated annual category expenditure, providing a broad demand benchmark for catchment research.` : 'No defensible local market expenditure estimate is available yet.'));
+    opportunity.append(element(doc,'p','',valueOf(metrics.som) !== null ? `The saved assumptions yield ${money(valueOf(metrics.som))} in capturable annual market expenditure; compare that with store operating costs.` : annual !== null ? `The geography has ${money(annual)} in estimated annual category expenditure, providing a broad demand benchmark for catchment research.` : monthlyBenchmark !== null ? `A regional apparel benchmark of ${money(monthlyBenchmark)} per person per month is available; the PIN market total remains unquantified until population and catchment evidence is supplied.` : 'No defensible local market expenditure estimate is available yet.'));
     const risk = element(doc,'article','mi-insight'); risk.append(element(doc,'h3','','Key risks'));
     risk.append(element(doc,'p','',valueOf(metrics.breakEvenRevenue) === null && forecast?.economics?.breakEvenRevenueMonthly == null ? 'Store costs and gross margin are missing, so break-even and payback cannot support an investment decision.' : !competitors.length ? 'Competitor coverage is missing; capture assumptions need local validation.' : 'Check whether the saved capture and conversion assumptions hold at the proposed site.'));
     insights.append(opportunity,risk); target.append(insights);
@@ -85,9 +96,10 @@
     target.append(drawer);
   }
 
-  function mount({root, selectedLocation = null, snapshot = {}, result = null, analyzed = false, sources = [], benchmarks = [], assessments = [], busy = false, search, onSelect, onManual, research, query = ''} = {}) {
+  function mount({root, selectedLocation = null, snapshot = {}, result = null, analyzed = false, sources = [], benchmarks = [], assessments = [], busy = false, search, onSelect, onManual, research, loadApplicants, query = ''} = {}) {
     if (!root) throw Error('Market Intelligence root is required');
     const doc = root.ownerDocument, win = doc.defaultView;
+    loadApplicants = loadApplicants || win.fetchMarketApplicants;
     const form = root.querySelector('#market-form');
     if (!form) throw Error('Market assessment form is required');
     const labels = [...form.querySelectorAll('label')].filter(label => label.querySelector('[name]'));
@@ -159,6 +171,38 @@
       }
       refresh.addEventListener('click',()=>loadResearch(true));
       loadResearch();
+      const applicantPanel=element(doc,'section','mi-applicants');applicantPanel.dataset.miApplicants='';
+      applicantPanel.append(element(doc,'h3','','Applicants linked to this PIN'));
+      const applicantBody=element(doc,'div','mi-applicants-body','Applicant records load from the active workspace database.');
+      applicantPanel.append(applicantBody);results.append(applicantPanel);
+      let applicantRevision=0;
+      (async function loadPinApplicants(){
+        const current=++applicantRevision;
+        const pin=selectedLocation?.pin||selectedLocation?.id?.match(/\b\d{6}\b/)?.[0];
+        if(!pin||!loadApplicants){applicantBody.textContent='Applicant lookup requires a selected PIN and an available workspace connection.';return;}
+        applicantBody.textContent='Loading applicants…';
+        try{
+          const rows=await loadApplicants(selectedLocation);
+          if(current!==applicantRevision||!applicantPanel.isConnected)return;
+          const ordered=[...(rows||[])].sort((a,b)=>{
+            const as=Number.isFinite(a.confirmedEligibilityScore)?a.confirmedEligibilityScore:Number.isFinite(a.score)?a.score:-Infinity;
+            const bs=Number.isFinite(b.confirmedEligibilityScore)?b.confirmedEligibilityScore:Number.isFinite(b.score)?b.score:-Infinity;
+            return bs-as||String(a.launch||'').localeCompare(String(b.launch||''))||String(a.id||a.key||'').localeCompare(String(b.id||b.key||''),undefined,{numeric:true,sensitivity:'base'});
+          });
+          applicantBody.replaceChildren();
+          if(!ordered.length){applicantBody.textContent='No applicants are linked to this PIN in the active Neon workspace.';return;}
+          for(const [index,item] of ordered.entries()){
+            const row=element(doc,'article','mi-applicant');
+            const low=item.scoreRange?.low??item.scoreLow??item.confirmedEligibilityScore??item.score;
+            const high=item.scoreRange?.high??item.scoreHigh??item.possibleEligibilityScore??item.high??low;
+            const score=Number.isFinite(low)?low===high?String(low):`${low}–${high} (incomplete)`: 'Unscored';
+            const button=element(doc,'button','text-button',`${index+1}. ${item.name||item.id||item.key||'Applicant'} · ${score}`);
+            button.type='button';if(item.key)button.dataset.detail=item.key;row.append(button);
+            row.append(element(doc,'small','',`${item.status||item.verificationStatus||'Status not assessed'} · ${item.allocationStatus||'Allocation status not checked'}${item.nextAction?` · Next: ${item.nextAction}`:''}`));
+            applicantBody.append(row);
+          }
+        }catch(error){if(current===applicantRevision&&applicantPanel.isConnected)applicantBody.textContent=`Applicant records unavailable: ${error.message||'workspace lookup failed'}.`;}
+      })();
     }
     const saved = element(doc,'section','mi-saved'); saved.append(element(doc,'h2','','Saved assessments'));
     if (assessments.length) for (const item of assessments) {
@@ -204,10 +248,21 @@
       form.elements.state.value = location.state || (location.level === 'state' ? location.name : '') || '';
       form.elements.city.value = location.city || (location.level === 'city' ? location.name : '') || '';
       form.elements.pin.value = location.pin || (location.level === 'pin' ? location.name : '') || '';
+      if (location.metrics?.monthlyPerCapitaSpend?.value != null && !form.elements.regionalSpend.value) {
+        form.elements.regionalSpend.value = String(location.metrics.monthlyPerCapitaSpend.value);
+        form.elements.regionalSpend.dataset.evidence = 'sourced-regional-benchmark';
+        const state=location.state||location.metrics.monthlyPerCapitaSpend.geography?.state;
+        const sector=location.metrics.monthlyPerCapitaSpend.geography?.sector||'urban';
+        const benchmarkIndex=benchmarks.findIndex(item=>item.metric==='clothing_bedding_footwear_mpce'
+          &&item.geography?.state===state&&item.geography?.sector===sector
+          &&item.value===location.metrics.monthlyPerCapitaSpend.value&&item.referencePeriod===location.metrics.monthlyPerCapitaSpend.referencePeriod);
+        if(benchmarkIndex>=0)form.dataset.benchmark=String(benchmarkIndex);
+      }
       // A state or city population is not a store catchment, and an HCES blend is not a PIN income observation.
       preview.replaceChildren();
       const population = valueOf(location.metrics?.population);
-      preview.append(element(doc,'strong','',location.name || 'Selected place'),element(doc,'span','',`${location.level || 'Location'} · ${population === null ? 'Population unavailable' : `${count(population)} people at ${location.level || 'this geographic'} level`} · ${location.sourceVersion || 'Source version unavailable'}`));
+      const spend = valueOf(location.metrics?.monthlyPerCapitaSpend);
+      preview.append(element(doc,'strong','',location.name || 'Selected place'),element(doc,'span','',`${location.level || 'Location'} · ${population === null ? 'Population unavailable' : `${count(population)} people at ${location.level || 'this geographic'} level`}${spend === null ? '' : ` · regional spend benchmark ₹${count(spend)}/person/month`} · ${location.sourceVersion || 'Source version unavailable'}`));
       if (location.evidence?.length) preview.append(element(doc,'small','','Source: ' + (location.evidence[0].title || location.evidence[0].sourceId || 'linked evidence') + (location.evidence[0].referenceYear ? ` · ${location.evidence[0].referenceYear}` : '')));
     }
     return { setLocation, getLocation:() => selectedLocation };

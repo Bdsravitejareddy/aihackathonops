@@ -8,11 +8,11 @@ const { createHandler } = require('../server/app.cjs');
 const workspaceId = 'f28e574b-6f52-4f24-97c6-69e0c28bb54f';
 const assessmentId = 'd18b6324-2abc-4f24-97c6-69e0c28bb54f';
 
-function harness({ marketStore, marketMapStore, marketSources = { sources: [{ id: 'official' }] }, marketBenchmarks = { observations: [] } } = {}) {
+function harness({ marketStore, marketMapStore, applicationRows = null, marketSources = { sources: [{ id: 'official' }] }, marketBenchmarks = { observations: [] } } = {}) {
   const workspaces = new Map([[workspaceId, { state: { apps: [{ key: 'A-1', score: 77 }], territories: [] }, revision: 1 }]]);
   const store = {
     async load(id) { return workspaces.get(id) || null; },
-    async listApplicationsByPin(id,pin) { return id===workspaceId&&pin==='560001' ? [{id:'APP-1',pin:'560001'}] : []; },
+    async listApplicationsByPin(id,pin) { return id===workspaceId ? applicationRows ? applicationRows.filter(row=>row.pin===pin) : pin==='560001' ? [{id:'APP-1',pin:'560001'}] : [] : []; },
     async save(id, state, revision) {
       const current = workspaces.get(id);
       if ((current?.revision || 0) !== revision) throw Object.assign(new Error('conflict'), { status: 409 });
@@ -102,6 +102,35 @@ test('unmapped six digit PIN search reports format coverage without inventing a 
   assert.equal(result.json().coverage,'not_verified');
 });
 
+test('verified India Post PIN search attaches regional HCES benchmarks while leaving PIN totals unsupported', async () => {
+  const map={sourceVersion:'fixture-v1',async searchMapGeographies(){return [];}};
+  const {call}=harness({marketMapStore:map});
+  const search=await call('GET','/api/market/map/search?q=560026');
+  assert.equal(search.status,200);
+  assert.equal(search.json().coverage,'sourced');
+  assert.equal(search.json().results[0].id,'pin:560026');
+  assert.equal(search.json().results[0].metrics.monthlyPerCapitaSpend.value,374.22);
+  assert.equal(search.json().results[0].metrics.population.value,null);
+  assert.equal(search.json().results[0].metrics.tam.value,null);
+  const detail=await call('GET','/api/market/map/geographies/pin%3A560026');
+  assert.equal(detail.json().geography.metrics.annualPerCapitaSpend.value,4490.64);
+  assert.equal(detail.json().geography.geometry,null);
+  const valid=await call('POST','/api/market/pins/validate',{pin:'560026'});
+  assert.equal(valid.json().directoryStatus,'verified');
+});
+
+test('PIN applicant lookup returns exact synthetic territory records for six distinct dataset PINs', async () => {
+  const rows=require('../dist/demo.json').apps;
+  const pins=['560101','570102','575103','580101','590102','572103'];
+  const {call}=harness({applicationRows:rows});
+  for(const pin of pins){
+    const response=await call('GET',`/api/screening/applications?workspaceId=${workspaceId}&pin=${pin}`);
+    assert.equal(response.status,200);
+    assert.ok(response.json().applications.length>0,`expected applicant rows for ${pin}`);
+    assert.ok(response.json().applications.every(row=>row.pin===pin));
+  }
+});
+
 test('PIN validation reports format validity without claiming directory membership', async () => {
   const { call } = harness();
   const valid = await call('POST', '/api/market/pins/validate', { pin: '560001' });
@@ -130,6 +159,20 @@ test('market assessment snapshots persist separately from franchise eligibility 
   assert.equal(detail.json().snapshot.results.metrics.tam.value, 3600000);
   assert.deepEqual(detail.json().snapshot.sourceVersions, snapshot.sourceVersions);
   assert.deepEqual(workspaces.get(workspaceId).state.apps, [{ key: 'A-1', score: 77 }]);
+});
+
+test('market preview calculates deterministically without writing a Neon assessment', async () => {
+  const {call}=harness();
+  const response=await call('POST','/api/market/assessments/preview',{snapshot:{
+    modelVersion:'india-fashion-market-v1',sourceVintage:'HCES 2023-24',
+    geography:{level:'PIN',pin:'560026'},inputs:{elasticity:1,demand:{monthlyPerCapitaSpend:374.22}},
+    location:{pin:'560026',state:'Karnataka',city:'Bengaluru'}
+  }});
+  assert.equal(response.status,200);
+  assert.equal(response.json().persisted,false);
+  assert.equal(response.json().results.metrics.annualPerCapitaSpend.value,4490.64);
+  assert.equal(response.json().results.metrics.tam.value,null);
+  assert.match(response.json().warning,/not saved to Neon/i);
 });
 
 test('market assessment rejects stale version and isolates workspace ownership', async () => {

@@ -63,16 +63,30 @@ test('initial market screen exposes only location, category, optional format and
   assert.ok(h.form.elements.scoreDemand, 'expert scoring field remains available');
 });
 
-test('selected geography updates location fields and only supported evidence can prefill spend', t => {
+test('selected geography updates location fields and prefills only a sourced regional spend benchmark', t => {
   const h = snapshotHarness(); t.after(() => h.dom.window.close());
   h.controller.setLocation({ id:'ka', name:'Karnataka', level:'state', state:'Karnataka', sourceVersion:'geo-v1',
     metrics:{ population:{value:61130704,evidenceClass:'official_observed'}, monthlyPerCapitaSpend:{value:312.14,evidenceClass:'derived_estimate'} },
     evidence:[{sourceId:'census-2011',title:'Census 2011',referenceYear:2011,url:'https://example.org/census'}] });
   assert.equal(h.form.elements.state.value, 'Karnataka');
   assert.equal(h.form.elements.population.value, '');
-  assert.equal(h.form.elements.regionalSpend.value, '');
+  assert.equal(h.form.elements.regionalSpend.value, '312.14');
   assert.match(h.rootElement.textContent, /6,11,30,704/);
   assert.match(h.rootElement.textContent, /Census 2011/);
+});
+
+test('PIN assessment reuses the applicant callback and ranks confirmed eligibility descending', async t => {
+  const calls=[];
+  const h=snapshotHarness({analyzed:true,selectedLocation:{id:'pin:560026',name:'Government Electric Factory · Bengaluru',level:'pin',pin:'560026',state:'Karnataka'},
+    loadApplicants:async location=>{calls.push(location.pin);return [
+      {id:'APP-002',name:'Second',confirmedEligibilityScore:70,key:'k2'},
+      {id:'APP-001',name:'First',confirmedEligibilityScore:88,key:'k1'}
+    ];}});
+  t.after(()=>h.dom.window.close());await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(calls,['560026']);
+  const rows=[...h.rootElement.querySelectorAll('[data-mi-applicants] .mi-applicant button')].map(button=>button.textContent);
+  assert.match(rows[0],/1\. First · 88/);
+  assert.match(rows[1],/2\. Second · 70/);
 });
 
 test('analysed snapshot names missing dimensions and deduplicates relevant evidence', t => {

@@ -100,6 +100,13 @@ test('annualization and TAM overflow return unavailable metrics with warnings', 
   assert.ok(tamOverflow.metrics.tam.warnings.length);
 });
 
+test('regional HCES benchmark annualizes without claiming PIN population or income adjustment', () => {
+  const result=calculateMarketAssessment({demand:{monthlyPerCapitaSpend:374.22,spendBasis:'Karnataka urban HCES 2023-24 state-sector benchmark; no PIN income adjustment.'}});
+  assert.equal(result.metrics.annualPerCapitaSpend.value,4490.64);
+  assert.equal(result.metrics.tam.value,null);
+  assert.ok(result.metrics.annualPerCapitaSpend.assumptions.some(value=>/state-sector benchmark/i.test(value)));
+});
+
 test('zero SAM factors are valid boundaries while invalid factors block SAM and SOM', () => {
   const base = { demand: { population: 100, monthlyPerCapitaSpend: 100 } };
   const zero = calculateMarketAssessment({ ...base, segmentation: { categoryShare: 0, audienceFit: 1, priceEligibility: 1, accessibility: 1, captureRate: 0 } });

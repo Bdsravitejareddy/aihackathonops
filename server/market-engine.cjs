@@ -81,6 +81,7 @@ function calculateMarketAssessment(input = {}) {
       spendAssumptions.push('Household spend conversion requires positive household spend and an explicit positive household size.');
     }
   }
+  if (typeof demand.spendBasis === 'string' && demand.spendBasis.trim()) spendAssumptions.push(demand.spendBasis.trim());
 
   metrics.annualPerCapitaSpend = isPositiveFinite(monthlyPerCapitaSpend)
     ? finiteEstimate(monthlyPerCapitaSpend * 12, 'INR/person/year', [...spendAssumptions, 'Monthly per-capita spend multiplied by 12.'], 'Annualizing monthly per-capita spend overflowed the supported numeric range.')

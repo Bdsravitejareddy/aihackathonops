@@ -5,6 +5,7 @@ const { createHash } = require('node:crypto');
 const { validateWorkspacePayload } = require('./validation.cjs');
 const { validatePin, calculateMarketAssessment } = require('./market-engine.cjs');
 const { projectStoreEconomics, scoreMarketViability } = require('./market-forecast.cjs');
+const { createMarketLocationData } = require('./market-location-data.cjs');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -46,7 +47,7 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
+function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -86,7 +87,8 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
         const segmentOf = value => typeof value === 'string' && value.trim().length <= 100 ? value.trim() : 'mass-market-family-apparel';
         const buildResearchContext = async (geographyId, payload) => {
           const scenario = payload.assumptions && typeof payload.assumptions === 'object' && !Array.isArray(payload.assumptions) ? payload.assumptions : {};
-          const geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', scenario);
+          const geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', scenario)
+            || (/^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null);
           if (!geography) return { error: { status:404, message:'Geography not found' } };
           let assessment = null;
           if (payload.assessmentId !== undefined || payload.workspaceId !== undefined) {
@@ -178,13 +180,19 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
           if (req.method === 'GET' && url.pathname === '/api/market/map/search') {
             const q = (url.searchParams.get('q') || '').trim();
             if (q.length < 2 || q.length > 100) return reply(res, 400, { error: 'Search must contain 2–100 characters' });
-            const results = await marketMapStore.searchMapGeographies(q, Math.min(Number(url.searchParams.get('limit')) || 20, 20));
-            return reply(res, 200, { results: results.map(({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors }) => ({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors })),
+            const pinPlace = /^\d{6}$/.test(q) ? marketLocationData?.resolvePin(q) : null;
+            // A known postal directory record is served from the versioned local catalog and
+            // must remain searchable even when Neon/PostGIS is temporarily unavailable.
+            const results = pinPlace ? [pinPlace] : await marketMapStore.searchMapGeographies(q, Math.min(Number(url.searchParams.get('limit')) || 20, 20));
+            if (pinPlace && !results.some(item => item.id === pinPlace.id)) results.unshift(pinPlace);
+            return reply(res, 200, { results: results.map(({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors,postOffices,postalRegion,postalDivision,postalCity,sourceVersion,warnings,benchmarkComparison }) => ({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors,postOffices,postalRegion,postalDivision,postalCity,sourceVersion,warnings,benchmarkComparison })),
               queryType:/^\d{6}$/.test(q)?'pin':'place', coverage:results.length?'sourced':/^\d{6}$/.test(q)?'not_verified':'unavailable' });
           }
           const detailMatch = url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)$/);
           if (req.method === 'GET' && detailMatch) {
             const id = decodeURIComponent(detailMatch[1]);
+            const pinPlace = /^pin:\d{6}$/.test(id) ? marketLocationData?.resolvePin(id.slice(4)) : null;
+            if (pinPlace) return reply(res,200,{geography:pinPlace,evidence:pinPlace.evidence,confidence:pinPlace.confidence,sourceVersion:pinPlace.sourceVersion});
             const geography = await marketMapStore.getMapGeography(id, 'apparelExpenditure', { captureRate: null });
             if (!geography) return reply(res, 404, { error: 'Geography not found' });
             const extra = await marketMapStore.getMapEvidence(id);
@@ -261,7 +269,8 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
         if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });
         try {
           const payload = await readBody(req, maxBodyBytes);
-          return reply(res, 200, { formatValid: validatePin(payload?.pin), directoryStatus: 'not_verified' });
+          const resolved = marketLocationData?.resolvePin(String(payload?.pin || ''));
+          return reply(res, 200, { formatValid: validatePin(payload?.pin), directoryStatus: resolved ? 'verified' : 'not_verified', ...(resolved ? { geography: resolved } : {}) });
         } catch (error) {
           return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : 'Invalid JSON' });
         }
@@ -276,6 +285,16 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
         } catch (error) {
           return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : error.status === 400 ? 'Invalid JSON' : error.message });
         }
+      }
+      if (url.pathname === '/api/market/assessments/preview' && req.method === 'POST') {
+        if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });
+        try {
+          const payload = await readBody(req, maxBodyBytes);
+          if (!payload?.snapshot || typeof payload.snapshot !== 'object' || Array.isArray(payload.snapshot)) return reply(res,400,{error:'A market snapshot is required'});
+          const snapshot = payload.snapshot;
+          const results = calculateMarketAssessment({ ...(snapshot.inputs || {}), sourceVintage:snapshot.sourceVintage, geography:snapshot.geography });
+          return reply(res,200,{ persisted:false, modelVersion:results.modelVersion, results, warning:'Preview only: this result is not saved to Neon.' });
+        } catch (error) { return reply(res,error.status || 400,{error:error.status===413?'Payload too large':error.status===400?'Invalid JSON':'Invalid market snapshot'}); }
       }
       if (!marketStore) return reply(res, 503, { error: 'Market storage unavailable' });
 

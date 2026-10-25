@@ -15,6 +15,11 @@ const { normalizeDatabaseUrl } = require('./db-config.cjs');
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Copy .env.example and set the Neon connection string.');
 const pool = new Pool({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL), max: 5 });
+pool.on('error', error => {
+  // Idle Neon connections can be closed by the provider. Log the condition without
+  // secrets and let pg-pool discard that client instead of crashing the local app.
+  process.stderr.write(`Neon idle connection dropped (${error.code || 'connection error'}); a later query will reconnect.\n`);
+});
 const dataDirectory = path.resolve(__dirname, '..', 'data');
 const marketSources = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-sources.json'), 'utf8'));
 const marketBenchmarks = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-benchmarks.json'), 'utf8'));

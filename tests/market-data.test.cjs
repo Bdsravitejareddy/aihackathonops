@@ -68,3 +68,14 @@ test('CSV geographic allocation conserves totals and rejects invalid weights', (
   assert.ok(Math.abs(allocated.reduce((sum, row) => sum + row.value, 0) - 123.45) < 1e-9);
   assert.throws(() => allocateParentTotal(100, [{ id: 'a', weight: 0.2 }, { id: 'b', weight: 0.2 }]), /weights/);
 });
+
+test('map source inventory exposes pipeline status without promoting catalogs to available data', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'data/india-geography/manifest.json')));
+  for (const dataset of manifest.datasets) {
+    const source = sources.sources.find(item => item.id === dataset.sourceId);
+    assert.ok(source, dataset.sourceId);
+    assert.equal(source.geographyPipeline.manifest, 'data/india-geography/manifest.json');
+    assert.equal(source.geographyPipeline.datasetId, dataset.id);
+    assert.equal(source.geographyPipeline.status, dataset.status);
+  }
+});

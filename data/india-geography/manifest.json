@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "retrievedAt": "2026-10-25",
+  "datasets": [
+    {
+      "id": "india-post-pin-boundaries",
+      "sourceId": "ogd-india-pin-geojson",
+      "publisher": "Department of Posts / OGD India",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "downloadUrl": null,
+      "sourceVintage": "unverified",
+      "level": "pin",
+      "codeScheme": "india-post-pin-6",
+      "license": {
+        "status": "unverified",
+        "url": "https://data.gov.in/Godl",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "HTTP 200 catalog shell has no resources (empty resources state); Sikkim official mirror renders No Result Found. Download URL, vintage, feature count and crosswalk unverified."
+      ],
+      "variables": [
+        "geometry",
+        "PIN"
+      ]
+    },
+    {
+      "id": "soi-state-boundaries",
+      "sourceId": "soi-state-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "sourceUrl": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "downloadUrl": "https://surveyofindia.gov.in/documents/State_District_Subdistrict_PAN%20INDIA.rar",
+      "sourceVintage": "unverified",
+      "level": "state",
+      "codeScheme": "unverified",
+      "license": {
+        "status": "restricted",
+        "url": "https://surveyofindia.gov.in/pages/copyright-policy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog identifies archive; no geometry acquired. Current website copyright policy requires written reproduction permission. Archive-specific reuse license and vintage unverified."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "soi-district-boundaries",
+      "sourceId": "soi-district-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "sourceUrl": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "downloadUrl": "https://surveyofindia.gov.in/documents/State_District_Subdistrict_PAN%20INDIA.rar",
+      "sourceVintage": "unverified",
+      "level": "district",
+      "codeScheme": "unverified",
+      "license": {
+        "status": "restricted",
+        "url": "https://surveyofindia.gov.in/pages/copyright-policy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No geometry acquired or validated; reuse permission, actual district coverage, identifier scheme and Census 2011 crosswalk unverified."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "census-2011-pca",
+      "sourceId": "census-2011-pca-town-ward",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191",
+      "downloadUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "sourceVintage": "2011",
+      "level": "census_state_district",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog verified in search. HTTPS download fails curl error 60 (unable to get local issuer certificate); official censusindia.mha.gov.in alternate returns HTTP 500 with zero bytes. No population, sex, households or age 0-6 rows ingested."
+      ],
+      "variables": [
+        "population",
+        "households",
+        "sex",
+        "age_0_6"
+      ]
+    },
+    {
+      "id": "census-2011-age",
+      "sourceId": "census-2011-c14-age",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "downloadUrl": null,
+      "sourceVintage": "2011",
+      "level": "state_district_age_sex",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "C-14 inventory only; no table acquired, precise download and reuse terms unverified. PCA age 0-6 must not be treated as full age distribution."
+      ],
+      "variables": [
+        "age",
+        "sex",
+        "population"
+      ]
+    },
+    {
+      "id": "census-2011-area",
+      "sourceId": "census-2011-area",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "downloadUrl": null,
+      "sourceVintage": "2011",
+      "level": "state_district",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No official area table acquired or aligned to boundaries; area and density remain unavailable."
+      ],
+      "variables": [
+        "area"
+      ]
+    },
+    {
+      "id": "official-state-projections",
+      "sourceId": "mohfw-population-projections-2011-2036",
+      "publisher": "National Commission on Population, Ministry of Health & Family Welfare",
+      "sourceUrl": "https://www.mohfw.gov.in/",
+      "downloadUrl": "https://www.mohfw.gov.in/sites/default/files/Population%20Projection%20Report%202011-2036%20-%20upload_compressed_0.pdf",
+      "sourceVintage": "2011-2036; Technical Group report July 2020",
+      "level": "state",
+      "codeScheme": "report-specific; unverified",
+      "license": {
+        "status": "unverified",
+        "url": "https://www.mohfw.gov.in/",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official report URL returns HTTP 404 (4660-byte HTML response); no projections ingested. Projections must remain distinct from Census observations."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "hces-2023-24-state-sector",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "publisher": "Ministry of Statistics and Programme Implementation",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "downloadUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sourceVintage": "2023-08 to 2024-07; released 2025-01-31",
+      "level": "state_sector",
+      "codeScheme": "published state names; no crosswalk verified",
+      "license": {
+        "status": "unverified",
+        "url": "https://www.mospi.gov.in/CopyrightPolicy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Report downloaded HTTP 200, 11737505 bytes to temporary storage. Current policy response is a 2644-byte app shell; redistribution terms and table extraction not verified. No new all-state clothing/bedding or footwear rows ingested. Existing Karnataka benchmarks remain separate."
+      ],
+      "variables": [
+        "clothing_bedding_mpce",
+        "footwear_mpce"
+      ]
+    }
+  ],
+  "evidence": [],
+  "geographies": [],
+  "relationships": [],
+  "backendContract": {
+    "geographyTable": "market_geographies",
+    "relationshipTable": "market_geo_relationships",
+    "properties": [
+      "population",
+      "households",
+      "demographics",
+      "apparelSpendPerPersonMonthly",
+      "apparelSpendEvidenceClass",
+      "incomeProxy",
+      "regionalIncomeProxy",
+      "regionalApparelSpendMonthly",
+      "evidence",
+      "evidenceClass",
+      "confidence",
+      "warnings"
+    ],
+    "geometryField": "geom",
+    "relationshipType": "contains",
+    "note": "Empty arrays are intentional: no validated geometries, metrics or crosswalks. Never synthesize rows from this manifest. This file is a source availability manifest, not a completed ingest snapshot."
+  }
+}

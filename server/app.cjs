@@ -3,6 +3,7 @@
 const http = require('node:http');
 const { validateWorkspacePayload } = require('./validation.cjs');
 const { validatePin, calculateMarketAssessment } = require('./market-engine.cjs');
+const { projectStoreEconomics, scoreMarketViability } = require('./market-forecast.cjs');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -75,6 +76,17 @@ function createHandler({ store, marketStore, marketSources, marketBenchmarks, ma
           return reply(res, 200, { formatValid: validatePin(payload?.pin), directoryStatus: 'not_verified' });
         } catch (error) {
           return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : 'Invalid JSON' });
+        }
+      }
+      if (url.pathname === '/api/market/forecast' && req.method === 'POST') {
+        if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });
+        try {
+          const payload = await readBody(req, maxBodyBytes);
+          const economics = projectStoreEconomics(payload);
+          const viability = payload.scoreMetrics ? scoreMarketViability(payload.scoreMetrics, payload.scoreWeights, payload.scoreGates) : null;
+          return reply(res, 200, { modelVersion: 'india-fashion-market-v1', economics, viability });
+        } catch (error) {
+          return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : error.status === 400 ? 'Invalid JSON' : error.message });
         }
       }
       if (!marketStore) return reply(res, 503, { error: 'Market storage unavailable' });

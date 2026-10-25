@@ -8,6 +8,10 @@ The app can run as a static browser workspace, or with the local Neon persistenc
 
 The Neon-backed workspace is identified by a random ID stored in that browser. This keeps reloads on that browser connected to the same workspace. Authentication and cross-user workspace sharing are not included yet; the API is intentionally bound to localhost until that is added. Vercel deployment is a later manual step.
 
+## India fashion market intelligence
+
+The Market Intelligence area stores a separate, versioned location assessment and does not change applicant eligibility scores. Its official-data registry currently includes Karnataka HCES 2023–24 state-sector clothing/bedding and footwear benchmarks, plus Census source metadata. PIN syntax validation does not verify postal directory membership. Census town figures are from 2011; current PIN-level population, income, apparel spend, competitors and footfall are not supplied as observed data. Use the [methodology and evidence limitations](docs/india-fashion-market-methodology.md) before interpreting scenarios. Initialize the additive Neon market tables and seed the versioned source catalog with `npm run db:init`, then start locally with `npm start`.
+
 JSZip is vendored. Run `npm test` for the test suite.
 
 ## Current assessment policy

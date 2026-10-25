@@ -105,13 +105,20 @@ function calculateMarketAssessment(input = {}) {
     ? finiteEstimate(metrics.sam.value * captureRate, 'INR/year', [`Capture rate ${captureRate} applied once to SAM.`], 'SOM calculation overflowed the supported numeric range.')
     : unavailable('INR/year', 'SOM requires SAM and an explicit capture rate from 0 to 1.');
 
-  if (isPositiveFinite(economics.monthlyFixedCosts) && isPositiveFinite(economics.grossMargin) && economics.grossMargin <= 1) {
-    metrics.breakEvenRevenue = finiteEstimate(economics.monthlyFixedCosts / economics.grossMargin, 'INR/month', ['Monthly fixed costs divided by gross margin.'], 'Break-even calculation overflowed the supported numeric range.');
+  const royaltyRate = economics.royaltyRate === undefined ? 0 : economics.royaltyRate;
+  const contributionMargin = isPositiveFinite(economics.grossMargin) && economics.grossMargin <= 1
+    && typeof royaltyRate === 'number' && Number.isFinite(royaltyRate) && royaltyRate >= 0 && royaltyRate < economics.grossMargin
+    ? economics.grossMargin - royaltyRate : null;
+  if (isPositiveFinite(economics.monthlyFixedCosts) && contributionMargin !== null) {
+    metrics.breakEvenRevenue = finiteEstimate(economics.monthlyFixedCosts / contributionMargin, 'INR/month', [
+      `Monthly fixed costs divided by contribution margin (${economics.grossMargin} gross margin − ${royaltyRate} royalty rate).`,
+      ...(economics.royaltyRate === undefined ? ['Royalty rate was not supplied and is assumed to be 0 for this calculation.'] : [])
+    ], 'Break-even calculation overflowed the supported numeric range.');
   } else {
-    metrics.breakEvenRevenue = unavailable('INR/month', 'Break-even revenue requires positive monthly fixed costs and gross margin from 0 to 1.');
+    metrics.breakEvenRevenue = unavailable('INR/month', 'Break-even revenue requires positive monthly fixed costs and a gross margin greater than the supplied royalty rate.');
   }
-  const monthlyContribution = isPositiveFinite(economics.monthlyRevenue) && isPositiveFinite(economics.grossMargin) && economics.grossMargin <= 1
-    ? economics.monthlyRevenue * economics.grossMargin - (Number.isFinite(economics.monthlyFixedCosts) && economics.monthlyFixedCosts >= 0 ? economics.monthlyFixedCosts : NaN)
+  const monthlyContribution = isPositiveFinite(economics.monthlyRevenue) && contributionMargin !== null
+    ? economics.monthlyRevenue * contributionMargin - (Number.isFinite(economics.monthlyFixedCosts) && economics.monthlyFixedCosts >= 0 ? economics.monthlyFixedCosts : NaN)
     : NaN;
   metrics.paybackMonths = isPositiveFinite(economics.initialInvestment) && Number.isFinite(monthlyContribution) && monthlyContribution > 0
     ? finiteEstimate(economics.initialInvestment / monthlyContribution, 'months', ['Initial investment divided by positive monthly contribution after fixed costs; assumes constant monthly performance.'], 'Payback calculation overflowed the supported numeric range.')

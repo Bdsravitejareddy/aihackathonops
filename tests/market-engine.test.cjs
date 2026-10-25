@@ -57,6 +57,12 @@ test('break-even and payback require complete inputs and return transparent valu
   assert.equal(incomplete.metrics.paybackMonths.value, null);
 });
 
+test('market break-even and payback subtract royalties from gross margin when supplied', () => {
+  const result = calculateMarketAssessment({ economics: { monthlyFixedCosts: 100000, grossMargin: 0.5, royaltyRate: 0.05, initialInvestment: 600000, monthlyRevenue: 300000 } });
+  assert.equal(result.metrics.breakEvenRevenue.value, 100000 / 0.45);
+  assert.equal(result.metrics.paybackMonths.value, 600000 / (300000 * 0.45 - 100000));
+});
+
 test('risk gates block unconditional approval for downside loss or critical evidence gaps', () => {
   for (const risk of [{ downsideCashFlowNegative: true }, { criticalEvidenceMissing: true }]) {
     const result = calculateMarketAssessment({ risk, economics: { monthlyFixedCosts: 1, grossMargin: 0.5, initialInvestment: 10, monthlyRevenue: 20 } });

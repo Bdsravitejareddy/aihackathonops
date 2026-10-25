@@ -75,6 +75,7 @@ test('store forecast models a 60-month ramp, three scenarios and nominal vs real
 test('break-even, required capture, cash flow, ROI, payback, NPV and IRR are unit-consistent', () => {
   const result = projectStoreEconomics({ store, market: { samAnnual: 50000000, captureBenchmark: 0.05 }, forecast: { years: 5, annualNominalGrowth: 0.05, annualInflation: 0.04, discountRate: 0.12 } });
   assert.ok(Math.abs(result.economics.breakEvenRevenueMonthly - 222222.2222) < 0.01);
+  assert.ok(Math.abs(result.economics.breakEvenTransactionsMonthly - (store.monthlyFixedCosts / ((store.grossMargin - store.royaltyRate) * store.aov))) < 1e-10);
   assert.ok(Math.abs(result.economics.requiredAnnualCaptureRate - (222222.2222 * 12 / 50000000)) < 1e-8);
   assert.equal(result.scenarios.base.months[0].cumulativeCashFlow, -975000);
   assert.ok(result.economics.base.roiPercent > 0);

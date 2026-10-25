@@ -7,6 +7,7 @@ const taskDefs=[['Funding verification','Finance · Verify available funds and a
 let state={apps:[],territories:[],reference:null,settings:{...E.defaultPolicy},tasks:{},taskDates:{},audit:[],source:'Synthetic demo',warnings:[]},results=[],tab='overview',filter='',query='',chat=[],botContext=null,pendingChat=null,importPreview=null,storageOK=true,marketAssessments=[],marketSources=[],marketBenchmarks=[],marketResult=null,marketBusy=false,marketPinStatus='',marketSelectedLocation=null,marketAnalyzed=false,marketNewDraft=false,marketUi=null,marketResearchRequests=new Map(),marketQueryDraft='',territoryScreening=null,screeningSelectedLocation=null,screeningApplicantsCache=new Map(),screeningRequestRevision=0;
 let expansionMap=null;
 const persistence=FranchisePersistence.createPersistence();
+const screeningMarketContextCache=new Map();
 function updateStorageBadge(){const badge=document.querySelector('.local-badge');if(!badge)return;const label=persistence.mode==='shared'?'Shared via Neon':persistence.mode==='pending'?'Syncing to Neon…':persistence.mode==='conflict'?'Sync conflict · local copy kept':'Saved in this browser';badge.innerHTML=`<i></i> ${storageOK?label:'Not saved · export a backup'}`;}
 function save(){screeningApplicantsCache.clear();state.messages=chat.slice(-100);state.botContext=botContext;try{persistence.save(state).then(updateStorageBadge);storageOK=true;}catch(e){storageOK=false;toast('Browser storage is unavailable or full. Export a workspace backup before leaving.');}updateStorageBadge();}
 function calculate(){results=E.assess(state.apps,state.territories,stores,state.reference,state.settings);let old=E.assess(state.apps,state.territories,stores,state.reference,{});for(let r of results)r.legacyScore=old.find(a=>a.key===r.key)?.score;}
@@ -56,14 +57,16 @@ async function loadScreeningApplicants(location,controller=territoryScreening){
  const pin=location?.pin||location?.id?.match(/\b\d{6}\b/)?.[0];
  const revision=++screeningRequestRevision;
  if(!pin){controller?.updateApplicants([]);controller?.updateMarketContext(screeningContextFor(location));return;}
+ loadScreeningMarketContext(location,controller);
  const key=`${persistence.workspaceId}:${pin}`;
  try{
    let pending=screeningApplicantsCache.get(key);
    if(!pending){pending=marketRequest('/api/screening/applications?'+new URLSearchParams({workspaceId:persistence.workspaceId,pin})).then(data=>data.applications||[]);screeningApplicantsCache.set(key,pending);pending.catch(()=>{if(screeningApplicantsCache.get(key)===pending)screeningApplicantsCache.delete(key);});}
    const rows=await pending;
    if(revision!==screeningRequestRevision||controller!==territoryScreening)return;
-   controller.updateApplicants(screeningRowsForPin(rows));controller.updateMarketContext(screeningContextFor(location));
- }catch(error){if(revision===screeningRequestRevision&&controller===territoryScreening){controller.updateApplicants([]);controller.updateMarketContext({...screeningContextFor(location),explanation:`Applicant records could not be loaded from Neon: ${error.message}`});}}
+   const resolved=screeningSelectedLocation?.pin===pin?screeningSelectedLocation:location;
+   controller.updateApplicants(screeningRowsForPin(rows));controller.updateMarketContext(screeningContextFor(resolved));
+ }catch(error){if(revision===screeningRequestRevision&&controller===territoryScreening){const resolved=screeningSelectedLocation?.pin===pin?screeningSelectedLocation:location;controller.updateApplicants([]);controller.updateMarketContext({...screeningContextFor(resolved),explanation:`Applicant records could not be loaded from Neon: ${error.message}`});}}
 }
 async function fetchApplicantsForLocation(location){
  const pin=location?.pin||location?.id?.match(/\b\d{6}\b/)?.[0];if(!pin)return[];
@@ -71,6 +74,23 @@ async function fetchApplicantsForLocation(location){
  if(!pending){pending=marketRequest('/api/screening/applications?'+new URLSearchParams({workspaceId:persistence.workspaceId,pin})).then(data=>data.applications||[]);screeningApplicantsCache.set(key,pending);pending.catch(()=>{if(screeningApplicantsCache.get(key)===pending)screeningApplicantsCache.delete(key);});}
  const assessed=screeningRowsForPin(await pending);
  return window.TerritoryScreening?.sortApplicants?window.TerritoryScreening.sortApplicants(assessed,[{field:'launch',direction:'asc'}]):assessed.sort((a,b)=>(b.confirmedEligibilityScore??-Infinity)-(a.confirmedEligibilityScore??-Infinity)||String(a.id||a.key||'').localeCompare(String(b.id||b.key||''),undefined,{numeric:true,sensitivity:'base'}));
+}
+function loadScreeningMarketContext(location,controller=territoryScreening){
+ const pin=location?.pin||location?.id?.match(/\b\d{6}\b/)?.[0];
+ if(!pin)return;
+ const key=`pin:${pin}`;
+ let pending=screeningMarketContextCache.get(key);
+ if(!pending){pending=marketRequest('/api/market/map/geographies/'+encodeURIComponent(key)).catch(()=>null);screeningMarketContextCache.set(key,pending);}
+ pending.then(data=>{
+   if(!data?.geography||!controller)return;
+   const active=controller.getLocation?.(),activePin=active?.pin||active?.id?.match(/\b\d{6}\b/)?.[0];
+   if(activePin!==pin)return;
+   const resolved={...location,...data.geography,evidence:data.evidence||data.geography.evidence||[],sourceVersion:data.sourceVersion||data.geography.sourceVersion};
+   screeningSelectedLocation=resolved;
+   marketSelectedLocation=resolved;
+   controller.updateLocation(resolved);
+   controller.updateMarketContext(screeningContextFor(resolved));
+ });
 }
 window.fetchMarketApplicants=fetchApplicantsForLocation;
 function mountTerritoryScreening(){

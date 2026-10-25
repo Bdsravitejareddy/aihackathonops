@@ -13,6 +13,7 @@ async function appHarness(t){
   w.fetch=async(url,options={})=>{
     const route=String(url);requests.push({url:route,options});
     const data=route==='demo.json'?JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')):
+      route.includes('/api/market/map/geographies/pin%3A560026')?{geography:{id:'pin:560026',name:'Government Electric Factory S.O · Bengaluru',level:'pin',pin:'560026',state:'Karnataka',postOffices:[{name:'Government Electric Factory S.O',delivery:'Delivery'}],metrics:{population:{value:null,unit:'people',evidenceClass:'unavailable',warnings:['No PIN population crosswalk.']},monthlyPerCapitaSpend:{value:374.22,unit:'INR/person/month',status:'available',evidenceClass:'official_survey_estimate',geographicResolution:'state_sector',referencePeriod:'2023-24',geography:{level:'state_sector',state:'Karnataka',sector:'urban'},evidence:[{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}]},annualPerCapitaSpend:{value:4490.64,unit:'INR/person/year',status:'derived',evidenceClass:'derived_estimate',referencePeriod:'2023-24',evidence:[{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}]},tam:{value:null,unit:'INR/year',evidenceClass:'unavailable'}},evidence:[{sourceId:'india-post',title:'India Post Karnataka PIN directory',referenceYear:2020,url:'https://indiapost.gov.in/pincode.pdf'},{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}],benchmarkComparison:{urban:{value:374.22,unit:'INR/person/month',referencePeriod:'2023-24'},rural:{value:273.17,unit:'INR/person/month',referencePeriod:'2023-24'}},warnings:['PIN population is unavailable.']},sourceVersion:'test-v1'}:
       route.includes('/api/screening/applications')?{applications:applicants}:
       route.includes('/api/market/assessments')?{assessments:[]}:
       route.includes('/api/market/sources')?{sources:[]}:
@@ -56,4 +57,25 @@ test('map PIN selection and Territories view preserve the chosen location into s
   const button=w.document.querySelector('[data-screen-pin="570101"]');
   assert.ok(button,'territory PIN is directly selectable');button.click();await new Promise(r=>setImmediate(r));
   assert.equal(w.location.hash,'#screening');assert.equal(w.document.querySelector('#ts-pin').value,'570101');
+});
+
+test('PIN 560026 loads postal and HCES evidence into the integrated territory snapshot without inventing TAM',async t=>{
+  const h=await appHarness(t),{w,requests}=h;
+  w.document.querySelector('[data-tab="screening"]').click();
+  await new Promise(r=>setImmediate(r));
+  w.document.querySelector('#ts-pin').value='560026';
+  w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<6;i++)await new Promise(r=>setImmediate(r));
+  assert.ok(requests.some(r=>r.url.includes('/api/market/map/geographies/pin%3A560026')),'selected PIN should resolve its sourced market context');
+  const market=w.document.querySelector('[data-market]');
+  assert.match(w.document.querySelector('[data-location]').textContent,/Government Electric Factory S\.O/);
+  assert.match(market.textContent,/374\.22/);
+  assert.match(w.document.querySelector('[data-evidence]').textContent,/HCES 2023-24 Karnataka urban/);
+  const tam=[...market.querySelectorAll('.ts-metric')].find(card=>/TAM/.test(card.textContent));
+  assert.match(tam.textContent,/Unavailable/);
+  assert.match(market.textContent,/No substitute city or regional population/);
+  w.document.querySelector('[data-tab="market"]').click();
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  assert.equal(w.document.querySelector('#market-form [name="pin"]').value,'560026');
+  assert.equal(w.document.querySelector('#market-form [name="regionalSpend"]').value,'374.22');
 });

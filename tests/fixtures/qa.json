@@ -1,0 +1,1023 @@
+{
+  "apps": [
+    {
+      "id": "APP-101",
+      "name": "Synthetic Partner 01",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 10,
+      "experience": 0,
+      "business": "Runs a footwear store",
+      "space": "Owned",
+      "area": 250,
+      "floor": "Ground",
+      "launch": 1,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570101"
+    },
+    {
+      "id": "APP-102",
+      "name": "Synthetic Partner 02",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 15,
+      "experience": 1,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 300,
+      "floor": "Ground",
+      "launch": 2,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570102"
+    },
+    {
+      "id": "APP-103",
+      "name": "Synthetic Partner 03",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 20,
+      "experience": 2,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 350,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570103"
+    },
+    {
+      "id": "APP-104",
+      "name": "Synthetic Partner 04",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 25,
+      "experience": 3,
+      "business": "Runs a footwear store",
+      "space": "Owned",
+      "area": 400,
+      "floor": "Ground",
+      "launch": 4,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570104"
+    },
+    {
+      "id": "APP-105",
+      "name": "Synthetic Partner 05",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 450,
+      "floor": "Ground",
+      "launch": 5,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570105"
+    },
+    {
+      "id": "APP-106",
+      "name": "Synthetic Partner 06",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 35,
+      "experience": 5,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 6,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570106"
+    },
+    {
+      "id": "APP-107",
+      "name": "Synthetic Partner 07",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 40,
+      "experience": 6,
+      "business": "Runs a footwear store",
+      "space": "Owned",
+      "area": 550,
+      "floor": "Ground",
+      "launch": 7,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570107"
+    },
+    {
+      "id": "APP-108",
+      "name": "Synthetic Partner 08",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 45,
+      "experience": 7,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 600,
+      "floor": "Ground",
+      "launch": 8,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570108"
+    },
+    {
+      "id": "APP-109",
+      "name": "Synthetic Partner 09",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 50,
+      "experience": 8,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 650,
+      "floor": "Ground",
+      "launch": 9,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570109"
+    },
+    {
+      "id": "APP-110",
+      "name": "Synthetic Partner 10",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 55,
+      "experience": 9,
+      "business": "Runs a footwear store",
+      "space": "Owned",
+      "area": 700,
+      "floor": "Ground",
+      "launch": 10,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570110"
+    },
+    {
+      "id": "APP-111",
+      "name": "Synthetic Partner 11",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 60,
+      "experience": 10,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 750,
+      "floor": "Ground",
+      "launch": 11,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570111"
+    },
+    {
+      "id": "APP-112",
+      "name": "Synthetic Partner 12",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 65,
+      "experience": 11,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 800,
+      "floor": "Ground",
+      "launch": 12,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570112"
+    },
+    {
+      "id": "APP-201",
+      "name": "Synthetic Partner 13",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": null,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570113"
+    },
+    {
+      "id": "APP-202",
+      "name": "Synthetic Partner 14",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": "₹25,00,000",
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570114"
+    },
+    {
+      "id": "APP-203",
+      "name": "Synthetic Partner 15",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": "20–30 lakh",
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570115"
+    },
+    {
+      "id": "APP-204",
+      "name": "Synthetic Partner 16",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": "4 months",
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570116"
+    },
+    {
+      "id": "APP-205",
+      "name": "Synthetic Partner 17",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": -5,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570117"
+    },
+    {
+      "id": "APP-206",
+      "name": "Synthetic Partner 18",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": "500 sqft",
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570118"
+    },
+    {
+      "id": "APP-207",
+      "name": "Synthetic Partner 19",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Not yet identified",
+      "area": null,
+      "floor": "Not known",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570119"
+    },
+    {
+      "id": "APP-208",
+      "name": "Synthetic Partner 20",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Upper",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570120"
+    },
+    {
+      "id": "APP-209",
+      "name": "Synthetic Partner 21",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Mall unit",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570121"
+    },
+    {
+      "id": "APP-210",
+      "name": "Synthetic Partner 22",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "Still searching for a shop",
+      "pin": "570122"
+    },
+    {
+      "id": "APP-211",
+      "name": "Synthetic Partner 23",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "The shop is on the first floor only",
+      "pin": "570123"
+    },
+    {
+      "id": "APP-212",
+      "name": "Synthetic Partner 24",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570009"
+    },
+    {
+      "id": "APP-213",
+      "name": "Synthetic Partner 25",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "560199"
+    },
+    {
+      "id": "APP-214",
+      "name": "Synthetic Partner 26",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570999"
+    },
+    {
+      "id": "APP-215",
+      "name": "Synthetic Partner 27",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570990"
+    },
+    {
+      "id": "APP-216",
+      "name": "Synthetic Partner 28",
+      "city": "Belagavi",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "590101"
+    },
+    {
+      "id": "APP-217",
+      "name": "Synthetic Partner 29",
+      "city": "Tumakuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "572101"
+    },
+    {
+      "id": "APP-218",
+      "name": "Synthetic Partner 30",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 100,
+      "experience": 12,
+      "business": "Runs a footwear store",
+      "space": "Owned",
+      "area": 1000,
+      "floor": "Ground",
+      "launch": 1,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570101"
+    },
+    {
+      "id": "APP-DUP",
+      "name": "Synthetic Partner 31",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 800,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570131"
+    },
+    {
+      "id": "app-dup",
+      "name": "Synthetic Partner 32",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 900,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570132"
+    },
+    {
+      "id": null,
+      "name": "Synthetic Partner 33",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570133"
+    },
+    {
+      "id": "APP-222",
+      "name": null,
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570134"
+    },
+    {
+      "id": "APP-223",
+      "name": "Synthetic Partner 35",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 0,
+      "business": "No previous business",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570135"
+    },
+    {
+      "id": "APP-224",
+      "name": "Synthetic Partner 36",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "I do not own a business, but my father owns a shop",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570136"
+    },
+    {
+      "id": "APP-225",
+      "name": "Synthetic Partner 37",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "I run marathons on weekends",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": null,
+      "language": null,
+      "notes": "",
+      "pin": "570137"
+    },
+    {
+      "id": "APP-226",
+      "name": "Synthetic Partner 38",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": "1.5 crore",
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570138"
+    },
+    {
+      "id": "APP-227",
+      "name": "<img src=x onerror=alert(1)>",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "investment": 30,
+      "experience": 4,
+      "business": "Runs a footwear store",
+      "space": "Rented",
+      "area": 500,
+      "floor": "Ground",
+      "launch": 3,
+      "language": "Kannada",
+      "notes": "",
+      "pin": "570139"
+    }
+  ],
+  "territories": [
+    {
+      "id": "TER-QA",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "pins": [
+        "570101",
+        "570102",
+        "570103",
+        "570104",
+        "570105",
+        "570106",
+        "570107",
+        "570108",
+        "570109",
+        "570110",
+        "570111",
+        "570112",
+        "570113",
+        "570114",
+        "570115",
+        "570116",
+        "570117",
+        "570118",
+        "570119",
+        "570120",
+        "570121",
+        "570122",
+        "570123",
+        "570009",
+        "570131",
+        "570132",
+        "570133",
+        "570134",
+        "570135",
+        "570136",
+        "570137",
+        "570138",
+        "570139"
+      ],
+      "tier": "Tier 2",
+      "slots": 3,
+      "priority": "High",
+      "issues": []
+    },
+    {
+      "id": "TER-OVER-1",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "pins": [
+        "570990"
+      ],
+      "tier": "Tier 2",
+      "slots": 1,
+      "priority": "Medium",
+      "issues": []
+    },
+    {
+      "id": "TER-OVER-2",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "pins": [
+        "570990"
+      ],
+      "tier": "Tier 2",
+      "slots": 1,
+      "priority": "Low",
+      "issues": []
+    },
+    {
+      "id": "TER-ZERO",
+      "city": "Belagavi",
+      "state": "Karnataka",
+      "pins": [
+        "590101"
+      ],
+      "tier": "Tier 2",
+      "slots": 0,
+      "priority": "High",
+      "issues": []
+    },
+    {
+      "id": "TER-BAD",
+      "city": "Tumakuru",
+      "state": "Karnataka",
+      "pins": [
+        "572101"
+      ],
+      "tier": "Tier 3",
+      "slots": -1,
+      "priority": "Medium",
+      "issues": [
+        "Invalid open slots"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "APP-101",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-102",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-103",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-104",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-105",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-106",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-107",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-108",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-109",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-110",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-111",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-112",
+      "scenario": "Complete baseline; compete within 3 slots",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-201",
+      "scenario": "Missing required investment",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-202",
+      "scenario": "Rupees must propose 25 lakh",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-203",
+      "scenario": "Range needs a single confirmed amount",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-204",
+      "scenario": "Wrong investment dimension",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-205",
+      "scenario": "Negative amount",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-206",
+      "scenario": "Area cleaning requires confirmation",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-207",
+      "scenario": "Site search needed",
+      "expected": [
+        "Site needed"
+      ]
+    },
+    {
+      "id": "APP-208",
+      "scenario": "Upper is not necessarily first floor",
+      "expected": [
+        "Site needed"
+      ]
+    },
+    {
+      "id": "APP-209",
+      "scenario": "Mall floor needs confirmation",
+      "expected": [
+        "Site needed"
+      ]
+    },
+    {
+      "id": "APP-210",
+      "scenario": "Ownership and site-search conflict",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-211",
+      "scenario": "Floor contradiction",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-212",
+      "scenario": "Existing store pin",
+      "expected": [
+        "Location unavailable"
+      ]
+    },
+    {
+      "id": "APP-213",
+      "scenario": "City and pin mismatch",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-214",
+      "scenario": "No territory coverage",
+      "expected": [
+        "Territory review"
+      ]
+    },
+    {
+      "id": "APP-215",
+      "scenario": "Overlapping territories",
+      "expected": [
+        "Territory review"
+      ]
+    },
+    {
+      "id": "APP-216",
+      "scenario": "Zero-slot territory",
+      "expected": [
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-217",
+      "scenario": "Invalid territory slot count",
+      "expected": [
+        "Territory review"
+      ]
+    },
+    {
+      "id": "APP-218",
+      "scenario": "Competing pin; stronger candidate",
+      "expected": [
+        "Recommended"
+      ]
+    },
+    {
+      "id": "APP-DUP",
+      "scenario": "Duplicate identity must not inflate references",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "app-dup",
+      "scenario": "Duplicate identity ignoring case",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": null,
+      "scenario": "Missing application ID retained",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-222",
+      "scenario": "Missing name retained",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-223",
+      "scenario": "Zero experience is valid, not missing",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-224",
+      "scenario": "Negated prior business earns zero",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-225",
+      "scenario": "Optional uncertainty shown, training blocked",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    },
+    {
+      "id": "APP-226",
+      "scenario": "Crore magnitude proposes 150 lakh",
+      "expected": [
+        "Clarification needed"
+      ]
+    },
+    {
+      "id": "APP-227",
+      "scenario": "Untrusted text renders literally",
+      "expected": [
+        "Recommended",
+        "Waitlisted"
+      ]
+    }
+  ],
+  "stores": [
+    {
+      "id": "ST-06",
+      "city": "Mysuru",
+      "pin": "570009",
+      "year": 2021
+    }
+  ]
+}

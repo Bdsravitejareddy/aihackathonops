@@ -5,3 +5,5 @@ Independent review found malformed backup replacement, backup attribute injectio
 Ruling: minimum five valid observations with variation (word distinct in initial spec corrected) matches disclosed UI and avoids arbitrary fixed thresholds.
 Ruling: missing optional business/launch/language can remain in provisional recommendations with score range. Configured launch minimum requires known launch; language required for training completion.
 Task 3: publication in progress.
+
+QA and research update: 84 automated tests pass, including 200 seeded allocation runs. Browser verified the 39-record XLSX, new bot clarification/contextual preview/explicit update, persistence, rejection of invalid policy settings, CSV and backup contents. Independent review findings fixed with regression tests. Revised industry-informed v2 uses declared adequacy with separately enforced gates; all weights and demo requirements explicitly labelled proposed. Seven-page research document rendered and visually checked, saved as a persistent deliverable and included in the app. QA report and initial rescoring CSV/JSON are included. Final source packaging/publication follows this checked state.

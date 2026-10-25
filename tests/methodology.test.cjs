@@ -1,0 +1,15 @@
+const {test}=require('node:test'),a=require('node:assert/strict'),E=require('../dist/engine.js');
+const policy={model:'industry-v2',minInvestment:30,minArea:400,minLaunch:3,targetLaunch:6};
+const base={id:'APP-X',name:'Example',city:'Mysuru',state:'Karnataka',pin:'570101',investment:30,experience:4,business:'Runs a footwear store',space:'Rented',area:450,floor:'Ground',launch:3,language:'Kannada'};
+const t=[{id:'TER-X',city:'Mysuru',state:'Karnataka',pins:['570101','570102'],slots:2}];
+const run=(patch={},p=policy)=>E.assess([E.normalize({...base,...patch},'x')],t,[],{},p)[0];
+test('v2 worked example scores 95 with declared funding not approval',()=>{let r=run();a.equal(r.score,95);a.equal(r.grade,'A');a.equal(r.model,'industry-v2');a.equal(r.status,'Recommended');});
+test('owning and renting the same viable site receive equal scores',()=>a.equal(run({space:'Owned'}).score,run({space:'Rented'}).score));
+test('additional wealth beyond requirement does not buy extra points',()=>a.equal(run({investment:1000}).score,run({investment:30}).score));
+test('area beyond minimum does not buy extra points',()=>a.equal(run({area:5000}).score,run({area:400}).score));
+test('financial shortfall cannot be offset by experience',()=>{let r=run({investment:20,experience:20});a.equal(r.status,'Requirements not met');a.equal(r.score,88.3);});
+test('unrealistically quick target gets timeline review not a bonus',()=>{let r=run({launch:1});a.equal(r.status,'Timeline review');a.equal(r.components.find(c=>c.key==='launch').contribution,0);});
+test('missing investment remains ungraded with unknown range',()=>{let r=run({investment:null});a.equal(r.grade,'U');a.equal(r.high-r.score,35);a.equal(r.status,'Clarification needed');});
+test('v2 requires explicit positive brand requirements',()=>a.equal(run({}, {...policy,minArea:''}).status,'Policy needed'));
+test('scores do not change when unrelated applicants join the cohort',()=>{let first=run();let xs=[E.normalize(base,'x'),E.normalize({...base,id:'APP-Y',pin:'570102',investment:1000,area:5000},'y')];a.equal(E.assess(xs,t,[],{},policy)[0].score,first.score);});
+test('first floor is not automatically worse without a brand rule',()=>a.equal(run({floor:'First'}).score,run({floor:'Ground'}).score));

@@ -3,9 +3,11 @@ const E=require('../dist/engine.js');let context={window:{},Engine:E};vm.runInNe
 const ah=Object.values(E.labels),th=['Territory ID','City','State','Pin codes covered','City tier','Open slots','Priority'];
 const app=['APP-003','Test partner','Mysuru','Karnataka',570001,null,0,'No previous business','Not yet identified',null,'Not known',3,'Kannada',''];
 const terr=['TER-01','Mysuru','Karnataka','570001','Tier 2',1,'High'];
-const sheets={Applications:[{row:2,values:ah},{row:3,values:app},{row:4,values:app}],Territories:[{row:2,values:th},{row:3,values:terr},{row:4,values:terr}]};
+const sheets={Applications:[{row:1,values:['Row 3 is an example']},{row:2,values:ah},{row:3,values:app},{row:4,values:app}],Territories:[{row:1,values:['Row 3 is an example']},{row:2,values:th},{row:3,values:terr},{row:4,values:terr}]};
 test('template examples excluded while incomplete actual row retained',()=>{let r=parse(sheets);a.equal(r.apps.length,1);a.equal(r.apps[0].investment,null);a.equal(r.territories.length,1);});
 test('example rows can explicitly be included',()=>{let r=parse(sheets,true);a.equal(r.apps.length,2);a.equal(r.territories.length,2);a.ok(r.territories.every(t=>t.issues.includes('Duplicate territory ID')));});
 test('missing territory header does not discard applications',()=>{let r=parse({Applications:sheets.Applications});a.equal(r.apps.length,1);a.equal(r.territories.length,0);a.ok(r.warnings.length);});
 test('empty rows ignored',()=>{let r=parse({...sheets,Applications:[...sheets.Applications,{row:9,values:[null,null]}]});a.equal(r.apps.length,1);});
 test('negative slots produce territory issue',()=>{let r=parse({...sheets,Territories:[{row:2,values:th},{row:4,values:[...terr.slice(0,5),-1,'High']}]});a.ok(r.territories[0].issues.includes('Invalid open slots'));});
+test('ordinary workbook row 3 is retained when it is not labelled an example',()=>{let r=parse({Applications:[{row:1,values:ah},{row:2,values:app},{row:3,values:[...app.slice(0,1),'Second actual record',...app.slice(2)]}],Territories:[{row:1,values:th},{row:2,values:terr}]});a.equal(r.apps.length,2);});
+test('changes to fixed existing stores are reported but not adopted',()=>{let r=parse({...sheets,'Existing stores':[{row:2,values:['Store ID','City','Pin code','Opened (year)']},{row:3,values:['ST-01','Bengaluru',560999,2019]}]},false,[{id:'ST-01',city:'Bengaluru',pin:'560001',year:2019}]);a.ok(r.warnings.some(w=>/fixed.*store|store.*fixed/i.test(w)));});

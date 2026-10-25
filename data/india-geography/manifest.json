@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "retrievedAt": "2026-10-25",
   "datasets": [
     {
@@ -87,6 +87,29 @@
       "variables": [
         "geometry"
       ]
+    },
+    {
+      "id": "nic-bharatmap-state-district-boundaries",
+      "sourceId": "nic-bharatmap-state-district",
+      "publisher": "National Informatics Centre, Government of India",
+      "title": "BharatMapService Admin Boundary District MapServer",
+      "sourceUrl": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+      "downloadUrl": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer/1/query?where=1%3D1&outFields=*&outSR=4326&f=geojson&returnGeometry=true",
+      "sourceVintage": "updated through October 2017; source metadata reports 36 states and 717 districts",
+      "level": "district",
+      "codeScheme": "Census 2011 codes with post-2011 districts assigned 701+; AP/Telangana code handling documented by source",
+      "license": {
+        "status": "unverified",
+        "url": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+        "note": "Public government ArcGIS REST service metadata is available; no explicit reuse/redistribution license was verified. No offline artifact retained."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": { "featureCount": 0, "rowCount": 0, "populationTotal": null },
+      "knownGaps": [
+        "Official NIC MapServer metadata verified and advertises GeoJSON query support, but the feature query timed out with no response during implementation. No geometries were obtained, validated or copied into the application; service reuse terms are also unverified."
+      ],
+      "variables": ["state geometry", "district geometry", "Census 2011 administrative codes"]
     },
     {
       "id": "census-2011-pca",

@@ -8,7 +8,7 @@ const { createHandler } = require('../server/app.cjs');
 const workspaceId = 'f28e574b-6f52-4f24-97c6-69e0c28bb54f';
 const assessmentId = 'd18b6324-2abc-4f24-97c6-69e0c28bb54f';
 
-function harness({ marketStore, marketSources = { sources: [{ id: 'official' }] }, marketBenchmarks = { observations: [] } } = {}) {
+function harness({ marketStore, marketMapStore, marketSources = { sources: [{ id: 'official' }] }, marketBenchmarks = { observations: [] } } = {}) {
   const workspaces = new Map([[workspaceId, { state: { apps: [{ key: 'A-1', score: 77 }], territories: [] }, revision: 1 }]]);
   const store = {
     async load(id) { return workspaces.get(id) || null; },
@@ -35,7 +35,7 @@ function harness({ marketStore, marketSources = { sources: [{ id: 'official' }] 
     async listCompetitors(owner, id) { return competitors.get(id)?.workspaceId === owner ? competitors.get(id).items : []; },
     async replaceCompetitors(owner, id, items) { competitors.set(id, { workspaceId: owner, items: structuredClone(items) }); return items; }
   };
-  const handler = createHandler({ store, marketStore: marketStore || defaultMarketStore, marketSources, marketBenchmarks });
+  const handler = createHandler({ store, marketStore: marketStore || defaultMarketStore, marketMapStore, marketSources, marketBenchmarks });
   async function call(method, path, body) {
     const req = Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))]);
     req.method = method;
@@ -132,4 +132,34 @@ test('market competitor routes are workspace scoped and reject malformed identif
   assert.equal(listed.json().competitors[0].name, 'Retailer A');
   assert.equal((await call('GET', '/api/market/assessments/not-a-uuid?workspaceId=' + workspaceId)).status, 400);
   assert.equal((await call('GET', '/api/market/assessments?workspaceId=bad')).status, 400);
+});
+
+test('map API progressively serves sourced geographies with fixed national legend and gray missing metrics', async () => {
+  const geo = { id: 'KA', name: 'Karnataka', level: 'state', parentId: null, geometry: null,
+    metrics: { population: { value: 100, unit: 'people', evidenceClass: 'official_observed' }, tam: { value: null, unit: 'INR/year', evidenceClass: 'unavailable' } },
+    evidence: [{ sourceId: 'census', referenceYear: 2011, geographicResolution: 'state' }], confidence: 'historical' };
+  const map = { sourceVersion: 'india-test-v1', async getMapLevel(parentId) { return parentId ? 'district' : 'state'; },
+    async listMapGeographies({ level }) { return level === 'state' ? [geo] : []; }, async searchMapGeographies() { return [geo]; },
+    async getMapGeography() { return geo; }, async getMapEvidence() { return { evidence: geo.evidence, warnings: [] }; } };
+  const { call } = harness({ marketMapStore: map });
+  const root = await call('GET', '/api/market/map/levels?metric=tam&year=2026');
+  assert.equal(root.status, 200); assert.equal(root.json().level, 'state');
+  assert.equal(root.json().features[0].metrics.tam.value, null);
+  assert.equal(root.json().legend.scope, 'national'); assert.equal(root.json().legend.colors.length, 5);
+  assert.equal((await call('GET', '/api/market/map/levels?parentId=KA&metric=population')).json().level, 'district');
+  assert.equal((await call('GET', '/api/market/map/search?q=Karnataka')).json().results[0].id, 'KA');
+  assert.equal((await call('GET', '/api/market/map/levels?metric=unknown')).status, 400);
+  assert.equal((await call('GET', '/api/market/map/levels?bbox=98,37,67,6')).status, 400);
+});
+
+test('scenario recalculation leaves missing inputs unavailable and explicitly labels projections', async () => {
+  const geo = { id: 'KA', name: 'Karnataka', level: 'state', metrics: { revenue: { value: null } }, evidence: [], confidence: 'insufficient evidence' };
+  const map = { sourceVersion: 'india-test-v1', async getMapLevel() { return 'state'; }, async listMapGeographies() { return [geo]; }, async getMapGeography() { return geo; } };
+  const { call } = harness({ marketMapStore: map });
+  const response = await call('POST', '/api/market/map/scenario', { scenario: 'base', horizonYears: 3, metric: 'revenue', assumptions: { elasticity: 1, captureRate: 0.02, investment: 100000 } });
+  assert.equal(response.status, 200);
+  assert.equal(response.json().map.features[0].metrics.revenue.value, null);
+  assert.equal(response.json().forecast.evidenceClass, 'model_assumption');
+  assert.ok(response.json().forecast.warnings.some(text => /not be interpreted as observed sales/i.test(text)));
+  assert.equal((await call('POST', '/api/market/map/scenario', { horizonYears: 4, assumptions: {} })).status, 400);
 });

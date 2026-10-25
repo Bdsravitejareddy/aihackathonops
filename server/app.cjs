@@ -36,7 +36,7 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
+function createHandler({ store, marketStore, marketMapStore, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -51,6 +51,71 @@ function createHandler({ store, marketStore, marketSources, marketBenchmarks, ma
     if (req.method === 'GET' && url.pathname === '/api/health') return reply(res, 200, { ok: true });
 
     if (url.pathname.startsWith('/api/market/')) {
+      if (url.pathname.startsWith('/api/market/map/')) {
+        if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
+        const allowedMetrics = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+        const legendFor = (metric, year) => {
+          const defs = {
+            population: ['people', [10000, 50000, 200000, 1000000]], populationDensity: ['people/km²', [100, 500, 1500, 5000]], households: ['households', [2000, 10000, 40000, 200000]],
+            monthlyPerCapitaSpend: ['INR/person/month', [100, 250, 500, 1000]], incomeProxy: ['INR/person/month', [10000, 20000, 40000, 80000]],
+            tam: ['INR/year', [10000000, 100000000, 1000000000, 10000000000]], sam: ['INR/year', [5000000, 50000000, 500000000, 5000000000]], som: ['INR/year', [1000000, 10000000, 100000000, 1000000000]],
+            competitorCount: ['stores', [1, 5, 20, 100]], saturation: ['index', [0.2, 0.4, 0.6, 0.8]], revenue: ['INR/year', [1000000, 10000000, 100000000, 1000000000]], revenuePerKm2: ['INR/year/km²', [1000000, 10000000, 100000000, 1000000000]],
+            growthPotential3Year: ['% nominal / 3 years', [5, 10, 20, 35]], growthPotential5Year: ['% nominal / 5 years', [10, 20, 40, 70]], breakEvenRevenue: ['INR/year', [1000000, 5000000, 25000000, 100000000]], paybackMonths: ['months', [12, 24, 36, 60]], viability: ['score / 100', [25, 45, 65, 80]]
+          };
+          if (!allowedMetrics.has(metric)) return null;
+          const [unit, thresholds] = defs[metric];
+          return { scope: 'national', metric, year, unit, thresholds, colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'] };
+        };
+        try {
+          if (req.method === 'GET' && url.pathname === '/api/market/map/levels') {
+            const metric = url.searchParams.get('metric') || 'population';
+            if (!allowedMetrics.has(metric)) return reply(res, 400, { error: 'Unsupported map metric' });
+            const parentId = url.searchParams.get('parentId') || null;
+            const rawBbox = url.searchParams.get('bbox');
+            const bbox = rawBbox ? rawBbox.split(',').map(Number) : null;
+            if (bbox && (bbox.length !== 4 || !bbox.every(Number.isFinite) || bbox[0] < -180 || bbox[2] > 180 || bbox[1] < -90 || bbox[3] > 90 || bbox[0] >= bbox[2] || bbox[1] >= bbox[3])) return reply(res, 400, { error: 'Invalid map bounding box' });
+            const validBbox = bbox;
+            const level = await marketMapStore.getMapLevel(parentId);
+            if (!level) return reply(res, 400, { error: 'Unknown map parent geography' });
+            const scenario = { captureRate: null };
+            const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario });
+            return reply(res, 200, { level, features, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1', legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings: features.length ? [] : ['No verified child boundaries are available at this level.'] });
+          }
+          if (req.method === 'GET' && url.pathname === '/api/market/map/search') {
+            const q = (url.searchParams.get('q') || '').trim();
+            if (q.length < 2 || q.length > 100) return reply(res, 400, { error: 'Search must contain 2–100 characters' });
+            const results = await marketMapStore.searchMapGeographies(q, Math.min(Number(url.searchParams.get('limit')) || 20, 20));
+            return reply(res, 200, { results: results.map(({ id,name,level,parentId,geometry,metrics,evidence,confidence }) => ({ id,name,level,parentId,geometry,metrics,evidence,confidence })) });
+          }
+          const detailMatch = url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)$/);
+          if (req.method === 'GET' && detailMatch) {
+            const id = decodeURIComponent(detailMatch[1]);
+            const geography = await marketMapStore.getMapGeography(id, 'population', { captureRate: null });
+            if (!geography) return reply(res, 404, { error: 'Geography not found' });
+            const extra = await marketMapStore.getMapEvidence(id);
+            return reply(res, 200, { geography: { ...geography, ...(extra || {}) }, evidence: extra?.evidence || geography.evidence, confidence: geography.confidence, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1' });
+          }
+          if (req.method === 'POST' && url.pathname === '/api/market/map/compare') {
+            const payload = await readBody(req, maxBodyBytes);
+            if (!Array.isArray(payload.geographyIds) || payload.geographyIds.length < 2 || payload.geographyIds.length > 4 || payload.geographyIds.some(id => typeof id !== 'string' || id.length > 160)) return reply(res, 400, { error: 'Choose 2–4 valid geography IDs' });
+            const geographies = await Promise.all(payload.geographyIds.map(id => marketMapStore.getMapGeography(id, payload.metric, { captureRate: null })));
+            return reply(res, 200, { geographies: geographies.filter(Boolean), warnings: ['Comparisons reflect source vintages and uncertainty shown for each geography; overlapping catchments may double-count residents.'] });
+          }
+          if (req.method === 'POST' && url.pathname === '/api/market/map/scenario') {
+            const payload = await readBody(req, maxBodyBytes), a = payload.assumptions || {};
+            if (!Number.isInteger(payload.horizonYears) || ![0,3,5].includes(payload.horizonYears)) return reply(res, 400, { error: 'Horizon must be baseline, 3 or 5 years' });
+            for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','travelTimeMinutes']) if (a[key] !== undefined && (!Number.isFinite(a[key]) || a[key] < 0 || (key === 'captureRate' && a[key] > 1) || (key === 'elasticity' && a[key] === 0))) return reply(res, 400, { error: `Invalid assumption: ${key}` });
+            const parentId = payload.parentId || null, level = await marketMapStore.getMapLevel(parentId);
+            const mapRows = await marketMapStore.listMapGeographies({ parentId, level, metric: payload.metric, scenario: { captureRate: a.captureRate, elasticity: a.elasticity ?? 1 } });
+            const selected = await Promise.all((payload.geographyIds || []).slice(0,4).map(id => marketMapStore.getMapGeography(id, payload.metric, { captureRate: a.captureRate, elasticity: a.elasticity ?? 1 })));
+            const scenarioId = `scenario-${payload.scenario || 'base'}-e${a.elasticity ?? 1}-c${a.captureRate ?? 'missing'}-h${payload.horizonYears}`;
+            const forecast = { evidenceClass: 'model_assumption', horizonYears: payload.horizonYears, annualRevenue: selected.map(item => item?.metrics?.revenue || null), roi: null, paybackMonths: null, warnings: ['Store costs, conversion, observed footfall and local income proxies are required for a defensible investment forecast; unavailable values remain blank.', 'Revenue is a scenario projection and must not be interpreted as observed sales.'] };
+            return reply(res, 200, { scenarioId, map: { level, features: mapRows, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1', legend: legendFor(payload.metric || 'population', Number(payload.year) || 2026), warnings: [] }, forecast, warnings: forecast.warnings });
+          }
+          res.setHeader('allow', 'GET, POST');
+          return reply(res, 405, { error: 'Method not allowed' });
+        } catch (error) { return reply(res, error.status || 503, { error: error.status === 400 ? 'Invalid JSON' : 'Map geography service unavailable' }); }
+      }
       if (req.method === 'GET' && url.pathname === '/api/market/sources') {
         if (typeof marketStore?.listSources === 'function') {
           try {

@@ -8,7 +8,7 @@ test('source-only geography handoff exposes no unvalidated backend records',()=>
  assert.equal(manifest.schemaVersion,1);
  assert.deepEqual(manifest.geographies,[]);
  assert.deepEqual(manifest.relationships,[]);
- assert.equal(manifest.datasets.length,8);
+ assert.equal(manifest.datasets.length,9);
  for(const d of manifest.datasets){
   assert.equal(d.status,'unavailable');assert.equal(d.artifact,null);
   assert.deepEqual(d.coverage,{featureCount:0,rowCount:0,populationTotal:null});

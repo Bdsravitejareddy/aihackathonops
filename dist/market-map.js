@@ -55,6 +55,7 @@
     return `<h3>${escape(geo.name || geo.id || 'Selected geography')}</h3><p class="hint">${escape(geo.level || '')} · Confidence: ${escape(raw?.confidence || geo.confidence || 'unavailable')} · ${escape(raw?.sourceVersion || geo.sourceVersion || 'Source version unavailable')}</p>
       <p class="hint">Source year: ${escape(years.join(', ') || 'Unavailable')}<br>Geographic resolution: ${escape(resolutions.join(', ') || 'Source resolution unavailable')} · Selected area: ${escape(geo.level || 'unavailable')}</p>
       ${groups.map(([title, keys]) => `<h4>${title}</h4><div class="expansion-metrics">${keys.map(key => metricHTML(key, metrics[key])).join('')}</div>`).join('')}
+      ${(raw?.demographics || geo.demographics) ? `<h4>Detailed demographic distribution</h4>${reportHTML(raw?.demographics || geo.demographics)}` : '<p class="hint">Detailed age, gender and household distributions are unavailable at this geographic resolution.</p>'}
       <details><summary>Evidence, vintage and allocation</summary>${evidenceHTML(raw?.evidence || geo.evidence)}${raw?.warnings ? `<p>${list(raw.warnings).map(escape).join(' · ')}</p>` : ''}</details>`;
   }
   function reportHTML(value) {

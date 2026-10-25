@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "manifestVersion": "1.0.1",
+  "manifestSha256": "37678b7cb0e9c4f900b9ec3c4206026fc69a9237c16da72e170f464bcc3052fa",
+  "coverage": {
+    "features": 0,
+    "relationships": 0,
+    "populationTotal": null
+  },
+  "geographies": [],
+  "relationships": [],
+  "datasets": [
+    {
+      "id": "india-post-pin-boundaries",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "HTTP 200 catalog shell has no resources (empty resources state); Sikkim official mirror renders No Result Found. Download URL, vintage, feature count and crosswalk unverified."
+      ]
+    },
+    {
+      "id": "soi-state-boundaries",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog identifies archive; no geometry acquired. Current website copyright policy requires written reproduction permission. Archive-specific reuse license and vintage unverified."
+      ]
+    },
+    {
+      "id": "soi-district-boundaries",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No geometry acquired or validated; reuse permission, actual district coverage, identifier scheme and Census 2011 crosswalk unverified."
+      ]
+    },
+    {
+      "id": "nic-bharatmap-state-district-boundaries",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official NIC MapServer metadata verified and advertises GeoJSON query support, but the feature query timed out with no response during implementation. No geometries were obtained, validated or copied into the application; service reuse terms are also unverified."
+      ]
+    },
+    {
+      "id": "census-2011-pca",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog verified in search. HTTPS download fails curl error 60 (unable to get local issuer certificate); official censusindia.mha.gov.in alternate returns HTTP 500 with zero bytes. No population, sex, households or age 0-6 rows ingested."
+      ]
+    },
+    {
+      "id": "census-2011-age",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "C-14 inventory only; no table acquired, precise download and reuse terms unverified. PCA age 0-6 must not be treated as full age distribution."
+      ]
+    },
+    {
+      "id": "census-2011-area",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No official area table acquired or aligned to boundaries; area and density remain unavailable."
+      ]
+    },
+    {
+      "id": "official-state-projections",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official report URL returns HTTP 404 (4660-byte HTML response); no projections ingested. Projections must remain distinct from Census observations."
+      ]
+    },
+    {
+      "id": "hces-2023-24-state-sector",
+      "status": "unavailable",
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Report downloaded HTTP 200, 11737505 bytes to temporary storage. Current policy response is a 2644-byte app shell; redistribution terms and table extraction not verified. No new all-state clothing/bedding or footwear rows ingested. Existing Karnataka benchmarks remain separate."
+      ]
+    }
+  ],
+  "generatedAt": "2026-10-25"
+}

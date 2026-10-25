@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS bot_messages (
 
 -- Market intelligence is stored independently from franchise eligibility scores.
 -- These tables are additive; existing workspace records are not migrated or rewritten.
+CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS market_source_versions (
   id text NOT NULL,
   version text NOT NULL,
@@ -56,8 +57,13 @@ CREATE TABLE IF NOT EXISTS market_geographies (
   external_id text,
   name text,
   properties jsonb NOT NULL DEFAULT '{}'::jsonb,
+  geom geometry(Geometry, 4326),
   UNIQUE (kind, external_id)
 );
+
+ALTER TABLE market_geographies ADD COLUMN IF NOT EXISTS geom geometry(Geometry, 4326);
+CREATE INDEX IF NOT EXISTS market_geographies_geom_gix ON market_geographies USING GIST (geom);
+CREATE INDEX IF NOT EXISTS market_geographies_kind_name_idx ON market_geographies (kind, name);
 
 CREATE TABLE IF NOT EXISTS market_geo_relationships (
   parent_id uuid NOT NULL REFERENCES market_geographies(id) ON DELETE CASCADE,
@@ -83,6 +89,9 @@ CREATE TABLE IF NOT EXISTS market_observations (
   created_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (source_id, source_version) REFERENCES market_source_versions(id, version)
 );
+
+CREATE INDEX IF NOT EXISTS market_observations_geography_metric_idx
+  ON market_observations (geography_id, metric, reference_period);
 
 CREATE TABLE IF NOT EXISTS market_assessments (
   id uuid PRIMARY KEY,

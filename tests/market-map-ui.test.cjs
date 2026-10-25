@@ -233,6 +233,15 @@ test('additional investment layers request their own metric and show missing evi
   assert.match(detail.textContent,/Missing evidence/);
 });
 
+test('selected geography shows detailed demographic data when the source provides it', async t => {
+  const f=feature('a',120);f.demographics={ageGroups:{'18-24':30,'25-34':40},urbanRural:'urban',householdSize:4};
+  const h=setup(url=>url.includes('/geographies/')?f:levels([f]));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();h.controller.selectGeography('a');await tick();
+  const detail=h.host.querySelector('[data-map-detail]');
+  assert.match(detail.textContent,/Detailed demographic distribution/);
+  assert.match(detail.textContent,/18-24/);assert.match(detail.textContent,/urban/);assert.match(detail.textContent,/household Size/);
+});
+
 test('global city/PIN search uses the bounded API and opens an unloaded geography at its parent level', async t => {
   const city = feature('remote-city',null,'city','remote-district');
   const h = setup(url => {

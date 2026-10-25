@@ -190,6 +190,24 @@
       }
     },
     {
+      "id": "nic-bharatmap-state-district",
+      "publisher": "National Informatics Centre, Government of India",
+      "title": "BharatMapService state and district administrative boundaries",
+      "url": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+      "referencePeriod": "Updated through October 2017 per service metadata",
+      "geography": "36 states and 717 districts; source codes aligned to Census 2011 with post-2011 district additions",
+      "updateFrequency": "Service metadata; query availability and update frequency not confirmed",
+      "licenseNote": "Government service metadata is public; explicit reuse and redistribution terms were not verified. No feature artifact retained.",
+      "variables": ["state geometry", "district geometry", "Census 2011 administrative codes"],
+      "limitations": ["Feature query timed out with no response during implementation.", "October 2017 boundaries omit later district changes; no Census population crosswalk validated."],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "nic-bharatmap-state-district-boundaries",
+        "status": "unavailable"
+      }
+    },
+    {
       "id": "soi-state-boundaries",
       "publisher": "Survey of India, Government of India",
       "title": "soi-state-boundaries",

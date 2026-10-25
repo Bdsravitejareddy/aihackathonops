@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 const { createHandler } = require('./app.cjs');
 const { createStore } = require('./store.cjs');
 const { createMarketStore } = require('./market-store.cjs');
+const { createMarketMapStore } = require('./market-map-store.cjs');
 const { createStaticHandler } = require('./static.cjs');
 const { normalizeDatabaseUrl } = require('./db-config.cjs');
 
@@ -16,7 +17,8 @@ const dataDirectory = path.resolve(__dirname, '..', 'data');
 const marketSources = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-sources.json'), 'utf8'));
 const marketBenchmarks = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-benchmarks.json'), 'utf8'));
 const marketStore = createMarketStore(pool);
-const api = createHandler({ store: createStore(pool), marketStore, marketSources, marketBenchmarks });
+const marketMapStore = createMarketMapStore(pool);
+const api = createHandler({ store: createStore(pool), marketStore, marketMapStore, marketSources, marketBenchmarks });
 const serveStatic = createStaticHandler({ directory: require('node:path').resolve(__dirname, '..', 'dist') });
 const staticServer = http.createServer((req, res) => req.url.startsWith('/api/') ? api(req, res) : serveStatic(req, res));
 const port = Number(process.env.PORT || 8080);

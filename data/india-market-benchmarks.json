@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "observations": [
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 273.17,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "components": { "clothing_bedding": 231.22, "footwear": 41.95 },
+      "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 374.22,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "components": { "clothing_bedding": 315.29, "footwear": 58.93 },
+      "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 231.22,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "notes": "Clothing and bedding excludes tailoring charges."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 41.95,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R"
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 315.29,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "notes": "Clothing and bedding excludes tailoring charges."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 58.93,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U"
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 317.61,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "with_imputation",
+      "statement": "10U",
+      "notes": "Urban with-imputation estimate; distinct observation from Statement 3U. Clothing and bedding excludes tailoring charges."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 59.53,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "with_imputation",
+      "statement": "10U"
+    }
+  ]
+}

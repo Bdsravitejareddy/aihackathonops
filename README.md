@@ -34,3 +34,6 @@ Automated checks include normalization, units, negation, conflicting updates, gr
 
 ## Data and scope
 Data remains in each visitor's browser; export JSON to preserve the workspace. Visitors have independent data. The app does not provide a shared team database, authenticate bank statements, validate leases, collect background checks or model catchment economics. Checklist completion is an operator attestation. Training and final franchise approval remain operational steps outside automatic scoring.
+
+## Market data registry
+The versioned India market source inventory is in `data/india-market-sources.json`; validated aggregate observations are in `data/india-market-benchmarks.json`. The initial benchmark rows are Karnataka HCES 2023-24 state-sector MPCE values, with source statement and imputation status retained. Census 2011 tables are listed as historical source options without invented counts. PIN directory and boundary records support lookup or spatial work only; they do not provide PIN income or apparel expenditure. Geographic allocations must use explicit weights summing to one and remain derived estimates. Run `node scripts/validate-market-data.cjs` to validate metadata, evidence classes and observation references.

@@ -1,0 +1,111 @@
+{
+  "version": "1.0.0",
+  "sources": [
+    {
+      "id": "census-2011-pca-town-ward",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "title": "Census of India 2011 Primary Census Abstract: Town and Ward datasets",
+      "url": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "referencePeriod": "2011 Census",
+      "geography": "India; administrative units and town/ward geographies as published",
+      "updateFrequency": "Decennial census; historical baseline",
+      "licenseNote": "Use subject to Census of India terms and attribution requirements.",
+      "variables": ["population", "households", "sex", "literacy", "workers", "town and ward identifiers"],
+      "limitations": ["Dated 2011 baseline, not a current population count.", "Published geography and identifiers may not align with current boundaries or postal PINs."],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "census-2011-c14-age",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "title": "Census of India 2011 C-14: Population in five-year age group by residence and sex",
+      "url": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "referencePeriod": "2011 Census",
+      "geography": "India; published state and district tables, with finer geography where available",
+      "updateFrequency": "Decennial census; historical baseline",
+      "licenseNote": "Use subject to Census of India terms and attribution requirements.",
+      "variables": ["age group", "sex", "rural/urban residence", "population"],
+      "limitations": ["Dated 2011 baseline; age tables do not provide current demographic counts.", "Tabulation geography and suppression/availability vary by table."],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "mospi-hces-2023-24-report-592",
+      "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
+      "title": "Household Consumption Expenditure Survey 2023-24, Report No. 592",
+      "url": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "downloadUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "referencePeriod": "2023-08 to 2024-07; released 2025-01-31",
+      "releaseDate": "2025-01-31",
+      "geography": "India and published state/sector aggregates; rural and urban estimates",
+      "updateFrequency": "Periodic household survey; not annual for every published breakdown",
+      "licenseNote": "Official MoSPI publication; cite report number, table/statement, period and release date.",
+      "variables": ["monthly per-capita consumption expenditure", "clothing and bedding", "footwear", "rural/urban sector", "imputation status"],
+      "limitations": ["Survey estimates at published geographies; not PIN-level observations.", "Clothing and bedding excludes tailoring charges.", "Broad consumption groups are not brand-specific demand or household income.", "Statement 10U imputed values are separate from Statements 3R/3U without imputation."],
+      "evidenceClass": "official_survey_estimate"
+    },
+    {
+      "id": "mospi-plfs-2023-24",
+      "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
+      "title": "Annual Report, Periodic Labour Force Survey 2023-24",
+      "url": "https://mospi.gov.in/sites/default/files/publication_reports/AnnualReport_PLFS2023-24L2.pdf",
+      "referencePeriod": "2023-04 to 2024-03",
+      "geography": "India and published state/sector estimates",
+      "updateFrequency": "Annual report",
+      "licenseNote": "Official MoSPI publication; cite report and table for reuse.",
+      "variables": ["labor force participation", "worker population ratio", "unemployment", "employment characteristics"],
+      "limitations": ["Survey estimates with published geography and sample design; not PIN-level income or employment counts."],
+      "evidenceClass": "official_survey_estimate"
+    },
+    {
+      "id": "rbi-dbie",
+      "publisher": "Reserve Bank of India",
+      "title": "Database on Indian Economy (DBIE)",
+      "url": "https://dbie.rbi.org.in/",
+      "referencePeriod": "Series-specific; record the vintage for each extracted series",
+      "geography": "India and available state/district/sector series, depending on indicator",
+      "updateFrequency": "Series-specific",
+      "licenseNote": "RBI public statistical database; observe series-specific terms and attribution.",
+      "variables": ["banking and credit indicators", "economic and financial time series"],
+      "limitations": ["Coverage and geography differ by series.", "Deposits and credit are not household income or apparel expenditure."],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "state-des-national-accounts",
+      "publisher": "State Directorates of Economics and Statistics",
+      "title": "State domestic product and national accounts publications",
+      "url": "https://mospi.gov.in/state-domestic-product",
+      "referencePeriod": "State-series specific; vintage and base year must be recorded per observation",
+      "geography": "State; district estimates only where the relevant state DES publishes them",
+      "updateFrequency": "State and series specific",
+      "licenseNote": "Consult and cite the publishing state DES terms and publication for each series.",
+      "variables": ["gross state domestic product", "net state domestic product", "sectoral value added"],
+      "limitations": ["Base years, methods, price basis and district coverage may differ across states.", "State product is not household income; do not combine incomparable series."],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "india-post-pin-directory",
+      "publisher": "Department of Posts, Ministry of Communications, Government of India",
+      "title": "Post Office and PIN Code Directory",
+      "url": "https://www.indiapost.gov.in/rti/pincodelist",
+      "referencePeriod": "Current directory; verify retrieval vintage when ingested",
+      "geography": "Postal PIN and post office records",
+      "updateFrequency": "As published by India Post",
+      "licenseNote": "Government directory; attribute India Post and check reuse terms for downloaded data.",
+      "variables": ["PIN code", "post office", "administrative location names"],
+      "limitations": ["Postal lookup only; a PIN is not a census unit, market boundary, or guaranteed catchment.", "Contains no observed income, population, apparel spend or footfall."],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "ogd-india-pin-geojson",
+      "publisher": "Open Government Data Platform India",
+      "title": "All India Pincode Boundary GeoJSON",
+      "url": "https://sikkim.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "referencePeriod": "Dataset vintage must be checked when downloaded",
+      "geography": "Postal PIN boundary geometries as supplied in the dataset",
+      "updateFrequency": "Dataset-specific; verify catalog updates",
+      "licenseNote": "Check the dataset's applicable Government Open Data License and attribution metadata before reuse.",
+      "variables": ["PIN code", "boundary geometry"],
+      "limitations": ["Geometry supports spatial lookup only after coverage and topology validation.", "A polygon does not imply observed PIN population, income or spend."],
+      "evidenceClass": "official_observed"
+    }
+  ]
+}

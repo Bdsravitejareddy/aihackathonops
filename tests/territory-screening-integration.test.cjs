@@ -118,3 +118,19 @@ test('territory screening sends calculator assumptions to the forecast API and r
   assert.match(output,/₹3,33,333/);
   assert.match(output,/No supported PIN TAM was supplied/);
 });
+
+test('late market catalog responses update the screening panel without erasing a running scenario',async t=>{
+  const h=await appHarness(t),{w}=h,originalFetch=w.fetch;let releaseBench;
+  w.fetch=(url,options)=>String(url).includes('/api/market/benchmarks')?new Promise(resolve=>{releaseBench=()=>originalFetch(url,options).then(resolve);}):originalFetch(url,options);
+  w.document.querySelector('[data-tab="screening"]').click();await new Promise(r=>setImmediate(r));
+  w.document.querySelector('#ts-pin').value='560026';
+  w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(r=>setImmediate(r));
+  w.document.querySelector('[data-financial-scenario]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  assert.match(w.document.querySelector('[data-financial-results]').textContent,/Conservative/);
+  assert.ok(releaseBench,'the catalog response should still be pending');releaseBench();
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  assert.match(w.document.querySelector('[data-financial-results]').textContent,/Conservative/);
+  assert.equal(w.document.querySelector('#ts-pin').value,'560026');
+});

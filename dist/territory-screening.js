@@ -52,15 +52,18 @@
     const economics={...summary,scenarios};
     const names=[['conservative','Conservative'],['base','Base'],['optimistic','Optimistic']];
     const scenario=name=>economics.scenarios[name]||{};
-    const yearOneCashFlow=name=>scenario(name).months?.filter(row=>row.month<=12).reduce((sum,row)=>sum+(numeric(row.operatingCashFlow)?row.operatingCashFlow:0),0);
+    const yearRows=name=>scenario(name).months?.filter(row=>row.month<=12)||[];
+    const yearOneCashFlow=name=>yearRows(name).reduce((sum,row)=>sum+(numeric(row.operatingCashFlow)?row.operatingCashFlow:0),0);
     const annualRevenue=name=>scenario(name).years?.[0]?.nominalRevenue;
+    const yearOneOperatingCosts=name=>{const rows=yearRows(name);return numeric(values.monthlyFixedCosts)&&rows.length===12&&rows.every(row=>numeric(row.revenue)&&numeric(row.grossProfit)&&numeric(row.royalty))?rows.reduce((sum,row)=>sum+row.revenue-row.grossProfit+row.royalty+values.monthlyFixedCosts,0):null;};
     const pct=value=>numeric(value)?`${value.toFixed(1)}%`:'Not estimable';
     const rows=[
       ['User-entered budget range',`${money(values.budgetMin)} – ${money(values.initialInvestment)} – ${money(values.budgetMax)}`,'Low · modelled investment · high'],
       ['Projected sales · year 1',...names.map(([key])=>money(annualRevenue(key)))],
+      ['Operating costs · year 1',...names.map(([key])=>money(yearOneOperatingCosts(key)))],
       ['Operating cash flow · year 1',...names.map(([key])=>money(yearOneCashFlow(key)))],
-      ['Break-even sales · monthly',money(economics.breakEvenRevenueMonthly),'Same model threshold'],
-      ['Break-even transactions · monthly',numeric(economics.breakEvenTransactionsMonthly)?Math.ceil(economics.breakEvenTransactionsMonthly).toLocaleString('en-IN'):'Not estimable','Same model threshold'],
+      ['Break-even sales · monthly',...names.map(()=>money(economics.breakEvenRevenueMonthly))],
+      ['Break-even transactions · monthly',...names.map(()=>numeric(economics.breakEvenTransactionsMonthly)?Math.ceil(economics.breakEvenTransactionsMonthly).toLocaleString('en-IN'):'Not estimable')],
       ['Five-year ROI',...names.map(([key])=>pct(scenario(key).roiPercent))],
       ['Payback period',...names.map(([key])=>numeric(scenario(key).paybackMonths)?`${scenario(key).paybackMonths} months`:'Not reached in forecast')],
       ['Five-year NPV',...names.map(([key])=>money(scenario(key).npv))],
@@ -118,7 +121,7 @@
       <section class="ts-applicants"><div class="ts-applicants-heading"><div><p class="ts-eyebrow">PARTNER PIPELINE</p><h2>Applicants for this territory</h2><p class="ts-subtitle">Rank is a screening order only. Confirmed funds, premises and due diligence remain separate checks.</p></div><div class="ts-filters" role="group" aria-label="Applicant filter"><button type="button" data-filter="all" aria-pressed="true">All Ranked</button><button type="button" data-filter="actionable" aria-pressed="false">Actionable</button></div></div><div class="ts-applicant-list" data-applicants></div></section>`;
     root.replaceChildren(shell);
     const q = selector => shell.querySelector(selector);
-    function renderFinancial(){const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
+    function renderFinancial(){const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax','monthlyFixedCosts'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
     q('[data-financial-scenario]').addEventListener('submit',async event=>{
       event.preventDefault();if(scenarioBusy)return;
       const form=event.currentTarget, number=name=>{const value=form.elements[name]?.value;return value===''||value===undefined?NaN:Number(value);};
@@ -129,7 +132,7 @@
       const store={initialInvestment:values.initialInvestment,workingCapital:values.workingCapital,areaSqFt:values.areaSqFt,monthlyFixedCosts:values.monthlyFixedCosts,grossMargin:values.grossMargin/100,royaltyRate:values.royaltyRate/100,aov:values.aov,conversionRate:values.conversionRate/100,monthlyPassingPedestrianTraffic:values.monthlyPassingPedestrianTraffic,entryRate:values.entryRate/100,salesRampMonths:values.salesRampMonths,initialRampFraction:values.initialRampFraction/100,trafficEvidenceClass:'model_assumption'};
       const payload={store,market:{samAnnual:metricValue((market?.metrics||{}).sam)},forecast:{years:5,annualNominalGrowth:values.annualNominalGrowth/100,annualInflation:values.annualInflation/100,discountRate:values.discountRate/100},scenarioFactors:{conservative:0.75,base:1,optimistic:1.25}};
       scenarioBusy=true;q('.ts-run').disabled=true;q('.ts-run').textContent='Calculating…';message.textContent='Running the deterministic five-year forecast…';
-      try{scenarioResult=await onRunScenario(payload);q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);message.textContent='Scenario recalculated. Inputs remain editable and are not saved to applicant records.';}
+      try{scenarioResult=await onRunScenario(payload);const rendered=renderScenarioResult(scenarioResult,market,doc,values);if(!rendered.includes('ts-financial-table'))throw new Error('Forecast API response did not include renderable scenario results');q('[data-financial-results]').innerHTML=rendered;message.textContent='Scenario recalculated. Inputs remain editable and are not saved to applicant records.';}
       catch(error){message.textContent=`Forecast unavailable: ${error?.message||'request failed'}`;}
       finally{scenarioBusy=false;q('[data-financial-scenario] .ts-run').disabled=false;q('[data-financial-scenario] .ts-run').textContent='Calculate conservative / base / optimistic';}
     });

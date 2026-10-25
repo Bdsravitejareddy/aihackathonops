@@ -141,9 +141,9 @@ test('illustrative financial scenario sends editable assumptions to the determin
   const h = harness({location:{pin:'560026'},onRunScenario:async payload=>{
     submitted=payload;
     return {modelVersion:'india-fashion-market-v1',economics:{footfall:{passingPedestrianTraffic:{value:30000}},economics:{breakEvenRevenueMonthly:200000,breakEvenTransactionsMonthly:200},scenarios:{
-      conservative:{years:[{nominalRevenue:1200000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:10000})),totalOperatingCashFlow:100000,roiPercent:-50,paybackMonths:null,npv:-500000,irrAnnual:null},
-      base:{years:[{nominalRevenue:1800000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:25000})),totalOperatingCashFlow:300000,roiPercent:0,paybackMonths:60,npv:10000,irrAnnual:4},
-      optimistic:{years:[{nominalRevenue:2400000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:50000})),totalOperatingCashFlow:700000,roiPercent:100,paybackMonths:24,npv:500000,irrAnnual:24}
+      conservative:{years:[{nominalRevenue:1200000}],months:Array.from({length:12},(_,i)=>({month:i+1,revenue:100000,grossProfit:50000,royalty:5000,operatingCashFlow:10000})),totalOperatingCashFlow:100000,roiPercent:-50,paybackMonths:null,npv:-500000,irrAnnual:null},
+      base:{years:[{nominalRevenue:1800000}],months:Array.from({length:12},(_,i)=>({month:i+1,revenue:150000,grossProfit:75000,royalty:7500,operatingCashFlow:25000})),totalOperatingCashFlow:300000,roiPercent:0,paybackMonths:60,npv:10000,irrAnnual:4},
+      optimistic:{years:[{nominalRevenue:2400000}],months:Array.from({length:12},(_,i)=>({month:i+1,revenue:200000,grossProfit:100000,royalty:10000,operatingCashFlow:50000})),totalOperatingCashFlow:700000,roiPercent:100,paybackMonths:24,npv:500000,irrAnnual:24}
     }}};
   }});
   t.after(() => h.dom.window.close());
@@ -159,6 +159,10 @@ test('illustrative financial scenario sends editable assumptions to the determin
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/Conservative/);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/₹18,00,000/);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/₹2,00,000/);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/Operating costs · year 1/);
+  const breakEvenCells=[...h.root.querySelectorAll('[data-financial-results] tr')].find(row=>row.querySelector('th')?.textContent==='Break-even sales · monthly').querySelectorAll('td');
+  assert.equal(breakEvenCells.length,3);
+  assert.deepEqual([...breakEvenCells].map(cell=>cell.textContent),['₹2,00,000','₹2,00,000','₹2,00,000']);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/assumes 30,000 passing pedestrians\/month/);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/cash flow excludes taxes, debt service, depreciation, lease accounting and terminal value/i);
 });

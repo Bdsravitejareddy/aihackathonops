@@ -12,4 +12,6 @@ Neon persistence milestone: created the dedicated `franchiseos` Neon project and
 
 Independent parallel review caught and fixed three issues: a delayed initial load could supersede a local edit, a save badge could claim sync before confirmation, and concurrent writers could overwrite each other. Added revision conflict handling, pending/conflict status, and a stale-load regression test. Static downloads also now receive correct XLSX/DOCX/CSV content types.
 
+GUI smoke testing was not available in this session because no browser-control surface was enabled. The app's static route and health/read APIs were exercised directly, the Neon schema setup completed through the local driver, and persistence UI behavior is covered by automated tests.
+
 Ruling: audit events and bot messages are stored as part of the same revision-checked workspace snapshot, not through separate append endpoints. This matches the app's existing full-workspace save and backup behavior and avoids partial writes; cost if wrong: message-level writes cannot be made independently.

@@ -86,6 +86,6 @@
 **Files:**
 - All files from Tasks 1–3.
 
-- [ ] Review the diff for secrets, generated files, and accidental unrelated changes.
-- [ ] Commit with `feat: add optional Neon workspace persistence`.
-- [ ] Push the commit to `Bdsravitejareddy/aihackathonops` only after verification passes.
+- [x] Review the diff for secrets, generated files, and accidental unrelated changes.
+- [x] Commit with `feat: add optional Neon workspace persistence`.
+- [x] Push the commit to `Bdsravitejareddy/aihackathonops` only after verification passes.

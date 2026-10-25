@@ -12,6 +12,8 @@ const { createMarketResearchStore } = require('./market-research-store.cjs');
 const { createMarketResearchService } = require('./market-research.cjs');
 const { createStaticHandler } = require('./static.cjs');
 const { normalizeDatabaseUrl } = require('./db-config.cjs');
+const { createAcademyStore } = require('./academy-store.cjs');
+const { createAcademyHandler } = require('./academy.cjs');
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Copy .env.example and set the Neon connection string.');
 const pool = new Pool({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL), max: 5 });
@@ -33,7 +35,8 @@ const marketResearchService = createMarketResearchService({ logger: {
   info(message, metadata) { process.stdout.write(`${message} ${JSON.stringify(metadata)}\n`); },
   error(message, metadata) { process.stderr.write(`${message} ${JSON.stringify(metadata)}\n`); }
 } });
-const api = createHandler({ store: createStore(pool), marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks });
+const academyHandler = createAcademyHandler({ store: createAcademyStore(pool) });
+const api = createHandler({ store: createStore(pool), academyHandler, marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks });
 const serveStatic = createStaticHandler({ directory: require('node:path').resolve(__dirname, '..', 'dist') });
 const staticServer = http.createServer((req, res) => req.url.startsWith('/api/') ? api(req, res) : serveStatic(req, res));
 const port = Number(process.env.PORT || 8080);

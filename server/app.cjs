@@ -47,7 +47,7 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
+function createHandler({ store, academyHandler, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -59,6 +59,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
         if (origin.protocol !== 'http:' || origin.host !== host || !/^(localhost|127\.0\.0\.1)$/i.test(origin.hostname)) return reply(res, 403, { error: 'Local requests only' });
       } catch { return reply(res, 403, { error: 'Local requests only' }); }
     }
+    if (url.pathname.startsWith('/api/academy/')) return academyHandler ? academyHandler(req, res) : reply(res, 503, { error: 'Academy is unavailable' });
     if (req.method === 'GET' && url.pathname === '/api/health') return reply(res, 200, { ok: true });
     if (req.method === 'GET' && url.pathname === '/api/screening/applications') {
       const workspaceId=url.searchParams.get('workspaceId'), pin=url.searchParams.get('pin');

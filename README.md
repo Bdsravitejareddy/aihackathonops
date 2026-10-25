@@ -31,6 +31,14 @@ One recommended partner per pin; existing-store pins and territory slots are pro
 ## Franchise bot
 Use the floating Ask Franchise bot button, the sidebar, or Ask bot in an applicant's details. Ask general policy/assumption questions, request portfolio summaries, compare applicants, inspect reasons, draft clarification questions and follow up without repeating the selected ID. What-if changes are read-only previews showing affected recommendations. Explicit changes produce a confirmation proposal. Ambiguous ranges, negative facts, mismatched units and unparsed explicit fields trigger clarification. Supported language patterns are documented by examples; this is a grounded rule-based assistant, not an unrestricted LLM. It has no outside rent, demand or profitability data and sends no applicant messages.
 
+## Franchise Academy
+
+The isolated Academy learner view is available at `/academy`; local administrators use `/academy/admin`. Create a course, load `.txt` or `.md` lesson text, translate English to Telugu with server-side Gemini when `GEMINI_API_KEY` is configured, or enter Telugu manually. Lessons stay in draft until a human reviews the Telugu preview and approves it. Deterministic QA blocks approval when numeric tokens or administrator-listed names/terms are missing or added. That check does not judge translation meaning.
+
+Set `ACADEMY_ADMIN_TOKEN` in the server environment to enable course/lesson authoring and approvals. The token is entered on the admin page, held only in page memory, and sent in a request header. Learners see approved lessons only; completion is stored in Neon under a browser-generated learner ID. The app remains bound to localhost and inherits the existing same-origin request check. This is suitable for local pilot use, not a multi-user identity or role system. The additive schema is in `server/migrations/20261026_franchise_academy.sql` and is also included in the existing `npm run db:init` path through `server/db.sql`.
+
+This release handles text and simple text-file lessons. It does not transcribe video, create subtitles, dub audio, or verify the semantic correctness of translations.
+
 ## Test data and findings
 `dist/qa-test-data.xlsx`: 39 synthetic applications, 5 territories, the protected existing-store list, legacy expectations and a revised rescoring snapshot.
 `dist/qa-rescoring.csv`: all 39 previous/revised results under the demonstration profile.

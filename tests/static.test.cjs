@@ -26,3 +26,12 @@ test('static host rejects paths that resolve outside the app directory', async (
   const response = await request('/..%2fREADME.md');
   assert.equal(response.status, 403);
 });
+
+test('academy routes serve their isolated learner and admin pages', async () => {
+  const learner = await request('/academy');
+  const admin = await request('/academy/admin');
+  assert.equal(learner.status, 200);
+  assert.match(learner.body.toString(), /FranchiseOS Academy/);
+  assert.equal(admin.status, 200);
+  assert.match(admin.body.toString(), /Academy admin token/);
+});

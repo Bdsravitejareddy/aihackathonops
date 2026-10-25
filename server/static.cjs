@@ -19,6 +19,8 @@ function createStaticHandler({ directory }) {
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
     catch { res.writeHead(400); return res.end('Bad request'); }
+    if (pathname === '/academy' || pathname === '/academy/') pathname = '/academy.html';
+    if (pathname === '/academy/admin' || pathname === '/academy/admin/') pathname = '/academy-admin.html';
     const filename = path.resolve(root, `.${pathname === '/' ? '/index.html' : pathname}`);
     if (!filename.startsWith(`${root}${path.sep}`)) { res.writeHead(403); return res.end('Forbidden'); }
     let data;

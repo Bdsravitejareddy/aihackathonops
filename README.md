@@ -4,7 +4,11 @@ A no-login browser workspace for franchise partner screening, territory allocati
 Live app: https://franchise-ops-ravi.cleantapir32.chatgpt.site
 
 ## Run and test
-Serve `dist/` with a static HTTP server, for example `python3 -m http.server 8080 --directory dist`. No build or paid API is required. JSZip is vendored. Run `node --test tests/*.test.cjs` or `npm test`.
+The app can run as a static browser workspace, or with the local Neon persistence API. For Neon mode, copy `.env.example` to `.env`, set `DATABASE_URL` from the `franchiseos` Neon project, then run `npm run db:init` once and `npm start`. The local server binds to `127.0.0.1:8080`; it serves the app and database API from one origin. Do not commit `.env`. If Neon is unavailable, the browser keeps using its local copy.
+
+The Neon-backed workspace is identified by a random ID stored in that browser. This keeps reloads on that browser connected to the same workspace. Authentication and cross-user workspace sharing are not included yet; the API is intentionally bound to localhost until that is added. Vercel deployment is a later manual step.
+
+JSZip is vendored. Run `npm test` for the test suite.
 
 ## Current assessment policy
 Industry-informed screening v2 is a **proposed pilot policy**, not an accepted universal numerical industry standard. Weights: 35% declared financial adequacy, 30% premises readiness, 25% retail/business experience, 10% feasible launch. Demonstration assumptions: ₹30 lakh required investment including an initial reserve, 400 sq ft minimum, 3–6 months feasible launch. Replace these with signed-off brand requirements. Full research, source links, methodology, examples and limits are in `dist/franchise-methodology.docx`.

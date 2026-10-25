@@ -133,7 +133,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const built = await buildResearchContext(geographyId, payload);
             if (built.error) return reply(res, built.error.status, { error:built.error.message });
             const contextHash = createHash('sha256').update(JSON.stringify(built.context)).digest('hex');
-            const modelVersion = marketResearchService.modelVersion || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+            const modelVersion = marketResearchService.modelVersion || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
             const clientId = req.socket?.remoteAddress || 'local-client';
             if (researchMatch[2] === 'research') {
               if (payload.refresh === true) await marketResearchStore.markStale({ geographyId, segment:built.segment });

@@ -28,6 +28,47 @@ test('service reports missing credentials without calling Gemini', async () => {
   assert.equal(called, false);
 });
 
+test('uses the current default Gemini model when no model is configured', async () => {
+  let requestedUrl = '';
+  const service = createMarketResearchService({ apiKey: 'primary', fetchImpl: async url => {
+    requestedUrl = url;
+    return groundedPayload('Grounded response. [1]', null, [{ web: { uri: 'https://example.org/source', title: 'Source' } }]);
+  } });
+  await service.answerQuestion({ context: validContext, question: 'Explain the assessment.' });
+  assert.equal(requestedUrl, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent');
+});
+
+test('uses low thinking for the default Gemini 3.8 request to keep grounded research responsive', async () => {
+  let body;
+  const service = createMarketResearchService({ apiKey: 'primary', fetchImpl: async (_url, request) => {
+    body = JSON.parse(request.body);
+    return groundedPayload('Grounded response. [1]', null, [{ web: { uri: 'https://example.org/source', title: 'Source' } }]);
+  } });
+  await service.answerQuestion({ context: validContext, question: 'Explain the assessment.' });
+  assert.deepEqual(body.generationConfig.thinkingConfig, { thinkingLevel: 'LOW' });
+});
+
+test('falls through invalid and quota-limited Gemini credentials without logging keys', async () => {
+  const usedKeys = [];
+  const logs = [];
+  const service = createMarketResearchService({
+    apiKeys: ['invalid-primary', 'quota-primary', 'working-fallback'],
+    model: 'gemini-test',
+    logger: { error: (...args) => logs.push(args) },
+    fetchImpl: async (_url, request) => {
+      const key = request.headers['x-goog-api-key'];
+      usedKeys.push(key);
+      if (key === 'invalid-primary') return response({ error: { status: 'UNAUTHENTICATED' } }, 401);
+      if (key === 'quota-primary') return response({ error: { status: 'RESOURCE_EXHAUSTED' } }, 429);
+      return groundedPayload('Grounded response. [1]', null, [{ web: { uri: 'https://example.org/source', title: 'Source' } }]);
+    }
+  });
+  const result = await service.answerQuestion({ context: validContext, question: 'Explain the assessment.' });
+  assert.equal(result.ok, true);
+  assert.deepEqual(usedKeys, ['invalid-primary', 'quota-primary', 'working-fallback']);
+  assert.equal(JSON.stringify(logs).includes('working-fallback'), false);
+});
+
 test('rejects cyclic context as invalid input instead of throwing', async () => {
   const context = {}; context.self = context;
   const service = createMarketResearchService({ apiKey: 'secret', fetchImpl: async () => { throw new Error('must not call'); } });
@@ -69,7 +110,9 @@ test('sends structured context and grounded search through the documented REST e
   assert.equal(request.url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent');
   assert.equal(request.options.headers['x-goog-api-key'], 'secret-key');
   assert.deepEqual(request.options.body && JSON.parse(request.options.body).tools, [{ google_search: {} }]);
-  assert.match(JSON.stringify(JSON.parse(request.options.body)), /1250000/);
+  const sentBody = JSON.parse(request.options.body);
+  assert.match(JSON.stringify(sentBody), /1250000/);
+  assert.match(sentBody.contents[0].parts[0].text, /Google Search/i);
 });
 
 test('answers questions with grounded citations and preserves deterministic numerical context', async () => {
@@ -84,6 +127,13 @@ test('answers questions with grounded citations and preserves deterministic nume
   assert.equal(result.citations[0].url, 'https://example.org/benchmarks');
   assert.match(body.contents[0].parts[0].text, /Deterministic numerical facts/);
   assert.match(body.contents[0].parts[0].text, /1250000/);
+});
+
+test('uses evidence links already in the assessment when no new web grounding is needed', async () => {
+  const service = createMarketResearchService({ apiKey: 'secret', fetchImpl: async () => groundedPayload('This is a regional benchmark and should not be interpreted as a PIN-level observation.', null) });
+  const result = await service.answerQuestion({ context: validContext, question: 'Why is this not a PIN-level observed value?' });
+  assert.equal(result.ok, true);
+  assert.equal(result.citations[0].url, 'https://censusindia.gov.in/');
 });
 
 test('rejects answers that introduce a number absent from deterministic context', async () => {
@@ -107,7 +157,7 @@ test('rejects numerical claims with altered precision or sign', async () => {
 
 test('rejects answers when Gemini returns no grounded citations', async () => {
   const service = createMarketResearchService({ apiKey:'secret', fetchImpl:async()=>groundedPayload('The market appears promising.',null) });
-  const result = await service.answerQuestion({ context:validContext, question:'Why is this place promising?' });
+  const result = await service.answerQuestion({ context:{location:{name:'Unknown'}}, question:'Why is this place promising?' });
   assert.equal(result.ok, false);
   assert.equal(result.error.code, 'invalid_response');
   assert.match(result.error.message,/citation|source/i);

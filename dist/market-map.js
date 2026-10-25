@@ -25,13 +25,52 @@
     catch { return null; }
   };
   const list = value => Array.isArray(value) ? value : value ? [value] : [];
+  function boundedCache(limit) {
+    const entries=new Map();
+    return {
+      get(key) { const value=entries.get(key); if (!value) return null; entries.delete(key); entries.set(key,value); return value; },
+      set(key,value) { entries.delete(key); entries.set(key,value); while(entries.size>limit) entries.delete(entries.keys().next().value); },
+      clear() { entries.clear(); }
+    };
+  }
+  const levelCache=boundedCache(32), detailCache=boundedCache(24);
+  let latestSourceVersion=null, dbPromise;
+  function openGeometryDb() {
+    if (!root.indexedDB) return Promise.resolve(null);
+    if (!dbPromise) dbPromise=new Promise(resolve=>{
+      try {
+        const request=root.indexedDB.open('franchiseos-public-geography-v1',1);
+        request.onupgradeneeded=()=>request.result.createObjectStore('geometry',{keyPath:'key'});
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>resolve(null);
+        request.onblocked=()=>resolve(null);
+      } catch { resolve(null); }
+    });
+    return dbPromise;
+  }
+  async function geometryRecord(key) {
+    const db=await openGeometryDb(); if (!db) return null;
+    return new Promise(resolve=>{
+      try { const request=db.transaction('geometry','readonly').objectStore('geometry').get(key); request.onsuccess=()=>resolve(request.result||null); request.onerror=()=>resolve(null); }
+      catch { resolve(null); }
+    });
+  }
+  async function saveGeometry(key,sourceVersion,features) {
+    const db=await openGeometryDb(); if (!db) return;
+    const geometries=Object.fromEntries(features.filter(f=>f.geometry).map(f=>[f.id,f.geometry]));
+    try { db.transaction('geometry','readwrite').objectStore('geometry').put({key,sourceVersion,geometries,savedAt:Date.now()}); } catch { /* Private browsing can disable IndexedDB writes. */ }
+  }
+  async function clearGeometry() {
+    const db=await openGeometryDb(); if (!db) return;
+    try { db.transaction('geometry','readwrite').objectStore('geometry').clear(); } catch { /* Memory and API remain available. */ }
+  }
   function evidenceHTML(value) {
     const rows = list(value);
     return rows.length ? `<ul class="expansion-sources">${rows.map(e => {
       if (typeof e === 'string') return `<li>${escape(e)}</li>`;
       const url = safeUrl(e.url || e.sourceUrl), title = escape(e.title || e.dataset || e.sourceId || 'Source');
       return `<li>${url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${title} ↗</a>` : title}
-        <small>${[e.publisher, e.evidenceClass, e.referenceYear || e.referencePeriod || e.vintage, e.geographicResolution || e.geography?.level, e.sourceVersion, e.allocationMethod, e.uncertainty].filter(v => v !== undefined && v !== null).map(escape).join(' · ')}</small>
+        <small>${[e.publisher, e.evidenceClass, e.referenceYear || e.referenceDate || e.referencePeriod || e.vintage, e.geographicResolution || e.geography?.level, e.sourceVersion, e.allocationMethod, e.uncertainty].filter(v => v !== undefined && v !== null).map(escape).join(' · ')}</small>
         ${e.caveats || e.warnings ? `<small>${list(e.caveats || e.warnings).map(escape).join(' · ')}</small>` : ''}</li>`;
     }).join('')}</ul>` : '<p class="hint">Source evidence unavailable.</p>';
   }
@@ -94,15 +133,22 @@
   function mount({ container, onSelect = () => {}, onViewport = () => {}, options = {} }) {
     const lib = options.maplibre || root.maplibregl;
     if (!lib) throw Error('Self-hosted MapLibre is unavailable. Reload to retry.');
-    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup;
+    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup, dataSignature=null;
     const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17,
       style: { version: 8, sources: {}, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } }] },
       attributionControl: true });
     map.addControl(new lib.NavigationControl(), 'top-right');
     const data = () => ({ type: 'FeatureCollection', features: features.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
-      properties: { id: String(f.id), name: f.name, level: f.level, color: colorFor(metricValue(f.metrics?.[metric]), legend) } })) });
+      properties: { id: String(f.id), name: f.name, level: f.level, color: colorFor(metricValue(f.metrics?.[metric]), legend),
+        ...Object.fromEntries(Object.entries(f.metrics||{}).filter(([,value])=>metricValue(value)!==null).map(([key,value])=>['v_'+key,metricValue(value)])) } })) });
     const highlight = () => { if (ready && !destroyed) map.setFilter('market-selected', ['==', ['get','id'], selected === null ? '' : String(selected)]); };
     const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(data()); highlight(); } };
+    const paint = () => {
+      if (!ready || destroyed) return;
+      const expression=legend ? ['case',['has','v_'+metric],['step',['get','v_'+metric],legend.colors[0],...legend.thresholds.flatMap((threshold,index)=>[threshold,legend.colors[index+1]])],MISSING] : MISSING;
+      map.setPaintProperty('market-fill','fill-color',expression);
+      map.setPaintProperty('market-points','circle-color',expression);
+    };
     function showPopup(event) {
       const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id, geo = features.find(f => String(f.id) === String(id));
       if (!geo) return;
@@ -116,7 +162,7 @@
       map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': 1 } });
       map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': ['get','color'], 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
       map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#143f35', 'line-width': 3 }, filter: ['==',['get','id'],''] });
-      ready = true; update();
+      ready = true; update(); paint();
     });
     for (const layer of ['market-fill','market-points']) {
       map.on('click', layer, event => { const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id; if (id !== undefined) { selected = id; highlight(); showPopup(event); onSelect(String(id)); } });
@@ -126,12 +172,20 @@
     map.on('moveend', () => { if (!destroyed) onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
     return {
-      setMetric(value) { metric = value; popup?.remove(); update(); },
+      setMetric(value) { metric = value; popup?.remove(); paint(); },
       setYear() { popup?.remove(); }, setScenario() { popup?.remove(); },
-      setLegend(value) { legend = normalizeLegend(value); update(); },
-      setFeatures(value) { features = Array.isArray(value) ? value : []; popup?.remove(); update(); },
+      setLegend(value) { legend = normalizeLegend(value); paint(); },
+      setFeatures(value,meta) {
+        features = Array.isArray(value) ? value : []; popup?.remove();
+        const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>[f.id,Object.entries(f.metrics||{}).map(([key,item])=>[key,metricValue(item)])])]) : null;
+        if (!signature || signature!==dataSignature) { dataSignature=signature; update(); }
+        paint();
+      },
       selectGeography(id) { selected = id; highlight(); },
-      focusGeography(geo, zoom) { const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: 0 }); },
+      focusGeography(geo, zoom) {
+        if (geo?.geometry?.type==='Point') { map.flyTo({center:geo.geometry.coordinates,zoom:Math.max(zoom,ZOOMS[2]),duration:600}); return; }
+        const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: 600 });
+      },
       reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: 0 }); },
       destroy() { destroyed = true; popup?.remove(); map.remove(); }
     };
@@ -191,7 +245,7 @@
     let year = options.year || new Date().getFullYear(), metric = 'apparelExpenditure', scenario = 'base', appliedScenario = 'base';
     let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
     let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [];
-    let level = 'state', sourceVersion, currentLegend, map;
+    let level = 'state', sourceVersion=latestSourceVersion, currentLegend, map, geometryGroup=null, loadedRequestKey=null;
     const legends = new Map(), compared = new Map(), aborters = new Map();
     container.innerHTML = pageHTML(year);
     const $ = selector => container.querySelector(selector);
@@ -266,29 +320,54 @@
       // Defend the national view even if a backend accidentally returns all PINs.
       const expected = LEVELS[childIndex()];
       if (data.level !== expected || data.features.some(f => f.level !== expected)) throw Error(`Expected ${expected} aggregates; refusing unexpected geography level.`);
-      sourceVersion = data.sourceVersion; level = data.level;
+      if (sourceVersion && data.sourceVersion && data.sourceVersion !== sourceVersion) {
+        levelCache.clear(); detailCache.clear(); void clearGeometry();
+      }
+      sourceVersion = data.sourceVersion; latestSourceVersion=sourceVersion; level = data.level;
       const key = metric + ':' + year, legend = normalizeLegend(data.legend);
       if (!legends.has(key) && legend && (!legend.metric || legend.metric === metric) && (!legend.year || Number(legend.year) === Number(year))) legends.set(key, legend);
       currentLegend = legends.get(key) || null; map?.setLegend(currentLegend);
-      features = data.features; map?.setFeatures(features); renderLegend(); renderAreas(); updateSelectionActions();
+      features = data.features;
+      if (features.some(feature=>feature.geometry)) map?.setFeatures(features,{sourceVersion:data.sourceVersion,group:geometryGroup});
+      renderLegend(); renderAreas(); updateSelectionActions();
       status(features.length ? `${features.length} ${level} areas · source ${sourceVersion || 'version unavailable'}. Missing values are gray.` : `No sourced ${level} features available for this selection. Missing evidence is not zero.`);
     }
     async function loadLevels() {
       const revision = ++levelRevision, context = contextRevision;
       const parent = path.at(-1);
       // Only one child level per selected parent. Zooming into India cannot fetch PINs.
-      const requestZoom = parent ? ZOOMS[childIndex()] : Math.min(zoom, 5);
+      const requestZoom = ZOOMS[childIndex()];
       const query = new URLSearchParams({ zoom: String(requestZoom), metric, year: String(year), scenario: appliedScenario });
       if (parent) query.set('parentId', parent.id);
-      if (bounds) query.set('bbox', bounds.flat().join(','));
-      features = []; map?.setFeatures([]); renderAreas(); status(`Loading ${parent ? 'children of ' + parent.name : 'state aggregates'}…`);
+      const requestedLevel=LEVELS[childIndex()];
+      if (bounds && ['pin','catchment'].includes(requestedLevel)) query.set('bbox', bounds.flat().join(','));
+      const endpoint='/api/market/map/levels?' + query;
+      const group=JSON.stringify([parent?.id||null,requestedLevel,query.get('bbox')||null]);
+      const cacheKey=(sourceVersion||'unknown')+'|'+endpoint;
+      aborters.get('levels')?.abort();
+      if (loadedRequestKey===cacheKey) return;
+      const cached=levelCache.get(cacheKey);
+      if (cached && Date.now()-cached.at<300000) {
+        geometryGroup=group; acceptLevels(cached.data); loadedRequestKey=cacheKey; return;
+      }
+      status(`Updating ${parent ? 'children of ' + parent.name : 'state aggregates'}… Existing geography remains visible.`);
       try {
-        const result = await request('levels', '/api/market/map/levels?' + query);
-        if (!destroyed && revision === levelRevision && context === contextRevision) acceptLevels(result);
+        let geometry=geometryGroup===group && features.some(f=>f.geometry)
+          ? {sourceVersion,geometries:Object.fromEntries(features.filter(f=>f.geometry).map(f=>[f.id,f.geometry]))}
+          : await geometryRecord(group);
+        if (destroyed || revision!==levelRevision || context!==contextRevision) return;
+        let result=await request('levels',endpoint+(geometry?'&geometry=none':''));
+        if (destroyed || revision!==levelRevision || context!==contextRevision) return;
+        if (geometry && result.sourceVersion===geometry.sourceVersion) result={...result,features:result.features.map(f=>({...f,geometry:f.geometry||geometry.geometries[f.id]||null}))};
+        else if (geometry && result.features.some(f=>!f.geometry)) result=await request('levels',endpoint);
+        if (destroyed || revision!==levelRevision || context!==contextRevision) return;
+        geometryGroup=group; acceptLevels(result);
+        const actualKey=(sourceVersion||'unknown')+'|'+endpoint;
+        levelCache.set(actualKey,{at:Date.now(),data:result}); loadedRequestKey=actualKey;
+        if (result.features.some(f=>f.geometry)) void saveGeometry(group,sourceVersion,result.features);
       } catch (error) {
         if (destroyed || revision !== levelRevision || context !== contextRevision || error.name === 'AbortError') return;
-        features = []; map?.setFeatures([]); renderAreas();
-        $('[data-map-status]').innerHTML = `${escape(error.message)} <button class="text-button" type="button" data-map-retry>Retry map</button>`;
+        $('[data-map-status]').innerHTML = `${escape(error.message)} Existing geography remains visible. <button class="text-button" type="button" data-map-retry>Retry map</button>`;
       }
     }
     async function selectGeography(id) {
@@ -299,13 +378,25 @@
       $('[data-map-research]').innerHTML = '<p>Loading location context…</p>'; $('[data-map-answer]').innerHTML = '';
       const query = new URLSearchParams({ workspaceId: workspaceId || '', year: String(year), scenario: appliedScenario });
       try {
-        const result = await request('detail', `/api/market/map/geographies/${encodeURIComponent(id)}?${query}`);
+        const endpoint=`/api/market/map/geographies/${encodeURIComponent(id)}?${query}`;
+        const cacheKey=(sourceVersion||'unknown')+'|'+endpoint;
+        const cached=detailCache.get(cacheKey);
+        const result=cached && Date.now()-cached.at<300000 ? cached.data : await request('detail',endpoint);
         if (destroyed || revision !== detailRevision || context !== contextRevision) return;
+        if (!cached) detailCache.set(cacheKey,{at:Date.now(),data:result});
         selectedDetail = result.geography || result;
         const loaded = features.find(f => String(f.id) === selected);
         selectedDetail = { ...loaded, ...selectedDetail, id: selected };
         $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
         updateSelectionActions();
+        root.dispatchEvent(new root.CustomEvent('franchiseos:location-selected',{detail:{
+          id:selectedDetail.id,name:selectedDetail.name,level:selectedDetail.level,
+          state:selectedDetail.state || (selectedDetail.level==='state'?selectedDetail.name:null),
+          city:selectedDetail.city || (selectedDetail.level==='city'?selectedDetail.name:null),
+          pin:selectedDetail.pin || (selectedDetail.level==='pin'?selectedDetail.name:null),
+          sourceVersion:result.sourceVersion || sourceVersion || null,
+          metrics:selectedDetail.metrics || {},evidence:result.evidence || selectedDetail.evidence || []
+        }}));
         loadResearch(selected);
       } catch (error) {
         if (!destroyed && revision === detailRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-detail]').innerHTML = `<p>${escape(error.message)}</p><button class="text-button" type="button" data-map-retry-detail>Retry detail</button>`;
@@ -319,7 +410,7 @@
       renderLegend(); clearResults(); $('[data-map-apply]').disabled = false;
       if (selected !== null) selectGeography(selected);
     }
-    function setMetric(value) { if (!Object.hasOwn(METRICS,value)) return; metric = value; $('[name="metric"]').value = value; invalidate(); loadLevels(); }
+    function setMetric(value) { if (!Object.hasOwn(METRICS,value) || value===metric) return; metric = value; $('[name="metric"]').value = value; invalidate(); loadLevels(); }
     function setYear(value) { if (!Number.isInteger(Number(value)) || value < 2011 || value > 2100) return; year = Number(value); $('[name="year"]').value = year; invalidate(); loadLevels(); }
     function setScenario(value) { scenario = String(value); $('[name="scenario"]').value = value; invalidate(); loadLevels(); }
     async function compare() {
@@ -341,7 +432,7 @@
       assumptions.apparelSegment = String(values.get('apparelSegment') || 'mass-market-family-apparel');
       const revision = ++scenarioRevision, context = ++contextRevision;
       levelRevision++; detailRevision++; compareRevision++; for (const c of aborters.values()) c.abort();
-      clearResults(); features = []; map?.setFeatures([]); renderAreas();
+      clearResults(); status('Calculating scenario… Existing geography remains visible.');
       $('[data-map-apply]').disabled = true; $('[data-map-scenario-status]').textContent = 'Calculating on the server…';
       try {
         const result = await request('scenario', '/api/market/map/scenario', { workspaceId, geographyIds: selected ? [selected] : [], parentId: path.at(-1)?.id, zoom: ZOOMS[childIndex()], metric, year,
@@ -411,7 +502,13 @@
         const result = await request('search', '/api/market/map/search?' + new URLSearchParams({ q: query, limit: '20' }));
         if (destroyed || revision !== searchRevision) return;
         searchResults = list(result.results || result.features || result.geographies || (Array.isArray(result) ? result : [])).slice(0,20);
-        $('[data-map-global-results]').innerHTML = searchResults.length ? searchResults.map(f => `<button type="button" class="expansion-area" data-map-global-result="${escape(f.id)}"><span>${escape(f.name || f.id)}</span><small>${escape(f.level || 'Resolution unavailable')} · ${escape(f.id)}</small></button>`).join('') : '<p class="hint">No sourced places match this search. Try another city or PIN.</p>';
+        $('[data-map-global-results]').innerHTML = searchResults.length ? searchResults.map(f => {
+          const hierarchy=[...list(f.ancestors).map(item=>item.name),f.name || f.id].join(' › ');
+          const coverage=f.geometry?.type==='Point' ? 'verified reference point; local market statistics unavailable' : f.geometry ? 'mapped boundary' : 'boundary unavailable';
+          return `<button type="button" class="expansion-area" data-map-global-result="${escape(f.id)}"><span>${escape(f.name || f.id)}</span><small>${escape(f.level || 'Resolution unavailable')} · ${escape(hierarchy)} · ${escape(coverage)}</small></button>`;
+        }).join('') : result.queryType==='pin'&&result.coverage==='not_verified'
+          ? '<p class="hint">Valid PIN format, but no verified postal directory mapping or boundary is available here. Search a city or state to inspect sourced geography.</p>'
+          : '<p class="hint">No sourced places match this search. Try another city or PIN.</p>';
       } catch (error) { if (!destroyed && revision === searchRevision && error.name !== 'AbortError') $('[data-map-global-results]').textContent = `Place search unavailable: ${error.message}`; }
     }
     container.addEventListener('change', onChange);

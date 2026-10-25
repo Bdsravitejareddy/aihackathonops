@@ -21,7 +21,8 @@ const marketBenchmarks = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'in
 const geographyManifest = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-geography', 'manifest.json'), 'utf8'));
 const marketStore = createMarketStore(pool);
 const marketMapStore = createMarketMapStore(pool);
-marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}`;
+const priorityPlacesVersion = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-geography', 'karnataka-priority-places.json'), 'utf8')).version;
+marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}+${priorityPlacesVersion}`;
 const marketResearchStore = createMarketResearchStore(pool);
 const marketResearchService = createMarketResearchService({ logger: {
   info(message, metadata) { process.stdout.write(`${message} ${JSON.stringify(metadata)}\n`); },

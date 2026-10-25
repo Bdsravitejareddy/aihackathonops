@@ -5,6 +5,34 @@ const CHILD = { state: 'district', district: 'city', city: 'pin', pin: 'catchmen
 const MAX_BY_LEVEL = { state: 40, district: 250, city: 750, pin: 1200, catchment: 500 };
 const ALLOWED_METRICS = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
 const canonicalId = (kind, id) => String(id).startsWith(`${kind}:`) ? String(id) : `${kind}:${id}`;
+const priorityCatalog = require('../data/india-geography/karnataka-priority-places.json');
+const priorityPlaces = priorityCatalog.places;
+const priorityById = new Map(priorityPlaces.map(place => [place.id, place]));
+const placeRow = place => ({ external_id:place.id, kind:place.level, name:place.name, parent_external_id:place.parentId,
+  geometry:place.geometry, area_km2:null, properties:{ sourceCode:place.sourceCode, state:place.state, city:place.city,
+    pin:place.pin, ancestors:place.ancestors, aliases:place.aliases, evidence:place.evidence, warnings:place.warnings,
+    confidence:'location verified; economic data unavailable' } });
+const normalizeSearch = value => String(value || '').normalize('NFKD').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+function editDistanceAtMostTwo(a,b) {
+  if (Math.abs(a.length-b.length)>2) return false;
+  const previous=Array.from({length:b.length+1},(_,i)=>i);
+  for (let i=1;i<=a.length;i++) {
+    const current=[i];
+    for (let j=1;j<=b.length;j++) current[j]=Math.min(current[j-1]+1,previous[j]+1,previous[j-1]+(a[i-1]===b[j-1]?0:1));
+    if (Math.min(...current)>2) return false;
+    previous.splice(0,previous.length,...current);
+  }
+  return previous[b.length]<=2;
+}
+function priorityMatches(query,limit) {
+  const wanted=normalizeSearch(query);
+  if (!wanted || /^\d{6}$/.test(wanted)) return [];
+  return priorityPlaces.map(place=>{
+    const names=[place.name,...(place.aliases||[])].map(normalizeSearch);
+    const exact=names.some(name=>name===wanted), prefix=names.some(name=>name.startsWith(wanted)), fuzzy=wanted.length>=4&&names.some(name=>editDistanceAtMostTwo(name,wanted));
+    return {place,rank:exact?0:prefix?1:fuzzy?2:Infinity};
+  }).filter(row=>Number.isFinite(row.rank)).sort((a,b)=>a.rank-b.rank||(a.place.level==='city'?0:1)-(b.place.level==='city'?0:1)||a.place.name.localeCompare(b.place.name)).slice(0,limit).map(row=>row.place);
+}
 
 function metric(value, unit, evidenceClass, source = null, warnings = []) {
   const available = Number.isFinite(value);
@@ -65,6 +93,10 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     name: row.name || row.external_id,
     level: row.kind,
     parentId: row.parent_external_id || null,
+    state: p.state || (row.kind === 'state' ? row.name : null),
+    city: p.city || (row.kind === 'city' ? row.name : null),
+    pin: p.pin || (row.kind === 'pin' ? row.name : null),
+    ancestors: p.ancestors || null,
     geometry: row.geometry || null,
     metrics,
     demographics: p.demographics || null,
@@ -77,6 +109,16 @@ function normalizeFeature(row, metricKey, scenario = {}) {
 }
 
 function createMarketMapStore(pool) {
+  const listCache = new Map();
+  const cachedList = (key, compute) => {
+    const cached=listCache.get(key);
+    if (cached && Date.now()-cached.at<300000) { listCache.delete(key); listCache.set(key,cached); return cached.value; }
+    const value=Promise.resolve().then(compute);
+    listCache.set(key,{at:Date.now(),value});
+    value.catch(()=>listCache.delete(key));
+    while (listCache.size>48) listCache.delete(listCache.keys().next().value);
+    return value;
+  };
   return {
     async seedMapCatalog(geographies = [], relationships = []) {
       if (!Array.isArray(geographies) || !Array.isArray(relationships)) throw new TypeError('Map catalog rows must be arrays');
@@ -105,7 +147,9 @@ function createMarketMapStore(pool) {
       } finally { client.release(); }
     },
 
-    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {} } = {}) {
+    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {}, includeGeometry = true } = {}) {
+      const cacheKey=JSON.stringify([this.sourceVersion,parentId,level,bbox,metricKey,scenario,includeGeometry]);
+      return cachedList(cacheKey, async () => {
       const wanted = level || (parentId ? null : 'state');
       if (wanted && !LEVELS.includes(wanted)) return [];
       const params = [];
@@ -122,28 +166,39 @@ function createMarketMapStore(pool) {
         where.push(`g.geom && ST_MakeEnvelope($${offset}, $${offset + 1}, $${offset + 2}, $${offset + 3}, 4326)`);
       }
       params.push(MAX_BY_LEVEL[wanted || 'district']);
-      const sql = `SELECT g.external_id, g.kind, g.name, g.properties, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id = g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id = r.parent_id WHERE ${where.length ? where.join(' AND ') : 'TRUE'} ORDER BY g.name, g.external_id LIMIT $${params.length}`;
+      const geometrySql=includeGeometry ? 'CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END' : 'NULL::jsonb';
+      const sql = `SELECT g.external_id, g.kind, g.name, g.properties, ${geometrySql} AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id = g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id = r.parent_id WHERE ${where.length ? where.join(' AND ') : 'TRUE'} ORDER BY g.name, g.external_id LIMIT $${params.length}`;
       const result = await pool.query(sql, params);
-      return result.rows.map(row => normalizeFeature(row, metricKey, scenario));
+      const rows=result.rows.map(row => normalizeFeature(row, metricKey, scenario));
+      if (parentId) for (const place of priorityPlaces.filter(place=>place.parentId===parentId && (!wanted || place.level===wanted))) {
+        if (!rows.some(row=>row.id===place.id)) rows.push(normalizeFeature({...placeRow(place),geometry:includeGeometry?place.geometry:null},metricKey,scenario));
+      }
+      return rows;
+      });
     },
 
     async getMapGeography(externalId, metricKey, scenario = {}) {
+      if (priorityById.has(externalId)) return normalizeFeature(placeRow(priorityById.get(externalId)),metricKey,scenario);
       const result = await pool.query(`SELECT g.external_id, g.kind, g.name, g.properties, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id=g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id=r.parent_id WHERE g.external_id=$1 LIMIT 1`, [externalId]);
       return result.rows.length ? normalizeFeature(result.rows[0], metricKey, scenario) : null;
     },
 
     async getMapLevel(parentId = null) {
       if (!parentId) return 'state';
+      if (priorityById.has(parentId)) return CHILD[priorityById.get(parentId).level] || null;
       const result = await pool.query(`SELECT CASE kind WHEN 'state' THEN 'district' WHEN 'district' THEN 'city' WHEN 'city' THEN 'pin' WHEN 'pin' THEN 'catchment' ELSE NULL END AS child_level FROM market_geographies WHERE external_id=$1 LIMIT 1`, [parentId]);
       return result.rows[0]?.child_level || null;
     },
 
     async searchMapGeographies(query, limit = 20) {
       const result = await pool.query(`SELECT g.external_id, g.kind, g.name, g.properties, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography)/1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id=g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id=r.parent_id WHERE g.name ILIKE $1 OR g.external_id ILIKE $1 OR g.properties->>'sourceCode' ILIKE $1 ORDER BY CASE WHEN lower(g.name)=lower($2) OR lower(g.properties->>'sourceCode')=lower($2) THEN 0 ELSE 1 END, g.kind, g.name LIMIT $3`, [`%${query}%`, query, Math.min(20, Math.max(1, limit))]);
-      return result.rows.map(row => normalizeFeature(row, null));
+      const known=priorityMatches(query,limit).map(place=>normalizeFeature(placeRow(place),null));
+      const database=result.rows.map(row=>normalizeFeature(row,null));
+      return [...known,...database.filter(row=>!known.some(place=>place.id===row.id))].slice(0,limit);
     },
 
     async getMapEvidence(externalId) {
+      if (priorityById.has(externalId)) { const p=priorityById.get(externalId); return {evidence:p.evidence,demographics:null,warnings:p.warnings}; }
       const result = await pool.query(`SELECT g.properties, g.kind, g.name FROM market_geographies g WHERE g.external_id=$1 LIMIT 1`, [externalId]);
       if (!result.rows.length) return null;
       const observations = await pool.query(`SELECT o.metric, o.value, o.unit, o.reference_period, o.evidence_class, o.provenance, s.manifest FROM market_observations o JOIN market_geographies g ON g.id=o.geography_id JOIN market_source_versions s ON s.id=o.source_id AND s.version=o.source_version WHERE g.external_id=$1 ORDER BY o.metric, o.reference_period DESC`, [externalId]);

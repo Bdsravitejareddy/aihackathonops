@@ -12,6 +12,7 @@ function harness({ marketStore, marketMapStore, marketSources = { sources: [{ id
   const workspaces = new Map([[workspaceId, { state: { apps: [{ key: 'A-1', score: 77 }], territories: [] }, revision: 1 }]]);
   const store = {
     async load(id) { return workspaces.get(id) || null; },
+    async listApplicationsByPin(id,pin) { return id===workspaceId&&pin==='560001' ? [{id:'APP-1',pin:'560001'}] : []; },
     async save(id, state, revision) {
       const current = workspaces.get(id);
       if ((current?.revision || 0) !== revision) throw Object.assign(new Error('conflict'), { status: 409 });
@@ -36,16 +37,17 @@ function harness({ marketStore, marketMapStore, marketSources = { sources: [{ id
     async replaceCompetitors(owner, id, items) { competitors.set(id, { workspaceId: owner, items: structuredClone(items) }); return items; }
   };
   const handler = createHandler({ store, marketStore: marketStore || defaultMarketStore, marketMapStore, marketSources, marketBenchmarks });
-  async function call(method, path, body) {
+  async function call(method, path, body, headers = {}) {
     const req = Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))]);
     req.method = method;
     req.url = path;
-    req.headers = { host: '127.0.0.1:8080', ...(body === undefined ? {} : { 'content-type': 'application/json' }) };
+    req.headers = { host: '127.0.0.1:8080', ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...headers };
     let status;
     let payload;
-    const res = { writeHead(code) { status = code; }, setHeader() {}, end(value) { payload = value; } };
+    let responseHeaders = {};
+    const res = { writeHead(code, headers = {}) { status = code; responseHeaders = headers; }, setHeader() {}, end(value) { payload = value; } };
     await handler(req, res);
-    return { status, json: () => JSON.parse(payload) };
+    return { status, headers:responseHeaders, json: () => JSON.parse(payload) };
   }
   return { call, workspaces, saved };
 }
@@ -56,6 +58,48 @@ test('market source and benchmark endpoints return versioned official catalog da
   const { call } = harness({ marketSources: sources, marketBenchmarks: benchmarks });
   assert.deepEqual((await call('GET', '/api/market/sources')).json(), sources);
   assert.deepEqual((await call('GET', '/api/market/benchmarks')).json(), benchmarks);
+});
+
+test('public map levels expose versioned ETags and geometry-free metric refreshes while workspace data stays private', async () => {
+  const geometry={type:'Polygon',coordinates:[[[75,12],[76,12],[76,13],[75,13],[75,12]]]};
+  const map={sourceVersion:'india-test-v1',async getMapLevel(){return 'state';},async listMapGeographies(){return [{id:'state:IN-KA',name:'Karnataka',level:'state',geometry,metrics:{apparelExpenditure:{value:42}},evidence:[]}];}};
+  const {call}=harness({marketMapStore:map});
+  const url='/api/market/map/levels?metric=apparelExpenditure&year=2026';
+  const first=await call('GET',url);
+  assert.equal(first.status,200);
+  assert.match(first.headers['cache-control'],/public/);
+  assert.ok(first.headers.etag);
+  const conditional=await call('GET',url,undefined,{'if-none-match':first.headers.etag});
+  assert.equal(conditional.status,304);
+  const withoutGeometry=await call('GET',url+'&geometry=none');
+  assert.equal(withoutGeometry.json().features[0].geometry,null);
+  assert.ok(JSON.stringify(withoutGeometry.json()).length<JSON.stringify(first.json()).length);
+  const privateResponse=await call('GET','/api/market/assessments?workspaceId='+workspaceId);
+  assert.equal(privateResponse.headers['cache-control'],'no-store');
+  map.sourceVersion='india-test-v2';
+  const changed=await call('GET',url,undefined,{'if-none-match':first.headers.etag});
+  assert.equal(changed.status,200);
+  assert.notEqual(changed.headers.etag,first.headers.etag);
+});
+
+test('workspace PIN screening validates input and remains private', async () => {
+  const {call}=harness();
+  const found=await call('GET',`/api/screening/applications?workspaceId=${workspaceId}&pin=560001`);
+  assert.equal(found.status,200);
+  assert.equal(found.headers['cache-control'],'no-store');
+  assert.equal(found.json().applications[0].id,'APP-1');
+  assert.equal((await call('GET',`/api/screening/applications?workspaceId=${workspaceId}&pin=56001`)).status,400);
+  assert.equal((await call('GET','/api/screening/applications?workspaceId=bad&pin=560001')).status,400);
+});
+
+test('unmapped six digit PIN search reports format coverage without inventing a postal area', async () => {
+  const map={sourceVersion:'fixture-v1',async searchMapGeographies(){return [];}};
+  const {call}=harness({marketMapStore:map});
+  const result=await call('GET','/api/market/map/search?q=560001');
+  assert.equal(result.status,200);
+  assert.deepEqual(result.json().results,[]);
+  assert.equal(result.json().queryType,'pin');
+  assert.equal(result.json().coverage,'not_verified');
 });
 
 test('PIN validation reports format validity without claiming directory membership', async () => {

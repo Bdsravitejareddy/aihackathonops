@@ -24,14 +24,16 @@ function mapDouble() {
     constructor(options) { this.options = options; this.zoom = options.zoom; this.events = []; this.sources = {}; this.layers = {}; Map.instances.push(this); }
     on(name, layer, fn) { this.events.push({ name, layer: typeof layer === 'string' ? layer : null, fn: fn || layer }); return this; }
     fire(name, event = {}, layer = null) { for (const e of this.events) if (e.name === name && e.layer === layer) e.fn(event); }
-    addSource(id, source) { this.sources[id] = { ...source, setData(data) { this.data = data; } }; }
+    addSource(id, source) { this.sources[id] = { ...source, setData(data) { this.data = data; this.setDataCount=(this.setDataCount||0)+1; } }; }
     getSource(id) { return this.sources[id]; }
     addLayer(layer) { this.layers[layer.id] = layer; }
     setFilter(id, filter) { this.layers[id].filter = filter; }
+    setPaintProperty(id,key,value) { this.layers[id].paint[key]=value; }
     addControl() {} getZoom() { return this.zoom; }
     getBounds() { return { toArray: () => [[70,10],[90,30]] }; }
     getCanvas() { return { style: {} }; }
     fitBounds(bounds, options) { this.zoom = options.zoom || options.maxZoom; this.bounds = bounds; }
+    flyTo(options) { this.zoom=options.zoom; this.center=options.center; }
     remove() { this.removed = true; }
   }
   Map.instances = [];
@@ -75,6 +77,13 @@ test('national loading requests state aggregates and never requests PINs without
   h.map.zoom = 13; h.map.fire('moveend'); await tick();
   assert.ok(h.requests.every(r => Number(new URL(r.url,'http://localhost').searchParams.get('zoom')) < 6));
   assert.equal(h.map.options.style.sources && Object.keys(h.map.options.style.sources).length, 0, 'no remote tile dependency');
+});
+
+test('panning and zooming the loaded state layer reuses its geometry request', async t => {
+  const h=setup(); t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  for (const zoom of [4,4.5,5,3.8,4.2]) { h.map.zoom=zoom; h.map.fire('moveend'); await tick(); }
+  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,1);
+  assert.equal(h.map.getSource('market-geographies').data.features.length,2);
 });
 
 test('fixed national legend survives local extrema; null stays gray while zero is a measured value', async t => {
@@ -134,7 +143,8 @@ test('explicit drill-down scopes district, city, PIN and catchment loads; nation
   }
   assert.match(h.host.querySelector('[data-map-status]').textContent,/catchment/i);
   h.click('[data-map-national]'); await tick();
-  assert.equal(new URL(h.requests.at(-1).url,'http://localhost').searchParams.get('parentId'),null);
+  assert.equal(h.host.querySelector('[data-map-path]').textContent,'India');
+  assert.equal(h.map.getSource('market-geographies').data.features[0].id,'a','cached national geography returns immediately');
 });
 
 test('comparison posts selected geography IDs and renders evidence alongside results', async t => {
@@ -184,12 +194,12 @@ test('late map and detail responses cannot overwrite a new year or selected geog
   assert.doesNotMatch(h.host.querySelector('[data-map-detail]').textContent,/Test area a/);
 });
 
-test('API failure clears old values and offers retry without fabricating features', async t => {
+test('API failure retains old sourced geography and offers retry without fabricating new values', async t => {
   let fail = false;
   const h = setup(() => { if(fail) throw Error('API offline'); return levels(); });
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick(); fail = true;
   h.controller.setMetric('tam'); await tick();
-  assert.equal(h.map.getSource('market-geographies').data.features.length,0);
+  assert.equal(h.map.getSource('market-geographies').data.features.length,2);
   assert.match(h.host.querySelector('[data-map-status]').textContent,/API offline/);
   assert.ok(h.host.querySelector('[data-map-retry]'));
 });
@@ -308,4 +318,84 @@ test('global result can drill after detail arrives before its sibling geometry l
   h.host.querySelector('[data-map-global-query]').value='city'; h.host.querySelector('[data-map-global-form]').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true})); await tick();
   h.click('[data-map-global-result]'); await tick(); completeLevel(levels([city],'city')); await tick();
   assert.equal(h.host.querySelector('[data-map-drill]').disabled,false);
+});
+
+test('layer changes keep sourced polygons visible and reuse one map instance while data loads', async t => {
+  let release;
+  const h = setup(url => {
+    if (url.includes('metric=population')) return new Promise(resolve => { release = resolve; });
+    return levels([feature('a',120)]);
+  });
+  t.after(() => { h.controller.destroy(); h.dom.window.close(); });
+  await tick();
+  const originalSource = h.map.getSource('market-geographies');
+  h.change('[name="metric"]','population');
+  assert.equal(h.window.maplibregl.Map.instances.length,1);
+  assert.equal(h.map.getSource('market-geographies'),originalSource);
+  assert.equal(originalSource.data.features.length,1,'the old geometry remains visible during the request');
+  release({ ...levels([feature('a',120)]), legend:{ metric:'population', year:2026, scope:'national', thresholds:[100,200], colors:['#d9eee1','#6ba688','#185a44'], unit:'people' } });
+  await tick();
+  assert.equal(originalSource.data.features.length,1);
+});
+
+test('metric paint changes do not reparse the same GeoJSON geometry', async t => {
+  const h=setup(()=>levels([feature('a',120)]));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  const source=h.map.getSource('market-geographies'), count=source.setDataCount;
+  h.change('[name="metric"]','population'); await tick();
+  assert.equal(source.setDataCount,count,'metric change updates paint, preserving geometry source');
+  assert.ok(h.map.layers['market-fill'].paint['fill-color']);
+});
+
+test('repeat metric navigation reuses loaded boundaries without another geometry response', async t => {
+  const h=setup(() => levels([feature('a',120)]));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  h.change('[name="metric"]','population'); await tick();
+  h.change('[name="metric"]','apparelExpenditure'); await tick();
+  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,2,'return to a loaded metric is served from memory');
+  assert.equal(h.map.getSource('market-geographies').data.features.length,1);
+});
+
+test('selected geography dispatches the shared sourced location contract', async t => {
+  const h=setup(url=>url.includes('/geographies/')?feature('a',120):levels([feature('a',120)]));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  const events=[]; h.window.addEventListener('franchiseos:location-selected',event=>events.push(event.detail));
+  h.controller.selectGeography('a'); await tick();
+  assert.equal(events.length,1);
+  assert.deepEqual(Object.keys(events[0]).sort(),['city','evidence','id','level','metrics','name','pin','sourceVersion','state'].sort());
+  assert.equal(events[0].id,'a'); assert.equal(events[0].level,'state');
+  assert.equal(events[0].metrics.apparelExpenditure.value,120);
+});
+
+test('a source version change invalidates prior level cache entries', async t => {
+  let version='fixture-v1';
+  const h=setup(()=>({...levels([feature('a',120)]),sourceVersion:version}));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  h.change('[name="metric"]','population'); await tick();
+  version='fixture-v2';
+  h.change('[name="year"]','2027'); await tick();
+  h.change('[name="year"]','2026'); await tick();
+  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,4,'old source responses are not reused after a version change');
+});
+
+test('city search shows its hierarchy and flies to a verified point without an economic value', async t => {
+  const city={...feature('city:GN-1277333',null,'city','district:KA-C11-572'),name:'Bengaluru',state:'Karnataka',city:'Bengaluru',
+    geometry:{type:'Point',coordinates:[77.59369,12.97194]},ancestors:[{id:'state:IN-KA',name:'Karnataka',level:'state'},{id:'district:KA-C11-572',name:'Bangalore',level:'district'}]};
+  const h=setup(url=>url.includes('/search?')?{results:[city]}:url.includes('/geographies/')?city:url.includes('parentId=district%3AKA-C11-572')?levels([city],'city'):levels());
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  h.host.querySelector('[data-map-global-query]').value='Bangalore';
+  h.host.querySelector('[data-map-global-form]').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true})); await tick();
+  assert.match(h.host.querySelector('[data-map-global-results]').textContent,/Karnataka.*Bangalore/);
+  h.click('[data-map-global-result]'); await tick();
+  assert.deepEqual(h.map.center,[77.59369,12.97194]);
+  assert.match(h.host.querySelector('[data-map-detail]').textContent,/Unavailable/);
+});
+
+test('unmapped six digit PIN search explains missing directory coverage', async t => {
+  const h=setup(url=>url.includes('/search?')?{results:[],queryType:'pin',coverage:'not_verified'}:levels());
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  h.host.querySelector('[data-map-global-query]').value='560001';
+  h.host.querySelector('[data-map-global-form]').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true})); await tick();
+  assert.match(h.host.querySelector('[data-map-global-results]').textContent,/valid PIN format/i);
+  assert.match(h.host.querySelector('[data-map-global-results]').textContent,/directory|mapping/i);
 });

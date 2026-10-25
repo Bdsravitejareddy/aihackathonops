@@ -14,6 +14,15 @@ function reply(res, status, value) {
   res.end(body);
 }
 
+function replyPublic(req, res, value, sourceVersion, lifetimeSeconds = 300) {
+  const etag = '"' + createHash('sha256').update(sourceVersion + ':' + req.url).digest('hex').slice(0,32) + '"';
+  const headers = { 'etag':etag, 'cache-control':`public, max-age=${lifetimeSeconds}, stale-while-revalidate=60`, 'x-content-type-options':'nosniff' };
+  if (req.headers['if-none-match'] === etag) { res.writeHead(304,headers); return res.end(); }
+  const body=JSON.stringify(value);
+  res.writeHead(200,{...headers,'content-type':'application/json; charset=utf-8','content-length':Buffer.byteLength(body)});
+  res.end(body);
+}
+
 function assessmentView(row) {
   if (!row) return row;
   if (row.snapshot) return row;
@@ -50,6 +59,13 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
       } catch { return reply(res, 403, { error: 'Local requests only' }); }
     }
     if (req.method === 'GET' && url.pathname === '/api/health') return reply(res, 200, { ok: true });
+    if (req.method === 'GET' && url.pathname === '/api/screening/applications') {
+      const workspaceId=url.searchParams.get('workspaceId'), pin=url.searchParams.get('pin');
+      if (!UUID.test(workspaceId || '') || !/^\d{6}$/.test(pin || '')) return reply(res,400,{error:'Valid workspace identifier and six digit PIN are required'});
+      if (typeof store.listApplicationsByPin !== 'function') return reply(res,503,{error:'Screening lookup unavailable'});
+      try { return reply(res,200,{applications:await store.listApplicationsByPin(workspaceId,pin)}); }
+      catch { return reply(res,503,{error:'Screening lookup unavailable'}); }
+    }
 
     if (url.pathname.startsWith('/api/market/')) {
       if (url.pathname.startsWith('/api/market/map/')) {
@@ -149,18 +165,22 @@ function createHandler({ store, marketStore, marketMapStore, marketResearchStore
             const level = await marketMapStore.getMapLevel(parentId);
             if (!level) return reply(res, 400, { error: 'Unknown map parent geography' });
             const scenario = { captureRate: null };
-            const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario });
+            const includeGeometry=url.searchParams.get('geometry') !== 'none';
+            const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario, includeGeometry });
             const missingExpenditure = metric === 'apparelExpenditure' ? features.filter(feature => feature.metrics.apparelExpenditure.value === null).length : 0;
             const warnings = features.length ? [] : ['No verified child boundaries are available at this level.'];
             if (missingExpenditure) warnings.push(`${missingExpenditure} of ${features.length} state/UTs have no annual expenditure value because the 2011 Census population cannot be defensibly crosswalked to those later boundaries.`);
             if (features.some(feature => feature.evidence.some(item => item.sourceId === 'census-of-india-2011-state-sector'))) warnings.push('Annual market expenditure combines Census 2011 population with HCES 2023-24 spending. It is a high-uncertainty market estimate, not actual franchise sales.');
-            return reply(res, 200, { level, features, sourceVersion: marketMapStore.sourceVersion || 'india-geography-1.1.2', legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings });
+            const version=marketMapStore.sourceVersion || 'india-geography-1.1.2';
+            const values={ level, features:includeGeometry?features:features.map(feature=>({...feature,geometry:null})), sourceVersion:version, legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings };
+            return replyPublic(req,res,values,version,includeGeometry?3600:300);
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/search') {
             const q = (url.searchParams.get('q') || '').trim();
             if (q.length < 2 || q.length > 100) return reply(res, 400, { error: 'Search must contain 2–100 characters' });
             const results = await marketMapStore.searchMapGeographies(q, Math.min(Number(url.searchParams.get('limit')) || 20, 20));
-            return reply(res, 200, { results: results.map(({ id,name,level,parentId,geometry,metrics,evidence,confidence }) => ({ id,name,level,parentId,geometry,metrics,evidence,confidence })) });
+            return reply(res, 200, { results: results.map(({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors }) => ({ id,name,level,parentId,geometry,metrics,evidence,confidence,state,city,pin,ancestors })),
+              queryType:/^\d{6}$/.test(q)?'pin':'place', coverage:results.length?'sourced':/^\d{6}$/.test(q)?'not_verified':'unavailable' });
           }
           const detailMatch = url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)$/);
           if (req.method === 'GET' && detailMatch) {

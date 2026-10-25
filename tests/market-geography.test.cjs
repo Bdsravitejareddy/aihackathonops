@@ -101,3 +101,32 @@ test('PostGIS catalog seeding is additive and links typed parent-child identifie
   assert.deepEqual(relationQuery.params.slice(0,4),['state:IN:29','district:C11:291','state','district']);
   await assert.rejects(()=>store.seedMapCatalog([{kind:'unknown',externalId:'x',name:'bad',properties:{}}]),/Invalid geography/i);
 });
+
+test('priority Karnataka city aliases resolve to sourced points without invented demographics', async () => {
+  const store=createMarketMapStore({query:async()=>({rows:[]})});
+  const aliases={Bangalore:'Bengaluru',banglore:'Bengaluru',Mysore:'Mysuru',Mangalore:'Mangaluru',Hubli:'Hubballi-Dharwad',Belgaum:'Belagavi',Tumkur:'Tumakuru',Davanagere:'Davanagere'};
+  for (const [query,name] of Object.entries(aliases)) {
+    const results=await store.searchMapGeographies(query);
+    const city=results.find(row=>row.level==='city'&&row.name===name);
+    assert.ok(city,`${query} resolves ${name}`);
+    assert.equal(results[0].name,name,`${query} ranks the intended city before an identically named district`);
+    assert.equal(city.geometry.type,'Point');
+    assert.equal(city.metrics.population.value,null);
+    assert.ok(city.evidence.some(row=>row.url?.startsWith('https://www.geonames.org/')));
+    assert.equal(city.state,'Karnataka');
+  }
+  assert.equal((await store.searchMapGeographies('560001')).length,0,'an unsupported PIN is not invented');
+});
+
+test('Karnataka priority district polygons and city points follow state to district to city hierarchy', async () => {
+  const store=createMarketMapStore({query:async()=>({rows:[]})});
+  const districts=await store.listMapGeographies({parentId:'state:IN-KA',level:'district',metric:'population'});
+  assert.equal(districts.length,7);
+  assert.ok(districts.every(row=>row.geometry && ['Polygon','MultiPolygon'].includes(row.geometry.type)));
+  const bengaluru=await store.searchMapGeographies('Bengaluru');
+  const city=bengaluru.find(row=>row.level==='city');
+  assert.equal(await store.getMapLevel(city.parentId),'city');
+  const child=await store.listMapGeographies({parentId:city.parentId,level:'city',metric:'population'});
+  assert.ok(child.some(row=>row.id===city.id));
+  assert.ok(districts.every(row=>row.metrics.population.value===null));
+});

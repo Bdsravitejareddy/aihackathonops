@@ -2,6 +2,15 @@
 
 function createStore(pool) {
   return {
+    async listApplicationsByPin(workspaceId, pin) {
+      const normalizedPin = String(pin || '').trim();
+      if (!/^\d{6}$/.test(normalizedPin)) throw new TypeError('PIN must be a six-digit Indian postal code');
+      const result = await pool.query(
+        "SELECT record FROM applications WHERE workspace_id = $1 AND record ->> 'pin' = $2 ORDER BY position ASC",
+        [workspaceId, normalizedPin]
+      );
+      return result.rows.map(row => row.record);
+    },
     async load(id) {
       const result = await pool.query('SELECT state, revision FROM workspaces WHERE id = $1', [id]);
       return result.rows[0] ? { state: result.rows[0].state, revision: result.rows[0].revision } : null;

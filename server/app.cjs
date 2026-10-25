@@ -104,12 +104,40 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
           if (req.method === 'POST' && url.pathname === '/api/market/map/scenario') {
             const payload = await readBody(req, maxBodyBytes), a = payload.assumptions || {};
             if (!Number.isInteger(payload.horizonYears) || ![0,3,5].includes(payload.horizonYears)) return reply(res, 400, { error: 'Horizon must be baseline, 3 or 5 years' });
-            for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','travelTimeMinutes']) if (a[key] !== undefined && (!Number.isFinite(a[key]) || a[key] < 0 || (key === 'captureRate' && a[key] > 1) || (key === 'elasticity' && a[key] === 0))) return reply(res, 400, { error: `Invalid assumption: ${key}` });
+            const scenarioFactors = { conservative:0.75, base:1, optimistic:1.25 }, scenarioName = payload.scenario || 'base';
+            if (!Object.hasOwn(scenarioFactors,scenarioName)) return reply(res,400,{error:'Unsupported scenario case'});
+            for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate','travelTimeMinutes']) {
+              const value=a[key], permitsNegative=['annualNominalGrowth','annualInflation','discountRate'].includes(key);
+              if (value !== undefined && (!Number.isFinite(value) || (value < 0 && !permitsNegative) || (permitsNegative && value <= -1) || (key === 'captureRate' && value > 1) || (key === 'elasticity' && value === 0))) return reply(res, 400, { error: `Invalid assumption: ${key}` });
+            }
+            const effectiveCaptureRate = Number.isFinite(a.captureRate) ? Math.min(1,a.captureRate*scenarioFactors[scenarioName]) : null;
             const parentId = payload.parentId || null, level = await marketMapStore.getMapLevel(parentId);
-            const mapRows = await marketMapStore.listMapGeographies({ parentId, level, metric: payload.metric, scenario: { captureRate: a.captureRate, elasticity: a.elasticity ?? 1 } });
-            const selected = await Promise.all((payload.geographyIds || []).slice(0,4).map(id => marketMapStore.getMapGeography(id, payload.metric, { captureRate: a.captureRate, elasticity: a.elasticity ?? 1 })));
+            const mapRows = await marketMapStore.listMapGeographies({ parentId, level, metric: payload.metric, scenario: { captureRate: effectiveCaptureRate, elasticity: a.elasticity ?? 1 } });
+            const selected = await Promise.all((payload.geographyIds || []).slice(0,4).map(id => marketMapStore.getMapGeography(id, payload.metric, { captureRate: effectiveCaptureRate, elasticity: a.elasticity ?? 1 })));
             const scenarioId = `scenario-${payload.scenario || 'base'}-e${a.elasticity ?? 1}-c${a.captureRate ?? 'missing'}-h${payload.horizonYears}`;
-            const forecast = { evidenceClass: 'model_assumption', horizonYears: payload.horizonYears, annualRevenue: selected.map(item => item?.metrics?.revenue || null), roi: null, paybackMonths: null, warnings: ['Store costs, conversion, observed footfall and local income proxies are required for a defensible investment forecast; unavailable values remain blank.', 'Revenue is a scenario projection and must not be interpreted as observed sales.'] };
+            const financeKeys = ['aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate'];
+            const financeInputsComplete = financeKeys.every(key => Number.isFinite(a[key]));
+            let financial = null;
+            if (financeInputsComplete && selected[0]) {
+              try {
+                financial = projectStoreEconomics({
+                  store: { aov:a.aov, areaSqFt:a.areaSqFt, initialInvestment:a.investment, workingCapital:a.workingCapital, monthlyFixedCosts:a.monthlyFixedCosts,
+                    grossMargin:a.grossMargin, royaltyRate:a.royaltyRate, conversionRate:a.conversionRate, monthlyPassingPedestrianTraffic:a.monthlyPassingPedestrianTraffic,
+                    entryRate:a.entryRate, salesRampMonths:a.salesRampMonths, initialRampFraction:a.initialRampFraction, trafficEvidenceClass:'model_assumption' },
+                  market: { samAnnual:selected[0].metrics?.sam?.value, captureBenchmark:effectiveCaptureRate },
+                  forecast: { years:Math.max(1,payload.horizonYears), annualNominalGrowth:a.annualNominalGrowth, annualInflation:a.annualInflation, discountRate:a.discountRate }
+                });
+              } catch (error) { return reply(res, 400, { error: `Invalid financial assumptions: ${error.message}` }); }
+            }
+            const chosenFinancial = financial?.scenarios?.[scenarioName];
+            const forecast = { evidenceClass:'model_assumption', scenario:scenarioName, effectiveCaptureRate, horizonYears:payload.horizonYears,
+              annualRevenue:chosenFinancial?.years?.[0]?.nominalRevenue ?? selected[0]?.metrics?.som?.value ?? null,
+              roi:chosenFinancial?.roiPercent ?? null, paybackMonths:chosenFinancial?.paybackMonths ?? null,
+              breakEvenRevenueMonthly:financial?.economics?.breakEvenRevenueMonthly ?? null, footfall:financial?.footfall || null, financial,
+              demand:selected.map(item=>({id:item?.id,tam:item?.metrics?.tam||null,sam:item?.metrics?.sam||null,som:item?.metrics?.som||null})),
+              warnings:[...(!financeInputsComplete?['Store costs, margins, conversion, passing traffic and discount assumptions are required for ROI and payback; those values remain unavailable.']:[]),
+                ...(!selected[0]?.metrics?.sam?.value?['A compatible serviceable market estimate is unavailable; revenue-to-market capture comparison is incomplete.']:[]),
+                'Revenue is a scenario projection and must not be interpreted as observed sales.'] };
             return reply(res, 200, { scenarioId, map: { level, features: mapRows, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1', legend: legendFor(payload.metric || 'population', Number(payload.year) || 2026), warnings: [] }, forecast, warnings: forecast.warnings });
           }
           res.setHeader('allow', 'GET, POST');

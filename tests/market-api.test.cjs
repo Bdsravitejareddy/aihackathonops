@@ -154,12 +154,29 @@ test('map API progressively serves sourced geographies with fixed national legen
 
 test('scenario recalculation leaves missing inputs unavailable and explicitly labels projections', async () => {
   const geo = { id: 'KA', name: 'Karnataka', level: 'state', metrics: { revenue: { value: null } }, evidence: [], confidence: 'insufficient evidence' };
-  const map = { sourceVersion: 'india-test-v1', async getMapLevel() { return 'state'; }, async listMapGeographies() { return [geo]; }, async getMapGeography() { return geo; } };
+  const map = { sourceVersion: 'india-test-v1', async getMapLevel() { return 'state'; }, async listMapGeographies({scenario}) { this.appliedScenario=scenario; return [geo]; }, async getMapGeography() { return geo; } };
   const { call } = harness({ marketMapStore: map });
   const response = await call('POST', '/api/market/map/scenario', { scenario: 'base', horizonYears: 3, metric: 'revenue', assumptions: { elasticity: 1, captureRate: 0.02, investment: 100000 } });
   assert.equal(response.status, 200);
   assert.equal(response.json().map.features[0].metrics.revenue.value, null);
   assert.equal(response.json().forecast.evidenceClass, 'model_assumption');
+  assert.equal(map.appliedScenario.captureRate,0.02);
   assert.ok(response.json().forecast.warnings.some(text => /not be interpreted as observed sales/i.test(text)));
   assert.equal((await call('POST', '/api/market/map/scenario', { horizonYears: 4, assumptions: {} })).status, 400);
+  assert.equal((await call('POST', '/api/market/map/scenario', { scenario:'wild',horizonYears:3,assumptions:{} })).status,400);
+});
+
+test('map scenario invokes existing store economics when full financial assumptions are supplied', async () => {
+  const geo={id:'KA',name:'Karnataka',level:'state',metrics:{sam:{value:5000000},tam:{value:10000000},som:{value:100000}},evidence:[],confidence:'scenario fixture'};
+  const map={sourceVersion:'india-test-v1',async getMapLevel(){return 'state';},async listMapGeographies({scenario}){this.appliedScenario=scenario;return [geo];},async getMapGeography(){return geo;}};
+  const {call}=harness({marketMapStore:map});
+  const assumptions={elasticity:1,captureRate:0.02,aov:500,areaSqFt:1000,investment:100000,workingCapital:10000,monthlyFixedCosts:10000,grossMargin:0.5,royaltyRate:0.05,conversionRate:0.1,monthlyPassingPedestrianTraffic:20000,entryRate:0.2,salesRampMonths:2,initialRampFraction:0.4,annualNominalGrowth:0.05,annualInflation:0.04,discountRate:0.1};
+  const response=await call('POST','/api/market/map/scenario',{geographyIds:['KA'],horizonYears:3,scenario:'optimistic',metric:'revenue',assumptions});
+  assert.equal(response.status,200);
+  const forecast=response.json().forecast;
+  assert.ok(forecast.financial);assert.equal(forecast.footfall.storeVisits.value,4000);assert.equal(forecast.effectiveCaptureRate,0.025);assert.equal(map.appliedScenario.captureRate,0.025);
+  assert.equal(forecast.breakEvenRevenueMonthly,10000/0.45);
+  assert.ok(forecast.annualRevenue>0);assert.equal(forecast.roi,forecast.financial.scenarios.optimistic.roiPercent);
+  assert.ok(forecast.paybackMonths>0);
+  assert.ok(forecast.warnings.some(text=>/not be interpreted as observed sales/i.test(text)));
 });

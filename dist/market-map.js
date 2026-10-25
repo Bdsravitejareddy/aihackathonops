@@ -161,6 +161,18 @@
             <label>AOV · ₹/transaction, assumption<input class="input" type="number" name="aov" min="0.01" step="any" placeholder="Missing"></label>
             <label>Store size · sq ft, assumption<input class="input" type="number" name="areaSqFt" min="0.01" step="any" placeholder="Missing"></label>
             <label>Investment · ₹, assumption<input class="input" type="number" name="investment" min="0" step="any" placeholder="Missing"></label>
+            <label>Working capital · ₹, assumption<input class="input" type="number" name="workingCapital" min="0" step="any" placeholder="Missing"></label>
+            <label>Monthly fixed costs · ₹, assumption<input class="input" type="number" name="monthlyFixedCosts" min="0" step="any" placeholder="Missing"></label>
+            <label>Gross margin · 0–1, assumption<input class="input" type="number" name="grossMargin" min="0" max="1" step="any" placeholder="Missing"></label>
+            <label>Royalty rate · 0–1, assumption<input class="input" type="number" name="royaltyRate" min="0" max="1" step="any" placeholder="Missing"></label>
+            <label>Store conversion · 0–1, assumption<input class="input" type="number" name="conversionRate" min="0" max="1" step="any" placeholder="Missing"></label>
+            <label>Passing pedestrian traffic · people/month, assumption<input class="input" type="number" name="monthlyPassingPedestrianTraffic" min="0" step="any" placeholder="Missing"></label>
+            <label>Entry rate · 0–1, assumption<input class="input" type="number" name="entryRate" min="0" max="1" step="any" placeholder="Missing"></label>
+            <label>Sales ramp · months, assumption<input class="input" type="number" name="salesRampMonths" min="1" max="120" step="1" value="6"></label>
+            <label>Opening month run-rate · 0–1, assumption<input class="input" type="number" name="initialRampFraction" min="0" max="1" step="any" value="0.4"></label>
+            <label>Annual nominal growth · fraction, assumption<input class="input" type="number" name="annualNominalGrowth" min="-0.99" step="any" placeholder="Missing"></label>
+            <label>Annual inflation · fraction, assumption<input class="input" type="number" name="annualInflation" min="-0.99" step="any" placeholder="Missing"></label>
+            <label>Discount rate · fraction, assumption<input class="input" type="number" name="discountRate" min="-0.99" step="any" placeholder="Missing"></label>
             <label>Travel time · minutes, assumption<input class="input" type="number" name="travelTimeMinutes" min="1" max="120" step="1" placeholder="Requires routing source"></label>
           </div><p class="hint">Travel-time input is an assumption, not a computed drive-time catchment. A routing source is required to draw travel-time boundaries. Radius bands, if supplied, are distance proxies.</p>
           <div class="market-actions"><button class="button primary" data-map-apply>Apply scenario</button><span class="hint" data-map-scenario-status>Default elasticity 1.00 · other inputs missing</span></div></form>
@@ -285,7 +297,7 @@
       event.preventDefault(); const form = $('[data-map-scenario-form]');
       if (!form.reportValidity()) return;
       const values = new FormData(form), assumptions = { evidenceClass: 'user_assumption' };
-      for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','travelTimeMinutes']) { const value = values.get(key); if (value !== '') assumptions[key] = Number(value); }
+      for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate','travelTimeMinutes']) { const value = values.get(key); if (value !== '') assumptions[key] = Number(value); }
       if (String(values.get('targetDemographics') || '').trim()) assumptions.targetDemographics = String(values.get('targetDemographics')).trim();
       const revision = ++scenarioRevision, context = ++contextRevision;
       levelRevision++; detailRevision++; compareRevision++; for (const c of aborters.values()) c.abort();

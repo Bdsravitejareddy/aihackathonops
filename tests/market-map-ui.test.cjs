@@ -143,13 +143,16 @@ test('scenario controls post explicit assumptions, keep blanks missing and synch
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
   h.change('[name="elasticity"]','0.75'); h.change('[name="captureRate"]','0.02'); h.change('[name="aov"]','800');
   h.change('[name="areaSqFt"]','900'); h.change('[name="investment"]','10000'); h.change('[name="targetDemographics"]','Test audience');
-  h.change('[name="travelTimeMinutes"]','15'); h.change('[name="horizonYears"]','3');
+  h.change('[name="travelTimeMinutes"]','15'); h.change('[name="monthlyFixedCosts"]','5000'); h.change('[name="grossMargin"]','0.45');
+  h.change('[name="conversionRate"]','0.08'); h.change('[name="workingCapital"]','2000'); h.change('[name="horizonYears"]','3');
   h.host.querySelector('[data-map-scenario-form]').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true})); await tick();
   const req = h.requests.find(r=>r.url.endsWith('/scenario'));
   assert.equal(req.method,'POST'); assert.equal(req.body.horizonYears,3); assert.equal(req.body.assumptions.elasticity,0.75);
   assert.equal(req.body.assumptions.captureRate,0.02); assert.equal(req.body.assumptions.aov,800);
   assert.equal(req.body.assumptions.areaSqFt,900); assert.equal(req.body.assumptions.investment,10000);
   assert.equal(req.body.assumptions.travelTimeMinutes,15); assert.equal(req.body.assumptions.targetDemographics,'Test audience');
+  assert.equal(req.body.assumptions.monthlyFixedCosts,5000); assert.equal(req.body.assumptions.grossMargin,0.45);
+  assert.equal(req.body.assumptions.conversionRate,0.08); assert.equal(req.body.assumptions.workingCapital,2000);
   assert.equal(req.body.assumptions.evidenceClass,'user_assumption');
   assert.match(h.host.textContent,/routing|route source/i);
   assert.match(h.host.querySelector('[data-map-forecast]').textContent,/Hypothetical test forecast/);

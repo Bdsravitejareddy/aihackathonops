@@ -15,3 +15,10 @@ HCES Report No. 592 covers August 2023–July 2024 and was released 31 January 2
 ## Verification
 
 The supplied focused test was run before implementation and failed as expected because `data/india-market-sources.json` did not exist. After implementation, `node --test tests/market-data.test.cjs` passed (4 tests), `node scripts/validate-market-data.cjs` reported 8 sources and 8 observations valid, and `npm test` passed (119 tests). `git diff --check` reported no whitespace errors.
+
+## Review fix round 1
+
+- Added the shared `tests/market-data.test.cjs` file to the versioned deliverable. It checks source metadata and evidence-class allowlisting, HCES vintage/release date, page and source URL metadata, published state-sector values, no PIN observations, and allocation order and conservation with invalid-weight rejection.
+- Added direct Report 592 page references to every HCES benchmark row: Statement 3R, p. S5; Statement 3U, p. S11; Statement 10U, p. S45. Each row now carries the official PDF URL.
+- Test-first evidence: the expanded focused test failed on the missing `S5` page field before the benchmark rows were updated.
+- Verification after the fix: `node --test tests/market-data.test.cjs` passed (4 tests); `node scripts/validate-market-data.cjs` reported 8 sources and 8 observations valid.

@@ -11,6 +11,8 @@
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "components": { "clothing_bedding": 231.22, "footwear": 41.95 },
       "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
     },
@@ -24,6 +26,8 @@
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "components": { "clothing_bedding": 315.29, "footwear": 58.93 },
       "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
     },
@@ -37,6 +41,8 @@
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "notes": "Clothing and bedding excludes tailoring charges."
     },
     {
@@ -48,7 +54,9 @@
       "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
-      "statement": "3R"
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf"
     },
     {
       "sourceId": "mospi-hces-2023-24-report-592",
@@ -60,6 +68,8 @@
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "notes": "Clothing and bedding excludes tailoring charges."
     },
     {
@@ -71,7 +81,9 @@
       "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
-      "statement": "3U"
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf"
     },
     {
       "sourceId": "mospi-hces-2023-24-report-592",
@@ -83,6 +95,8 @@
       "evidenceClass": "official_survey_estimate",
       "imputation": "with_imputation",
       "statement": "10U",
+      "page": "S45",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "notes": "Urban with-imputation estimate; distinct observation from Statement 3U. Clothing and bedding excludes tailoring charges."
     },
     {
@@ -94,7 +108,9 @@
       "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
       "evidenceClass": "official_survey_estimate",
       "imputation": "with_imputation",
-      "statement": "10U"
+      "statement": "10U",
+      "page": "S45",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf"
     }
   ]
 }

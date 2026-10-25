@@ -135,3 +135,30 @@ test('changing PIN clears prior market context until matching evidence is suppli
   h.controller.updateMarketContext({metrics:{tam:{value:200000,evidenceClass:'derived_estimate'}}});
   assert.match(h.root.textContent,/2,00,000/);
 });
+
+test('illustrative financial scenario sends editable assumptions to the deterministic forecast and shows three cases', async t => {
+  let submitted;
+  const h = harness({location:{pin:'560026'},onRunScenario:async payload=>{
+    submitted=payload;
+    return {modelVersion:'india-fashion-market-v1',economics:{footfall:{passingPedestrianTraffic:{value:30000}},economics:{breakEvenRevenueMonthly:200000,breakEvenTransactionsMonthly:200},scenarios:{
+      conservative:{years:[{nominalRevenue:1200000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:10000})),totalOperatingCashFlow:100000,roiPercent:-50,paybackMonths:null,npv:-500000,irrAnnual:null},
+      base:{years:[{nominalRevenue:1800000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:25000})),totalOperatingCashFlow:300000,roiPercent:0,paybackMonths:60,npv:10000,irrAnnual:4},
+      optimistic:{years:[{nominalRevenue:2400000}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:50000})),totalOperatingCashFlow:700000,roiPercent:100,paybackMonths:24,npv:500000,irrAnnual:24}
+    }}};
+  }});
+  t.after(() => h.dom.window.close());
+  assert.match(h.root.textContent,/editable demo assumptions/i);
+  assert.match(h.root.textContent,/not observed PIN footfall/i);
+  const form=h.root.querySelector('[data-financial-scenario]');
+  form.elements.monthlyFixedCosts.value='120000';
+  form.dispatchEvent(new h.dom.window.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(submitted.store.monthlyFixedCosts,120000);
+  assert.equal(submitted.store.trafficEvidenceClass,'model_assumption');
+  assert.equal(submitted.forecast.years,5);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/Conservative/);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/₹18,00,000/);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/₹2,00,000/);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/assumes 30,000 passing pedestrians\/month/);
+  assert.match(h.root.querySelector('[data-financial-results]').textContent,/cash flow excludes taxes, debt service, depreciation, lease accounting and terminal value/i);
+});

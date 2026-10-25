@@ -14,6 +14,7 @@ async function appHarness(t){
     const route=String(url);requests.push({url:route,options});
     const data=route==='demo.json'?JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')):
       route.includes('/api/market/map/geographies/pin%3A560026')?{geography:{id:'pin:560026',name:'Government Electric Factory S.O · Bengaluru',level:'pin',pin:'560026',state:'Karnataka',postOffices:[{name:'Government Electric Factory S.O',delivery:'Delivery'}],metrics:{population:{value:null,unit:'people',evidenceClass:'unavailable',warnings:['No PIN population crosswalk.']},monthlyPerCapitaSpend:{value:374.22,unit:'INR/person/month',status:'available',evidenceClass:'official_survey_estimate',geographicResolution:'state_sector',referencePeriod:'2023-24',geography:{level:'state_sector',state:'Karnataka',sector:'urban'},evidence:[{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}]},annualPerCapitaSpend:{value:4490.64,unit:'INR/person/year',status:'derived',evidenceClass:'derived_estimate',referencePeriod:'2023-24',evidence:[{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}]},tam:{value:null,unit:'INR/year',evidenceClass:'unavailable'}},evidence:[{sourceId:'india-post',title:'India Post Karnataka PIN directory',referenceYear:2020,url:'https://indiapost.gov.in/pincode.pdf'},{sourceId:'hces-karnataka',title:'HCES 2023-24 Karnataka urban',referenceYear:2024,url:'https://mospi.gov.in/hces.pdf'}],benchmarkComparison:{urban:{value:374.22,unit:'INR/person/month',referencePeriod:'2023-24'},rural:{value:273.17,unit:'INR/person/month',referencePeriod:'2023-24'}},warnings:['PIN population is unavailable.']},sourceVersion:'test-v1'}:
+      route.includes('/api/market/forecast')?{modelVersion:'india-fashion-market-v1',economics:{footfall:{passingPedestrianTraffic:{value:30000}},economics:{breakEvenRevenueMonthly:333333.333,breakEvenTransactionsMonthly:500},scenarios:Object.fromEntries([['conservative',900000],['base',1200000],['optimistic',1500000]].map(([name,revenue])=>[name,{years:[{nominalRevenue:revenue}],months:Array.from({length:12},(_,i)=>({month:i+1,operatingCashFlow:10000})),roiPercent:5,paybackMonths:48,npv:100000,irrAnnual:3}]))}}:
       route.includes('/api/screening/applications')?{applications:applicants}:
       route.includes('/api/market/assessments')?{assessments:[]}:
       route.includes('/api/market/sources')?{sources:[]}:
@@ -95,4 +96,25 @@ test('a transient market-detail outage is retried when the same PIN is selected 
   selectPin();for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
   assert.equal(attempts,2);
   assert.match(w.document.querySelector('[data-market]').textContent,/374\.22/);
+});
+
+test('territory screening sends calculator assumptions to the forecast API and renders its nested results',async t=>{
+  const h=await appHarness(t),{w,requests}=h;
+  w.document.querySelector('[data-tab="screening"]').click();await new Promise(r=>setImmediate(r));
+  w.document.querySelector('#ts-pin').value='560026';
+  w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(r=>setImmediate(r));
+  const form=w.document.querySelector('[data-financial-scenario]');
+  form.elements.monthlyFixedCosts.value='120000';
+  form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  const request=requests.find(row=>row.url==='/api/market/forecast');
+  assert.ok(request,'scenario should call existing deterministic forecast endpoint');
+  const payload=JSON.parse(request.options.body);
+  assert.equal(payload.store.monthlyFixedCosts,120000);
+  assert.equal(payload.store.trafficEvidenceClass,'model_assumption');
+  const output=w.document.querySelector('[data-financial-results]').textContent;
+  assert.match(output,/Conservative/);
+  assert.match(output,/₹3,33,333/);
+  assert.match(output,/No supported PIN TAM was supplied/);
 });

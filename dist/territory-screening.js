@@ -45,6 +45,32 @@
     return unit.startsWith('₹') ? `₹${amount}${unit.slice(1)}` : `${amount}${unit ? ` ${unit}` : ''}`;
   };
   const metricValue = value => numeric(value) ? value : value && value.status !== 'unavailable' && numeric(value.value) ? value.value : null;
+  const money = value => numeric(value) ? `₹${value.toLocaleString('en-IN',{maximumFractionDigits:0})}` : 'Not estimable';
+  function renderScenarioResult(result, context, doc, values = {}) {
+    const forecast=result?.economics, summary=forecast?.economics||forecast, scenarios=forecast?.scenarios||summary?.scenarios;
+    if (!scenarios) return '<p class="ts-scenario-empty">Run the illustrative calculator to see five-year financial scenarios. Local investment and return evidence is not available for this PIN.</p>';
+    const economics={...summary,scenarios};
+    const names=[['conservative','Conservative'],['base','Base'],['optimistic','Optimistic']];
+    const scenario=name=>economics.scenarios[name]||{};
+    const yearOneCashFlow=name=>scenario(name).months?.filter(row=>row.month<=12).reduce((sum,row)=>sum+(numeric(row.operatingCashFlow)?row.operatingCashFlow:0),0);
+    const annualRevenue=name=>scenario(name).years?.[0]?.nominalRevenue;
+    const pct=value=>numeric(value)?`${value.toFixed(1)}%`:'Not estimable';
+    const rows=[
+      ['User-entered budget range',`${money(values.budgetMin)} – ${money(values.initialInvestment)} – ${money(values.budgetMax)}`,'Low · modelled investment · high'],
+      ['Projected sales · year 1',...names.map(([key])=>money(annualRevenue(key)))],
+      ['Operating cash flow · year 1',...names.map(([key])=>money(yearOneCashFlow(key)))],
+      ['Break-even sales · monthly',money(economics.breakEvenRevenueMonthly),'Same model threshold'],
+      ['Break-even transactions · monthly',numeric(economics.breakEvenTransactionsMonthly)?Math.ceil(economics.breakEvenTransactionsMonthly).toLocaleString('en-IN'):'Not estimable','Same model threshold'],
+      ['Five-year ROI',...names.map(([key])=>pct(scenario(key).roiPercent))],
+      ['Payback period',...names.map(([key])=>numeric(scenario(key).paybackMonths)?`${scenario(key).paybackMonths} months`:'Not reached in forecast')],
+      ['Five-year NPV',...names.map(([key])=>money(scenario(key).npv))],
+      ['Annualized IRR',...names.map(([key])=>pct(scenario(key).irrAnnual))]
+    ];
+    const table=`<div class="ts-financial-table-wrap"><table class="ts-financial-table"><thead><tr><th>Measure</th>${names.map(([,label])=>`<th>${label}</th>`).join('')}</tr></thead><tbody>${rows.map((row,index)=>`<tr><th>${esc(row[0])}</th>${index===0?`<td colspan="3">${esc(row[1])} <small>(${esc(row[2])})</small></td>`:row.slice(1).map(value=>`<td>${esc(value)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const footfall=forecast?.footfall?.passingPedestrianTraffic||result?.footfall?.passingPedestrianTraffic;
+    const note=`<p class="ts-financial-footnote">Model ${esc(result.modelVersion||'version not supplied')}. Sales use the store-traffic method only. ${numeric(footfall?.value)?`The forecast assumes ${esc(footfall.value.toLocaleString('en-IN'))} passing pedestrians/month; this is a scenario input, not observed footfall.`:'Passing-footfall scenario unavailable.'} ${context?.metrics?.tam?.value==null?'No supported PIN TAM was supplied, so the forecast is not reconciled to local market demand.':'Market TAM is shown separately and is not added to store sales.'} Cash flow excludes taxes, debt service, depreciation, lease accounting and terminal value.</p>`;
+    return table+note;
+  }
   const confirmedScore = applicant => [applicant.confirmedEligibilityScore, applicant.confirmedScore, applicant.score].find(numeric);
   const idOf = applicant => String(applicant.applicationId ?? applicant.id ?? applicant.key ?? '');
   const scoreRange = applicant => {
@@ -70,19 +96,43 @@
     }
     return idOf(a).localeCompare(idOf(b),undefined,{numeric:true,sensitivity:'base'});
   });
-  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, tieBreakFields = []} = {}) {
+  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, onRunScenario = async () => { throw new Error('Forecast API is not connected'); }, tieBreakFields = []} = {}) {
     if (!root) throw new Error('Territory Screening root is required');
     const doc = root.ownerDocument, win = doc.defaultView;
-    let selected = location, market = marketContext, records = list(applicants), workspaceTerritories=list(territories), filter = 'all';
+    let selected = location, market = marketContext, records = list(applicants), workspaceTerritories=list(territories), filter = 'all', scenarioResult = null, scenarioBusy = false;
     const shell = doc.createElement('section'); shell.className = 'territory-screening'; shell.setAttribute('aria-label','Territory screening');
     shell.innerHTML = `<header class="ts-heading"><div><p class="ts-eyebrow">TERRITORY SCREENING</p><h1>One territory. A clear next step.</h1><p>Review supported market evidence and compare applicants for the selected postal area.</p></div><span class="ts-separation">Eligibility is not franchise approval</span></header>
       <form class="ts-pin-form" data-pin-form><label for="ts-pin">Six-digit PIN code</label><div class="ts-pin-controls"><input id="ts-pin" name="pin" inputmode="numeric" autocomplete="postal-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter PIN code" aria-describedby="ts-pin-message"><button type="submit">View territory</button></div><p class="ts-message" id="ts-pin-message" data-pin-message aria-live="polite"></p></form>
       <details class="ts-cascade"><summary>Browse uploaded territories · State → City → PIN</summary><div class="ts-cascade-grid"><label>State<select data-cascade-state><option value="">Select state</option></select></label><label>City<select data-cascade-city disabled><option value="">Select city</option></select></label><label>PIN code<select data-cascade-pin disabled><option value="">Select PIN</option></select></label></div><p class="ts-message">Options come from the workspace territory list. This identifies an uploaded territory; it does not supply population or economic data.</p></details>
       <div class="ts-location" data-location aria-live="polite"></div><div class="ts-market" data-market></div>
+      <section class="ts-financial panel" aria-labelledby="ts-financial-title"><div class="ts-financial-head"><div><p class="ts-eyebrow">ILLUSTRATIVE STORE ECONOMICS</p><h2 id="ts-financial-title">Model an investment and return</h2><p>Editable demo assumptions only. They are not observed PIN footfall, brand quotes, local rent or a validated comparable-store benchmark.</p></div><span class="ts-assumption-badge">Scenario · not a recommendation</span></div>
+      <form data-financial-scenario><div class="ts-financial-grid">
+      <label>Low budget · ₹<input name="budgetMin" type="number" min="0" step="10000" value="800000"></label><label>Modelled investment · ₹<input name="initialInvestment" type="number" min="0" step="10000" value="1000000"></label><label>High budget · ₹<input name="budgetMax" type="number" min="0" step="10000" value="1200000"></label>
+      <label>Working capital · ₹<input name="workingCapital" type="number" min="0" step="10000" value="200000"></label><label>Store area · sq ft<input name="areaSqFt" type="number" min="1" step="1" value="400"></label><label>Monthly fixed operating costs · ₹<input name="monthlyFixedCosts" type="number" min="0" step="10000" value="150000"></label>
+      <label>Gross margin · %<input name="grossMargin" type="number" min="0" max="100" step="1" value="50"></label><label>Royalty · %<input name="royaltyRate" type="number" min="0" max="100" step="0.5" value="5"></label><label>Average order value · ₹<input name="aov" type="number" min="1" step="50" value="1500"></label>
+      <label>Purchase conversion · %<input name="conversionRate" type="number" min="0" max="100" step="0.5" value="12"></label><label>Passing pedestrians / month<input name="monthlyPassingPedestrianTraffic" type="number" min="0" step="1000" value="30000"></label><label>Store entry rate · %<input name="entryRate" type="number" min="0" max="100" step="1" value="20"></label>
+      <label>Sales ramp · months<input name="salesRampMonths" type="number" min="1" max="60" step="1" value="6"></label><label>Initial ramp · % of steady sales<input name="initialRampFraction" type="number" min="0" max="100" step="1" value="50"></label><label>Annual nominal sales growth · %<input name="annualNominalGrowth" type="number" min="-99" step="1" value="5"></label>
+      <label>Annual inflation · %<input name="annualInflation" type="number" min="-99" step="1" value="4"></label><label>Discount rate · %<input name="discountRate" type="number" min="-99" step="1" value="12"></label>
+      </div><p class="ts-scenario-warning">Passing footfall is an editable scenario input, not a measurement. This deterministic five-year model excludes taxes, debt service, depreciation, lease accounting and terminal value.</p><button class="ts-run" type="submit" ${scenarioBusy?'disabled':''}>${scenarioBusy?'Calculating…':'Calculate conservative / base / optimistic'}</button><span data-scenario-message role="status" aria-live="polite"></span></form><div data-financial-results>${renderScenarioResult(scenarioResult, market, doc)}</div></section>
       <details class="ts-details"><summary>Spend and footfall evidence</summary><div data-evidence></div></details>
       <section class="ts-applicants"><div class="ts-applicants-heading"><div><p class="ts-eyebrow">PARTNER PIPELINE</p><h2>Applicants for this territory</h2><p class="ts-subtitle">Rank is a screening order only. Confirmed funds, premises and due diligence remain separate checks.</p></div><div class="ts-filters" role="group" aria-label="Applicant filter"><button type="button" data-filter="all" aria-pressed="true">All Ranked</button><button type="button" data-filter="actionable" aria-pressed="false">Actionable</button></div></div><div class="ts-applicant-list" data-applicants></div></section>`;
     root.replaceChildren(shell);
     const q = selector => shell.querySelector(selector);
+    function renderFinancial(){const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
+    q('[data-financial-scenario]').addEventListener('submit',async event=>{
+      event.preventDefault();if(scenarioBusy)return;
+      const form=event.currentTarget, number=name=>{const value=form.elements[name]?.value;return value===''||value===undefined?NaN:Number(value);};
+      const names=['budgetMin','initialInvestment','budgetMax','workingCapital','areaSqFt','monthlyFixedCosts','grossMargin','royaltyRate','aov','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate'];
+      const values=Object.fromEntries(names.map(name=>[name,number(name)]));
+      const message=q('[data-scenario-message]');
+      if(names.some(name=>!Number.isFinite(values[name]))||values.budgetMin>values.initialInvestment||values.initialInvestment>values.budgetMax||values.grossMargin>100||values.royaltyRate>100||values.conversionRate>100||values.entryRate>100||values.initialRampFraction>100){message.textContent='Check required values, percentages (0–100), and ensure low budget ≤ modelled investment ≤ high budget.';return;}
+      const store={initialInvestment:values.initialInvestment,workingCapital:values.workingCapital,areaSqFt:values.areaSqFt,monthlyFixedCosts:values.monthlyFixedCosts,grossMargin:values.grossMargin/100,royaltyRate:values.royaltyRate/100,aov:values.aov,conversionRate:values.conversionRate/100,monthlyPassingPedestrianTraffic:values.monthlyPassingPedestrianTraffic,entryRate:values.entryRate/100,salesRampMonths:values.salesRampMonths,initialRampFraction:values.initialRampFraction/100,trafficEvidenceClass:'model_assumption'};
+      const payload={store,market:{samAnnual:metricValue((market?.metrics||{}).sam)},forecast:{years:5,annualNominalGrowth:values.annualNominalGrowth/100,annualInflation:values.annualInflation/100,discountRate:values.discountRate/100},scenarioFactors:{conservative:0.75,base:1,optimistic:1.25}};
+      scenarioBusy=true;q('.ts-run').disabled=true;q('.ts-run').textContent='Calculating…';message.textContent='Running the deterministic five-year forecast…';
+      try{scenarioResult=await onRunScenario(payload);q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);message.textContent='Scenario recalculated. Inputs remain editable and are not saved to applicant records.';}
+      catch(error){message.textContent=`Forecast unavailable: ${error?.message||'request failed'}`;}
+      finally{scenarioBusy=false;q('[data-financial-scenario] .ts-run').disabled=false;q('[data-financial-scenario] .ts-run').textContent='Calculate conservative / base / optimistic';}
+    });
     const territoryStates=[...new Set(workspaceTerritories.map(row=>row.state).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
     q('[data-cascade-state]').insertAdjacentHTML('beforeend',territoryStates.map(value=>`<option value="${esc(value)}">${esc(value)}</option>`).join(''));
     function fillSelect(select,placeholder,values){const first=doc.createElement('option');first.value='';first.textContent=placeholder;const options=values.map(value=>{const option=doc.createElement('option');option.value=value;option.textContent=value;return option;});select.replaceChildren(first,...options);}
@@ -179,7 +229,7 @@
         const caution=doc.createElement('small');caution.className='ts-caution';caution.textContent='This ranking is not an approval; recommended status is not final approval.';row.append(caution);target.append(row);
       });
     }
-    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin)market=selected?.marketContext || null; q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();if(notify)onLocationChange(selected); }
+    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin){market=selected?.marketContext || null;scenarioResult=null;} q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();renderFinancial();if(notify)onLocationChange(selected); }
     q('[data-pin-form]').addEventListener('submit',event=>{event.preventDefault();const pin=q('[name="pin"]').value.trim();if(!/^\d{6}$/.test(pin)){q('[data-pin-message]').textContent='Enter a valid six-digit PIN code.';return;}q('[data-pin-message]').textContent='PIN selected. Geographic and market evidence will appear only when supplied.';const detail={id:`pin:${pin}`,name:pin,level:'pin',pin};updateLocation(detail,true);win?.dispatchEvent(new win.CustomEvent('franchiseos:location-selected',{detail}));});
     q('[data-cascade-state]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value;const cities=[...new Set(workspaceTerritories.filter(row=>row.state===state).map(row=>row.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));fillSelect(q('[data-cascade-city]'),'Select city',cities);fillSelect(q('[data-cascade-pin]'),'Select PIN',[]);q('[data-cascade-city]').disabled=!cities.length;q('[data-cascade-pin]').disabled=true;});
     q('[data-cascade-city]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value,city=q('[data-cascade-city]').value;const pins=[...new Set(workspaceTerritories.filter(row=>row.state===state&&row.city===city).flatMap(row=>list(row.pins).map(String)).filter(pin=>/^\d{6}$/.test(pin)))].sort();fillSelect(q('[data-cascade-pin]'),'Select PIN',pins);q('[data-cascade-pin]').disabled=!pins.length;});
@@ -188,7 +238,7 @@
     const sharedLocation=event=>{const detail=event.detail;if(detail && typeof detail==='object')updateLocation(detail);};
     win?.addEventListener('franchiseos:location-selected',sharedLocation);
     updateLocation(location);renderMarket();renderApplicants();
-    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();}, updateApplicants(value){records=list(value);renderApplicants();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
+    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
   }
   return {mount,sortApplicants};
 });

@@ -99,6 +99,7 @@ function mountTerritoryScreening(){
  territoryScreening=window.TerritoryScreening.mount({root:$('#territory-screening-root'),location:screeningSelectedLocation,territories:state.territories,
    marketContext:screeningContextFor(screeningSelectedLocation),applicants:[],tieBreakFields:[{field:'launch',direction:'asc'}],
    onLocationChange:location=>{screeningSelectedLocation=location;loadScreeningApplicants(location);},
+   onRunScenario:payload=>marketRequest('/api/market/forecast',{method:'POST',body:JSON.stringify(payload)}),
    onOpenApplicant:applicant=>{if(applicant.key)detail(applicant.key);},
    onFilterChange:()=>{}});
  if(screeningSelectedLocation)loadScreeningApplicants(screeningSelectedLocation);

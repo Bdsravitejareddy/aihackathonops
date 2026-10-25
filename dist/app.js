@@ -82,7 +82,8 @@ function loadScreeningMarketContext(location,controller=territoryScreening){
  let pending=screeningMarketContextCache.get(key);
  if(!pending){pending=marketRequest('/api/market/map/geographies/'+encodeURIComponent(key)).catch(()=>null);screeningMarketContextCache.set(key,pending);}
  pending.then(data=>{
-   if(!data?.geography||!controller)return;
+   if(!data?.geography){if(screeningMarketContextCache.get(key)===pending)screeningMarketContextCache.delete(key);return;}
+   if(!controller)return;
    const active=controller.getLocation?.(),activePin=active?.pin||active?.id?.match(/\b\d{6}\b/)?.[0];
    if(activePin!==pin)return;
    const resolved={...location,...data.geography,evidence:data.evidence||data.geography.evidence||[],sourceVersion:data.sourceVersion||data.geography.sourceVersion};

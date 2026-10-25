@@ -79,3 +79,20 @@ test('PIN 560026 loads postal and HCES evidence into the integrated territory sn
   assert.equal(w.document.querySelector('#market-form [name="pin"]').value,'560026');
   assert.equal(w.document.querySelector('#market-form [name="regionalSpend"]').value,'374.22');
 });
+
+test('a transient market-detail outage is retried when the same PIN is selected again',async t=>{
+  const h=await appHarness(t),{w}=h,originalFetch=w.fetch;let attempts=0;
+  w.fetch=async(url,options)=>{
+    if(String(url).includes('/api/market/map/geographies/pin%3A560026')&&++attempts===1)
+      return {ok:false,status:503,json:async()=>({error:'temporary outage'})};
+    return originalFetch(url,options);
+  };
+  w.document.querySelector('[data-tab="screening"]').click();
+  await new Promise(r=>setImmediate(r));
+  const selectPin=()=>{w.document.querySelector('#ts-pin').value='560026';w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));};
+  selectPin();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+  assert.equal(attempts,1);
+  selectPin();for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
+  assert.equal(attempts,2);
+  assert.match(w.document.querySelector('[data-market]').textContent,/374\.22/);
+});

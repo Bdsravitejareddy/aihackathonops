@@ -43,7 +43,7 @@ function ingest({ rootDir = path.resolve(__dirname,'..'), outputDir = path.join(
   return { path:outputPath,coverage:snapshot.coverage,geographies:snapshot.geographies,relationships:snapshot.relationships,idempotent:false };
 }
 if (require.main === module) {
-  try { process.stdout.write(`${JSON.stringify(ingest())}\n`); }
+  try { const result=ingest(); process.stdout.write(`${JSON.stringify({path:result.path,coverage:result.coverage,idempotent:result.idempotent})}\n`); }
   catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode=1; }
 }
 module.exports={ingest};

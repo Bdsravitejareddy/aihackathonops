@@ -8,6 +8,8 @@ const { createHandler } = require('./app.cjs');
 const { createStore } = require('./store.cjs');
 const { createMarketStore } = require('./market-store.cjs');
 const { createMarketMapStore } = require('./market-map-store.cjs');
+const { createMarketResearchStore } = require('./market-research-store.cjs');
+const { createMarketResearchService } = require('./market-research.cjs');
 const { createStaticHandler } = require('./static.cjs');
 const { normalizeDatabaseUrl } = require('./db-config.cjs');
 
@@ -16,9 +18,16 @@ const pool = new Pool({ connectionString: normalizeDatabaseUrl(process.env.DATAB
 const dataDirectory = path.resolve(__dirname, '..', 'data');
 const marketSources = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-sources.json'), 'utf8'));
 const marketBenchmarks = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-benchmarks.json'), 'utf8'));
+const geographyManifest = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-geography', 'manifest.json'), 'utf8'));
 const marketStore = createMarketStore(pool);
 const marketMapStore = createMarketMapStore(pool);
-const api = createHandler({ store: createStore(pool), marketStore, marketMapStore, marketSources, marketBenchmarks });
+marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}`;
+const marketResearchStore = createMarketResearchStore(pool);
+const marketResearchService = createMarketResearchService({ logger: {
+  info(message, metadata) { process.stdout.write(`${message} ${JSON.stringify(metadata)}\n`); },
+  error(message, metadata) { process.stderr.write(`${message} ${JSON.stringify(metadata)}\n`); }
+} });
+const api = createHandler({ store: createStore(pool), marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks });
 const serveStatic = createStaticHandler({ directory: require('node:path').resolve(__dirname, '..', 'dist') });
 const staticServer = http.createServer((req, res) => req.url.startsWith('/api/') ? api(req, res) : serveStatic(req, res));
 const port = Number(process.env.PORT || 8080);

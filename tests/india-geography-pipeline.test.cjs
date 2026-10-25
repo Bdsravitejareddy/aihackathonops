@@ -12,12 +12,13 @@ const root = path.resolve(__dirname,'..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root,'data/india-geography/manifest.json'),'utf8'));
 const polygon = { type:'Polygon', coordinates:[[[77,12],[78,12],[78,13],[77,13],[77,12]]] };
 
-test('repository geography manifest validates and preserves zero/unavailable source coverage', () => {
+test('repository geography manifest validates sourced state coverage and explicit remaining gaps', () => {
   const result = validateRepository({rootDir:root});
-  assert.equal(result.datasetCount,9);
+  assert.equal(result.datasetCount,10);
   assert.equal(result.featureCount,0);
-  assert.equal(result.coverage.populationTotal,null);
-  assert.equal(manifest.datasets.every(item=>item.status==='unavailable'),true);
+  assert.equal(result.coverage.populationTotal,1112978963);
+  assert.equal(manifest.datasets.find(item=>item.id==='geoboundaries-india-adm1').coverage.featureCount,36);
+  assert.equal(manifest.datasets.filter(item=>item.status==='unavailable').length,9);
 });
 
 test('feature validation checks PIN syntax, geometry, count and never accepts unsupported PIN metrics', () => {
@@ -43,7 +44,7 @@ test('ingestion creates a reproducible immutable snapshot and rejects changed ou
     const first=ingest({rootDir:root,outputDir}), second=ingest({rootDir:root,outputDir});
     assert.equal(first.idempotent,false);assert.equal(second.idempotent,true);assert.deepEqual(first.coverage,second.coverage);
     const data=JSON.parse(fs.readFileSync(first.path,'utf8'));
-    assert.deepEqual(data.geographies,[]);assert.deepEqual(data.relationships,[]);
+    assert.equal(data.geographies.length,36);assert.deepEqual(data.relationships,[]);
     fs.writeFileSync(first.path,'modified');
     assert.throws(()=>ingest({rootDir:root,outputDir}),/immutable/i);
   } finally { fs.rmSync(outputDir,{recursive:true,force:true}); }
@@ -54,6 +55,7 @@ test('verified GeoJSON artifacts become typed geography rows with provenance for
   try{
     fs.mkdirSync(path.join(repo,'data/india-geography'),{recursive:true});
     const candidate=structuredClone(manifest), dataset=candidate.datasets[0];
+    candidate.datasets=[dataset];candidate.evidence=[];
     dataset.level='state';dataset.featureLevel='state';dataset.status='available';dataset.license.status='verified';dataset.artifact='data/india-geography/state.geojson';
     dataset.coverage={featureCount:1,rowCount:1,populationTotal:null};dataset.knownGaps=[];candidate.retrievedAt='2026-10-25';
     fs.writeFileSync(path.join(repo,'data/india-geography/manifest.json'),JSON.stringify(candidate));

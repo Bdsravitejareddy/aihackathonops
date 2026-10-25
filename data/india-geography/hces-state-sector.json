@@ -1,0 +1,880 @@
+{
+  "source": {
+    "title": "Household Consumption Expenditure Survey 2023-24, NSS Report No. 592",
+    "publisher": "Ministry of Statistics and Programme Implementation",
+    "url": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+    "referencePeriod": "2023-08 to 2024-07",
+    "releaseDate": "2025-01-31",
+    "geographicResolution": "State/UT by rural/urban sector",
+    "method": "Extracted the published per-capita values from Statements 3R and 3U, rows 28 (clothing and bedding) and 29 (footwear); sum those categories. The published clothing/bedding row excludes tailoring charges.",
+    "licence": "Government statistical publication; link and attribute NSS Report 592, Tables 3R/3U.",
+    "pdfSha256": "368deb9c858dcc71c3bf0e6cad096a31b5b337a724cf92a113637f3302ea268e",
+    "sourceId": "mospi-hces-2023-24-report-592"
+  },
+  "observations": [
+    {
+      "state": "Andhra Pradesh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 252.18,
+          "footwearINRPerPersonMonth": 36.15,
+          "combinedINRPerPersonMonth": 288.33,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 315.4,
+          "footwearINRPerPersonMonth": 48.1,
+          "combinedINRPerPersonMonth": 363.5,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Arunachal Pradesh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 353.12,
+          "footwearINRPerPersonMonth": 62.28,
+          "combinedINRPerPersonMonth": 415.4,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 458,
+          "footwearINRPerPersonMonth": 79.45,
+          "combinedINRPerPersonMonth": 537.45,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Assam",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 235.04,
+          "footwearINRPerPersonMonth": 32.41,
+          "combinedINRPerPersonMonth": 267.45,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 358.81,
+          "footwearINRPerPersonMonth": 46.15,
+          "combinedINRPerPersonMonth": 404.96,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Bihar",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 207.52,
+          "footwearINRPerPersonMonth": 27.6,
+          "combinedINRPerPersonMonth": 235.12,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 264.86,
+          "footwearINRPerPersonMonth": 36.39,
+          "combinedINRPerPersonMonth": 301.25,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Chhattisgarh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 184.63,
+          "footwearINRPerPersonMonth": 28.67,
+          "combinedINRPerPersonMonth": 213.3,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 287.18,
+          "footwearINRPerPersonMonth": 44.8,
+          "combinedINRPerPersonMonth": 331.98,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Delhi",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 365.99,
+          "footwearINRPerPersonMonth": 53.78,
+          "combinedINRPerPersonMonth": 419.77,
+          "statement": "3R",
+          "reportPage": "S4"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 380.06,
+          "footwearINRPerPersonMonth": 64.35,
+          "combinedINRPerPersonMonth": 444.41,
+          "statement": "3U",
+          "reportPage": "S10"
+        }
+      }
+    },
+    {
+      "state": "Goa",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 343.61,
+          "footwearINRPerPersonMonth": 58.81,
+          "combinedINRPerPersonMonth": 402.42,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 438.72,
+          "footwearINRPerPersonMonth": 79.48,
+          "combinedINRPerPersonMonth": 518.2,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Gujarat",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 243.32,
+          "footwearINRPerPersonMonth": 40.53,
+          "combinedINRPerPersonMonth": 283.85,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 353.31,
+          "footwearINRPerPersonMonth": 60.91,
+          "combinedINRPerPersonMonth": 414.22,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Haryana",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 291.2,
+          "footwearINRPerPersonMonth": 71.24,
+          "combinedINRPerPersonMonth": 362.44,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 473.31,
+          "footwearINRPerPersonMonth": 118.29,
+          "combinedINRPerPersonMonth": 591.6,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Himachal Pradesh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 340.83,
+          "footwearINRPerPersonMonth": 93.11,
+          "combinedINRPerPersonMonth": 433.94,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 579.94,
+          "footwearINRPerPersonMonth": 134.54,
+          "combinedINRPerPersonMonth": 714.48,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Jharkhand",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 175.36,
+          "footwearINRPerPersonMonth": 27.73,
+          "combinedINRPerPersonMonth": 203.09,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 322.11,
+          "footwearINRPerPersonMonth": 51.29,
+          "combinedINRPerPersonMonth": 373.4,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Karnataka",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 231.22,
+          "footwearINRPerPersonMonth": 41.95,
+          "combinedINRPerPersonMonth": 273.17,
+          "statement": "3R",
+          "reportPage": "S5"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 315.29,
+          "footwearINRPerPersonMonth": 58.93,
+          "combinedINRPerPersonMonth": 374.22,
+          "statement": "3U",
+          "reportPage": "S11"
+        }
+      }
+    },
+    {
+      "state": "Kerala",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 291.71,
+          "footwearINRPerPersonMonth": 51.94,
+          "combinedINRPerPersonMonth": 343.65,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 310.82,
+          "footwearINRPerPersonMonth": 57.86,
+          "combinedINRPerPersonMonth": 368.68,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Madhya Pradesh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 219.13,
+          "footwearINRPerPersonMonth": 41.57,
+          "combinedINRPerPersonMonth": 260.7,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 303.11,
+          "footwearINRPerPersonMonth": 58.05,
+          "combinedINRPerPersonMonth": 361.16,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Maharashtra",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 229.87,
+          "footwearINRPerPersonMonth": 42.15,
+          "combinedINRPerPersonMonth": 272.02,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 333.79,
+          "footwearINRPerPersonMonth": 62.56,
+          "combinedINRPerPersonMonth": 396.35,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Manipur",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 206.04,
+          "footwearINRPerPersonMonth": 57.1,
+          "combinedINRPerPersonMonth": 263.14,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 297.73,
+          "footwearINRPerPersonMonth": 68.03,
+          "combinedINRPerPersonMonth": 365.76,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Meghalaya",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 240.58,
+          "footwearINRPerPersonMonth": 63.19,
+          "combinedINRPerPersonMonth": 303.77,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 421.51,
+          "footwearINRPerPersonMonth": 110.58,
+          "combinedINRPerPersonMonth": 532.09,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Mizoram",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 295.91,
+          "footwearINRPerPersonMonth": 123.32,
+          "combinedINRPerPersonMonth": 419.23,
+          "statement": "3R",
+          "reportPage": "S6"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 436.95,
+          "footwearINRPerPersonMonth": 172.53,
+          "combinedINRPerPersonMonth": 609.48,
+          "statement": "3U",
+          "reportPage": "S12"
+        }
+      }
+    },
+    {
+      "state": "Nagaland",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 421.74,
+          "footwearINRPerPersonMonth": 158.75,
+          "combinedINRPerPersonMonth": 580.49,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 610.29,
+          "footwearINRPerPersonMonth": 197.74,
+          "combinedINRPerPersonMonth": 808.03,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Odisha",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 219.51,
+          "footwearINRPerPersonMonth": 29.53,
+          "combinedINRPerPersonMonth": 249.04,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 358.72,
+          "footwearINRPerPersonMonth": 59.74,
+          "combinedINRPerPersonMonth": 418.46,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Punjab",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 318.85,
+          "footwearINRPerPersonMonth": 92.4,
+          "combinedINRPerPersonMonth": 411.25,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 419.13,
+          "footwearINRPerPersonMonth": 110.47,
+          "combinedINRPerPersonMonth": 529.6,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Rajasthan",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 243.11,
+          "footwearINRPerPersonMonth": 50.54,
+          "combinedINRPerPersonMonth": 293.65,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 338.03,
+          "footwearINRPerPersonMonth": 66.85,
+          "combinedINRPerPersonMonth": 404.88,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Sikkim",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 523.99,
+          "footwearINRPerPersonMonth": 153.06,
+          "combinedINRPerPersonMonth": 677.05,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 749.53,
+          "footwearINRPerPersonMonth": 221.8,
+          "combinedINRPerPersonMonth": 971.33,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Tamil Nadu",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 269.27,
+          "footwearINRPerPersonMonth": 36.57,
+          "combinedINRPerPersonMonth": 305.84,
+          "statement": "3R",
+          "reportPage": "S7"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 319.82,
+          "footwearINRPerPersonMonth": 50.25,
+          "combinedINRPerPersonMonth": 370.07,
+          "statement": "3U",
+          "reportPage": "S13"
+        }
+      }
+    },
+    {
+      "state": "Telangana",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 347.96,
+          "footwearINRPerPersonMonth": 39.41,
+          "combinedINRPerPersonMonth": 387.37,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 361.15,
+          "footwearINRPerPersonMonth": 57.27,
+          "combinedINRPerPersonMonth": 418.42,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "Tripura",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 490.06,
+          "footwearINRPerPersonMonth": 69.62,
+          "combinedINRPerPersonMonth": 559.68,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 560.99,
+          "footwearINRPerPersonMonth": 94.09,
+          "combinedINRPerPersonMonth": 655.08,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "Uttar Pradesh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 203.37,
+          "footwearINRPerPersonMonth": 35.83,
+          "combinedINRPerPersonMonth": 239.2,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 296.14,
+          "footwearINRPerPersonMonth": 50.99,
+          "combinedINRPerPersonMonth": 347.13,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "Uttarakhand",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 336.09,
+          "footwearINRPerPersonMonth": 66.33,
+          "combinedINRPerPersonMonth": 402.42,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 395.56,
+          "footwearINRPerPersonMonth": 81.72,
+          "combinedINRPerPersonMonth": 477.28,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "West Bengal",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 226.12,
+          "footwearINRPerPersonMonth": 28.5,
+          "combinedINRPerPersonMonth": 254.62,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 325.93,
+          "footwearINRPerPersonMonth": 45.69,
+          "combinedINRPerPersonMonth": 371.62,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "Andaman and Nicobar Islands",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 377.86,
+          "footwearINRPerPersonMonth": 63.77,
+          "combinedINRPerPersonMonth": 441.63,
+          "statement": "3R",
+          "reportPage": "S8"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 488.12,
+          "footwearINRPerPersonMonth": 80.78,
+          "combinedINRPerPersonMonth": 568.9,
+          "statement": "3U",
+          "reportPage": "S14"
+        }
+      }
+    },
+    {
+      "state": "Chandigarh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 750.01,
+          "footwearINRPerPersonMonth": 108.86,
+          "combinedINRPerPersonMonth": 858.87,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 908.04,
+          "footwearINRPerPersonMonth": 202.88,
+          "combinedINRPerPersonMonth": 1110.92,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    },
+    {
+      "state": "Dadra and Nagar Haveli and Daman and Diu",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 281.66,
+          "footwearINRPerPersonMonth": 42.1,
+          "combinedINRPerPersonMonth": 323.76,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 399.46,
+          "footwearINRPerPersonMonth": 54.97,
+          "combinedINRPerPersonMonth": 454.43,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    },
+    {
+      "state": "Jammu and Kashmir",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 304.75,
+          "footwearINRPerPersonMonth": 61.49,
+          "combinedINRPerPersonMonth": 366.24,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 359.3,
+          "footwearINRPerPersonMonth": 71.56,
+          "combinedINRPerPersonMonth": 430.86,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    },
+    {
+      "state": "Ladakh",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 247,
+          "footwearINRPerPersonMonth": 49.99,
+          "combinedINRPerPersonMonth": 296.99,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 350.29,
+          "footwearINRPerPersonMonth": 75.66,
+          "combinedINRPerPersonMonth": 425.95,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    },
+    {
+      "state": "Lakshadweep",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 312.81,
+          "footwearINRPerPersonMonth": 57.78,
+          "combinedINRPerPersonMonth": 370.59,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 255.89,
+          "footwearINRPerPersonMonth": 40.32,
+          "combinedINRPerPersonMonth": 296.21,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    },
+    {
+      "state": "Puducherry",
+      "referencePeriod": "2023-24",
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sectors": {
+        "rural": {
+          "clothingBeddingINRPerPersonMonth": 303.33,
+          "footwearINRPerPersonMonth": 56.87,
+          "combinedINRPerPersonMonth": 360.2,
+          "statement": "3R",
+          "reportPage": "S9"
+        },
+        "urban": {
+          "clothingBeddingINRPerPersonMonth": 347.87,
+          "footwearINRPerPersonMonth": 62.45,
+          "combinedINRPerPersonMonth": 410.32,
+          "statement": "3U",
+          "reportPage": "S15"
+        }
+      }
+    }
+  ]
+}

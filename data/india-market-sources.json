@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "sources": [
     {
       "id": "census-2011-pca-town-ward",
@@ -58,14 +58,14 @@
     {
       "id": "mospi-hces-2023-24-report-592",
       "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
-      "title": "Household Consumption Expenditure Survey 2023-24, Report No. 592",
+      "title": "Household Consumption Expenditure Survey 2023-24, NSS Report No. 592",
       "url": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
       "downloadUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
-      "referencePeriod": "2023-08 to 2024-07; released 2025-01-31",
+      "referencePeriod": "2023-08 to 2024-07",
       "releaseDate": "2025-01-31",
-      "geography": "India and published state/sector aggregates; rural and urban estimates",
-      "updateFrequency": "Periodic household survey; not annual for every published breakdown",
-      "licenseNote": "Official MoSPI publication; cite report number, table/statement, period and release date.",
+      "geography": "India and all 36 State/UTs, rural and urban sector (published summary tables)",
+      "updateFrequency": "Periodic household survey; not annual at every published detail",
+      "licenseNote": "MoSPI e-Sankhyiki catalog identifies the HCES product under revised GSDD guidelines (NDSAP 2012). Report No. 592, Statements 3R/3U; attribute MoSPI and retain table/page references.",
       "variables": [
         "monthly per-capita consumption expenditure",
         "clothing and bedding",
@@ -74,16 +74,19 @@
         "imputation status"
       ],
       "limitations": [
-        "Survey estimates at published geographies; not PIN-level observations.",
+        "HCES estimates are survey aggregates at State/UT-sector resolution; not district, city or PIN measurements.",
         "Clothing and bedding excludes tailoring charges.",
-        "Broad consumption groups are not brand-specific demand or household income.",
-        "Statement 10U imputed values are separate from Statements 3R/3U without imputation."
+        "Do not interpret category expenditure as brand demand or actual franchise sales.",
+        "Without-imputation values are used for the map."
       ],
       "evidenceClass": "official_survey_estimate",
       "geographyPipeline": {
         "manifest": "data/india-geography/manifest.json",
+        "artifact": "data/india-geography/hces-state-sector.json",
+        "benchmarkCatalog": "data/india-market-benchmarks.json",
         "datasetId": "hces-2023-24-state-sector",
-        "status": "unavailable"
+        "status": "unavailable",
+        "coverage": "Benchmark extract covers 36 State/UTs × rural and urban; no spatial state_sector geography records are seeded."
       }
     },
     {
@@ -198,8 +201,15 @@
       "geography": "36 states and 717 districts; source codes aligned to Census 2011 with post-2011 district additions",
       "updateFrequency": "Service metadata; query availability and update frequency not confirmed",
       "licenseNote": "Government service metadata is public; explicit reuse and redistribution terms were not verified. No feature artifact retained.",
-      "variables": ["state geometry", "district geometry", "Census 2011 administrative codes"],
-      "limitations": ["Feature query timed out with no response during implementation.", "October 2017 boundaries omit later district changes; no Census population crosswalk validated."],
+      "variables": [
+        "state geometry",
+        "district geometry",
+        "Census 2011 administrative codes"
+      ],
+      "limitations": [
+        "Feature query timed out with no response during implementation.",
+        "October 2017 boundaries omit later district changes; no Census population crosswalk validated."
+      ],
       "evidenceClass": "official_observed",
       "geographyPipeline": {
         "manifest": "data/india-geography/manifest.json",
@@ -293,6 +303,57 @@
         "manifest": "data/india-geography/manifest.json",
         "datasetId": "official-state-projections",
         "status": "unavailable"
+      }
+    },
+    {
+      "id": "geoboundaries-ind-adm1",
+      "publisher": "geoBoundaries; underlying source: DataMeet India community / Election Commission of India",
+      "title": "India ADM1 State and Union Territory Boundaries (simplified)",
+      "url": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM1/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "referencePeriod": "Boundary vintage 2011; source data updated 2023-01-19; build 2023-12-12",
+      "geography": "36 state and UT polygons, WGS84 longitude/latitude",
+      "updateFrequency": "Versioned source; refresh only after metadata and license review",
+      "licenseNote": "CC BY 2.5 India for underlying DataMeet India/Election Commission source; attribute source and geoBoundaries. Simplified geometry is for overview mapping, not legal/cadastral use.",
+      "variables": [
+        "state and UT polygons",
+        "source ISO subdivision code",
+        "source boundary ID"
+      ],
+      "limitations": [
+        "Cartographic simplification reduces boundary detail.",
+        "2011 boundary vintage does not guarantee alignment with later admin or Census geography changes."
+      ],
+      "evidenceClass": "derived_geometry",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "geoboundaries-india-adm1",
+        "status": "available"
+      }
+    },
+    {
+      "id": "census-state-population-2011",
+      "publisher": "Ministry of Health and Family Welfare; source data from Office of the Registrar General & Census Commissioner, India",
+      "title": "State-wise Rural and Urban Population as per 2001 and 2011 Census, Table 2",
+      "url": "https://nhm.gov.in/images/pdf/monitoring/rhs/rhs-march-2011-tables-final-9-4-2012.pdf",
+      "referencePeriod": "Census 2011",
+      "geography": "State/UT, rural and urban",
+      "updateFrequency": "Decennial Census; historical baseline",
+      "licenseNote": "Aggregate values are cited and attributed to the Census. OGD catalog entry for state/UT rural-urban Census 2011 data is https://www.data.gov.in/resource/stateut-wise-rural-and-urban-population-census-2011-and-estimation-mid-year-population. Dataset values are used only where a geographic crosswalk is defensible.",
+      "variables": [
+        "rural population",
+        "urban population",
+        "total population"
+      ],
+      "limitations": [
+        "2011 historic values; not current population.",
+        "Legacy AP and J&K counts are not split across later geographies; unavailable values remain missing."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "census-state-population-2011",
+        "status": "available"
       }
     }
   ]

@@ -5,7 +5,7 @@
   const ZOOMS = [3.5, 6, 9, 12, 14];
   const METRICS = {
     population: 'Population', populationDensity: 'Population density', households: 'Households',
-    monthlyPerCapitaSpend: 'Monthly per-capita apparel spend', incomeProxy: 'Purchasing power / income proxy · modeled', tam: 'Annual TAM · modeled',
+    monthlyPerCapitaSpend: 'Monthly per-capita clothing & footwear spend', incomeProxy: 'Purchasing power / income proxy · modeled', apparelExpenditure: 'Annual clothing & footwear expenditure · estimated', tam: 'Annual TAM · modeled',
     sam: 'Annual SAM · modeled', som: 'Annual SOM · modeled', competitorCount: 'Competition · supply indicator', saturation: 'Competition / saturation',
     revenue: 'Store revenue · scenario', revenuePerKm2: 'Expected franchise revenue per km² · scenario',
     growthPotential3Year: '3-year growth potential · scenario', growthPotential5Year: '5-year growth potential · scenario',
@@ -48,7 +48,7 @@
     const resolutions = [...new Set(evidence.map(e => e.geographicResolution || e.geography?.level).filter(Boolean))];
     const groups = [
       ['Demographics', ['population','populationDensity','households','malePopulation','femalePopulation','ageGroups']],
-      ['Spend and modeled demand', ['monthlyPerCapitaSpend','incomeProxy','tam','sam','som']],
+      ['Spend and modeled demand', ['monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som']],
       ['Competition and store economics', ['competitorCount','saturation','revenue','revenuePerKm2','breakEvenRevenue','paybackMonths','viability']],
       ['Growth scenarios', ['growthPotential3Year','growthPotential5Year']]
     ];
@@ -94,7 +94,7 @@
   function mount({ container, onSelect = () => {}, onViewport = () => {}, options = {} }) {
     const lib = options.maplibre || root.maplibregl;
     if (!lib) throw Error('Self-hosted MapLibre is unavailable. Reload to retry.');
-    let features = [], metric = options.metric || 'population', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup;
+    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup;
     const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17,
       style: { version: 8, sources: {}, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } }] },
       attributionControl: true });
@@ -112,7 +112,7 @@
     map.on('load', () => {
       if (destroyed) return;
       map.addSource('market-geographies', { type: 'geojson', data: data() });
-      map.addLayer({ id: 'market-fill', type: 'fill', source: 'market-geographies', filter: ['==',['geometry-type'],'Polygon'], paint: { 'fill-color': ['get','color'], 'fill-opacity': 0.82 } });
+      map.addLayer({ id: 'market-fill', type: 'fill', source: 'market-geographies', paint: { 'fill-color': ['get','color'], 'fill-opacity': 0.82 } });
       map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': 1 } });
       map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': ['get','color'], 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
       map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#143f35', 'line-width': 3 }, filter: ['==',['get','id'],''] });
@@ -145,7 +145,7 @@
           <button class="button small" type="button" data-map-national>India · reset</button></div>
         <section class="panel expansion-place-search"><form data-map-global-form><label>Find a place across India<input class="input" data-map-global-query type="search" minlength="2" maxlength="100" required placeholder="State, district, city or PIN"></label><button class="button small" type="submit">Search India ↗</button></form><div data-map-global-results aria-live="polite"></div></section>
         <div class="expansion-map-frame panel"><div class="expansion-map" data-map-canvas aria-label="India market map. Use the area list for keyboard selection."></div>
-          <div class="expansion-map-caption">Source boundaries only · no external basemap</div></div>
+          <div class="expansion-map-caption">Boundaries: geoBoundaries simplified ADM1 · CC BY 2.5 India · underlying source: DataMeet India / Election Commission of India. Values: Census 2011 and MoSPI HCES 2023-24. Annual expenditure is a market estimate, not store sales.</div></div>
         <div class="expansion-legend panel" data-map-legend aria-label="Fixed national scale"></div>
         <div class="expansion-status" role="status" aria-live="polite" data-map-status>Loading sourced state aggregates…</div>
         <div class="expansion-breadcrumbs" data-map-path></div>
@@ -156,6 +156,7 @@
             <label>Horizon · assumption<select class="input" name="horizonYears"><option value="0">Baseline</option><option value="3">3 years</option><option value="5">5 years</option></select></label>
             <label>Scenario case · assumption<select class="input" name="scenario"><option value="base">Base</option><option value="conservative">Conservative</option><option value="optimistic">Optimistic</option></select></label>
             <label>Elasticity · assumption<select class="input" name="elasticity">${[0.5,0.75,1,1.25].map(v => `<option value="${v}" ${v===1?'selected':''}>${v.toFixed(2)}</option>`).join('')}</select></label>
+            <label>Apparel segment · assumption<select class="input" name="apparelSegment"><option value="value-fashion">Value fashion</option><option value="mass-market-family-apparel" selected>Mass-market family apparel</option><option value="mid-market-casualwear">Mid-market casualwear</option><option value="premium-fashion">Premium fashion</option><option value="ethnic-occasion-wear">Ethnic and occasion wear</option><option value="childrens-apparel">Children's apparel</option><option value="footwear-accessories">Footwear and accessories</option></select></label>
             <label>Target demographics · assumption<input class="input" name="targetDemographics" placeholder="Describe audience; no unsupported splits"></label>
             <label>Capture rate · fraction, assumption<input class="input" type="number" name="captureRate" min="0" max="1" step="any" placeholder="0–1"></label>
             <label>AOV · ₹/transaction, assumption<input class="input" type="number" name="aov" min="0.01" step="any" placeholder="Missing"></label>
@@ -181,13 +182,15 @@
         <section class="panel expansion-detail"><div data-map-detail aria-live="polite"><h2>Select an area</h2><p class="hint">Inspect the evidence before drawing an investment conclusion. Missing metrics stay unavailable.</p></div>
           <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add to comparison</button></div></section>
         <section class="panel expansion-compare"><h2>Compare places</h2><p class="hint">Select 2–4 areas. Overlap and missing evidence must be reviewed.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></section>
+        <section class="panel expansion-research"><h2>Market research</h2><p class="hint">Gemini search-grounded context supplements sourced statistics and does not change calculations.</p><div data-map-research aria-live="polite"><p>Select a location to load research.</p></div><button class="button small" type="button" data-map-refresh-research disabled>Refresh research</button>
+          <form data-map-ask-form><label>Ask Market Intelligence<textarea class="input" name="question" rows="3" maxlength="2000" required placeholder="What evidence supports this opportunity? What additional evidence is needed?"></textarea></label><button class="button small" type="submit" data-map-ask disabled>Ask</button></form><div data-map-answer aria-live="polite"></div></section>
       </aside></div>`;
   }
 
   function mountPage({ container, workspaceId, options = {} }) {
-    let year = options.year || new Date().getFullYear(), metric = 'population', scenario = 'base', appliedScenario = 'base';
+    let year = options.year || new Date().getFullYear(), metric = 'apparelExpenditure', scenario = 'base', appliedScenario = 'base';
     let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
-    let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, searchResults = [];
+    let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [];
     let level = 'state', sourceVersion, currentLegend, map;
     const legends = new Map(), compared = new Map(), aborters = new Map();
     container.innerHTML = pageHTML(year);
@@ -203,6 +206,40 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw Error(result.error || `Market map API returned ${response.status}`);
       return result;
+    }
+    function currentAssumptions() {
+      const values = new FormData($('[data-map-scenario-form]')), assumptions = { evidenceClass:'user_assumption' };
+      for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate','travelTimeMinutes']) { const value = values.get(key); if (value !== '') assumptions[key] = Number(value); }
+      const targetDemographics = String(values.get('targetDemographics') || '').trim(); if (targetDemographics) assumptions.targetDemographics = targetDemographics;
+      return assumptions;
+    }
+    function citationsHTML(citations) {
+      return list(citations).map(c => { const url = safeUrl(c?.url); return url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(c.title || url)} ↗</a>` : ''; }).filter(Boolean).join(' · ');
+    }
+    function researchHTML(result) {
+      const cards = list(result.cards);
+      return `${result.cached ? '<p class="hint">Cached research</p>' : ''}${cards.map(card => `<article class="expansion-insight"><h3>${escape(card.headline)}</h3><p>${escape(card.insight)}</p><p><strong>Action:</strong> ${escape(card.implication)}</p><small>Evidence strength: ${escape(card.confidence)} · ${escape(card.referenceDate || result.retrievedAt || 'date unavailable')}</small><div>${citationsHTML(list(card.evidenceUrls).map(url => (result.citations || []).find(c => c.url === url)).filter(Boolean))}</div></article>`).join('') || '<p class="hint">No cited research cards were returned.</p>'}<small>Retrieved ${escape(result.retrievedAt || 'date unavailable')} · model ${escape(result.modelVersion || 'unavailable')}</small>`;
+    }
+    async function loadResearch(geographyId, refresh = false) {
+      const revision = ++researchRevision;
+      $('[data-map-research]').innerHTML = '<p>Searching public sources and checking evidence…</p>';
+      $('[data-map-refresh-research]').disabled = false; $('[data-map-ask]').disabled = false;
+      try {
+        const result = await request('research', `/api/market/map/geographies/${encodeURIComponent(geographyId)}/research`, { segment:$('[name="apparelSegment"]').value, assumptions:currentAssumptions(), refresh });
+        if (destroyed || revision !== researchRevision || selected !== String(geographyId)) return;
+        $('[data-map-research]').innerHTML = researchHTML(result);
+      } catch (error) {
+        if (destroyed || revision !== researchRevision || selected !== String(geographyId) || error.name === 'AbortError') return;
+        $('[data-map-research]').innerHTML = `<p class="hint">${escape(error.message)} Research is optional; sourced metrics and forecasts remain available.</p>`;
+      }
+    }
+    async function askMarket(question) {
+      if (!selected) return;
+      $('[data-map-answer]').textContent = 'Checking assessment evidence…';
+      try {
+        const result = await request('ask', `/api/market/map/geographies/${encodeURIComponent(selected)}/ask`, { question, segment:$('[name="apparelSegment"]').value, assumptions:currentAssumptions() });
+        $('[data-map-answer]').innerHTML = `<p>${escape(result.answer || 'No answer returned.')}</p><div>${citationsHTML(result.citations)}</div><small>${escape(result.cached ? 'Cached' : 'Retrieved')} ${escape(result.retrievedAt || '')} · ${escape(result.modelVersion || '')}</small>`;
+      } catch (error) { if (error.name !== 'AbortError') $('[data-map-answer]').innerHTML = `<p class="hint">${escape(error.message)} Check the research configuration and selected location.</p>`; }
     }
     function renderLegend() {
       $('[data-map-legend]').innerHTML = `<strong>Fixed national scale · ${escape(label(metric))} · ${escape(year)}</strong><div class="expansion-legend-items">${currentLegend ? currentLegend.colors.map((color,i) => {
@@ -259,6 +296,7 @@
       map?.selectGeography(selected); renderAreas();
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
+      $('[data-map-research]').innerHTML = '<p>Loading location context…</p>'; $('[data-map-answer]').innerHTML = '';
       const query = new URLSearchParams({ workspaceId: workspaceId || '', year: String(year), scenario: appliedScenario });
       try {
         const result = await request('detail', `/api/market/map/geographies/${encodeURIComponent(id)}?${query}`);
@@ -268,6 +306,7 @@
         selectedDetail = { ...loaded, ...selectedDetail, id: selected };
         $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
         updateSelectionActions();
+        loadResearch(selected);
       } catch (error) {
         if (!destroyed && revision === detailRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-detail]').innerHTML = `<p>${escape(error.message)}</p><button class="text-button" type="button" data-map-retry-detail>Retry detail</button>`;
       }
@@ -299,6 +338,7 @@
       const values = new FormData(form), assumptions = { evidenceClass: 'user_assumption' };
       for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate','travelTimeMinutes']) { const value = values.get(key); if (value !== '') assumptions[key] = Number(value); }
       if (String(values.get('targetDemographics') || '').trim()) assumptions.targetDemographics = String(values.get('targetDemographics')).trim();
+      assumptions.apparelSegment = String(values.get('apparelSegment') || 'mass-market-family-apparel');
       const revision = ++scenarioRevision, context = ++contextRevision;
       levelRevision++; detailRevision++; compareRevision++; for (const c of aborters.values()) c.abort();
       clearResults(); features = []; map?.setFeatures([]); renderAreas();
@@ -356,9 +396,12 @@
       if ('mapAddCompare' in d && selectedDetail && compared.size < 4) { compared.set(selected,selectedDetail); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); button.disabled = true; }
       if ('mapRemove' in d) { compared.delete(d.mapRemove); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); $('[data-map-add-compare]').disabled = !selectedDetail || compared.has(selected) || compared.size>=4; }
       if ('mapCompare' in d) compare();
+      if ('mapRefreshResearch' in d && selected) loadResearch(selected, true);
     }
+    function submitQuestion(event) { event.preventDefault(); const question = $('[name="question"]').value.trim(); if (question) askMarket(question); }
     $('[data-map-search]').addEventListener('input', renderAreas);
     $('[data-map-global-form]').addEventListener('submit', searchPlaces);
+    $('[data-map-ask-form]').addEventListener('submit', submitQuestion);
     async function searchPlaces(event) {
       event.preventDefault();
       const query = $('[data-map-global-query]').value.trim(); if (query.length < 2) return;
@@ -386,7 +429,7 @@
     renderLegend(); renderCompared(); loadLevels();
     return { setMetric, setYear, setScenario, selectGeography,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; contextRevision++; searchRevision++; for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

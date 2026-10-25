@@ -11,13 +11,13 @@ const polygon = { type: 'Polygon', coordinates: [[[75,20],[77,20],[77,22],[75,22
 // Deliberately synthetic test geographies; never loaded by production code.
 const feature = (id, value, level = 'state', parentId = null) => ({
   id, name: `Test area ${id}`, level, parentId, geometry: polygon,
-  metrics: { population: { value, unit: 'people', evidenceClass: 'derived_estimate', referenceYear: 2011 } },
+  metrics: { population: { value, unit: 'people', evidenceClass: 'derived_estimate', referenceYear: 2011 }, apparelExpenditure: { value, unit:'INR/year', evidenceClass:'derived_estimate' } },
   confidence: 'low', evidence: [{ title: 'Test source', publisher: 'Fixture publisher', referenceYear: 2011,
     evidenceClass: 'derived_estimate', allocationMethod: 'areal_interpolation', uncertainty: 'high', url: 'https://example.org/source' }]
 });
 const levels = (features = [feature('a', 120), feature('b', null)], level = 'state') => ({
   level, sourceVersion: 'fixture-v1', features,
-  legend: { metric: 'population', year: 2026, scope: 'national', thresholds: [100,200], colors: ['#d9eee1','#6ba688','#185a44'], unit: 'people' }
+  legend: { metric: 'apparelExpenditure', year: 2026, scope: 'national', thresholds: [100,200], colors: ['#d9eee1','#6ba688','#185a44'], unit: 'INR/year' }
 });
 function mapDouble() {
   class Map {
@@ -70,6 +70,7 @@ test('national loading requests state aggregates and never requests PINs without
   const url = new URL(h.requests[0].url, 'http://localhost');
   assert.equal(url.pathname, '/api/market/map/levels');
   assert.ok(Number(url.searchParams.get('zoom')) < 6);
+  assert.equal(url.searchParams.get('metric'),'apparelExpenditure');
   assert.equal(url.searchParams.get('parentId'), null);
   h.map.zoom = 13; h.map.fire('moveend'); await tick();
   assert.ok(h.requests.every(r => Number(new URL(r.url,'http://localhost').searchParams.get('zoom')) < 6));
@@ -89,6 +90,15 @@ test('fixed national legend survives local extrema; null stays gray while zero i
   assert.equal(changed[1].properties.color, '#185a44');
   assert.equal(changed[2].properties.color, '#b9c1c5');
   assert.match(legend, /100/); assert.match(legend, /200/); assert.match(legend, /national/i);
+});
+
+test('visible fill layer accepts sourced MultiPolygon state boundaries', async t => {
+  const h = setup(); t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
+  const multi = feature('multi-state', 120);
+  multi.geometry = { type:'MultiPolygon', coordinates:[[[[75,19],[80,19],[80,25],[75,25],[75,19]]]] };
+  h.controller.setFeatures([multi]);
+  assert.equal(h.map.getSource('market-geographies').data.features[0].geometry.type, 'MultiPolygon');
+  assert.equal(h.map.layers['market-fill'].filter, undefined, 'the fill layer must not exclude MultiPolygon features');
 });
 
 test('click loads workspace detail, evidence popup is escaped, and unsupported metrics remain unavailable', async t => {
@@ -214,11 +224,12 @@ test('Expansion Intelligence navigation preserves classic applicant flow and loa
 });
 
 test('additional investment layers request their own metric and show missing evidence, vintage and resolution', async t => {
-  const f = feature('a',120); f.metrics.incomeProxy = { value:null, evidenceClass:'unavailable', warnings:['No compatible income proxy evidence'] };
+  const f = feature('a',120); f.metrics.apparelExpenditure = { value:null, evidenceClass:'unavailable' }; f.metrics.incomeProxy = { value:null, evidenceClass:'unavailable', warnings:['No compatible income proxy evidence'] };
   f.evidence[0].geographicResolution = 'state survey';
   const h = setup(url => url.includes('/geographies/') ? f : levels([f]));
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
   const expected = [
+    ['apparelExpenditure', /annual clothing.*footwear expenditure/i],
     ['incomeProxy', /purchasing power|income proxy/i], ['revenuePerKm2', /revenue.*km/i],
     ['saturation', /saturation/i], ['growthPotential3Year', /3.year growth/i], ['growthPotential5Year', /5.year growth/i]
   ];

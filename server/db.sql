@@ -122,3 +122,34 @@ CREATE TABLE IF NOT EXISTS market_competitors (
 
 CREATE INDEX IF NOT EXISTS market_competitors_assessment_idx
   ON market_competitors (assessment_id);
+
+-- Grounded Gemini research is versioned separately from deterministic market figures.
+CREATE TABLE IF NOT EXISTS market_research_records (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  geography_id uuid NOT NULL REFERENCES market_geographies(id) ON DELETE CASCADE,
+  geography_external_id text NOT NULL,
+  apparel_segment text NOT NULL,
+  assessment_id uuid REFERENCES market_assessments(id) ON DELETE SET NULL,
+  assessment_version integer,
+  assessment_key text NOT NULL,
+  model_version text NOT NULL,
+  context_hash text NOT NULL,
+  record_type text NOT NULL CHECK (record_type IN ('cards','answer')),
+  prompt_hash text NOT NULL DEFAULT '',
+  result jsonb NOT NULL,
+  retrieved_at timestamptz NOT NULL DEFAULT now(),
+  stale boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS market_research_cache_idx
+  ON market_research_records (geography_external_id, apparel_segment, assessment_key, model_version, context_hash, record_type, stale, retrieved_at DESC);
+
+CREATE TABLE IF NOT EXISTS market_research_evidence (
+  research_id uuid NOT NULL REFERENCES market_research_records(id) ON DELETE CASCADE,
+  url text NOT NULL,
+  title text,
+  publication_date text,
+  retrieved_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (research_id, url)
+);

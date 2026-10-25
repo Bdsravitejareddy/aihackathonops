@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.1",
+  "version": "1.1.2",
   "retrievedAt": "2026-10-25",
   "datasets": [
     {
@@ -105,11 +105,19 @@
       },
       "status": "unavailable",
       "artifact": null,
-      "coverage": { "featureCount": 0, "rowCount": 0, "populationTotal": null },
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
       "knownGaps": [
         "Official NIC MapServer metadata verified and advertises GeoJSON query support, but the feature query timed out with no response during implementation. No geometries were obtained, validated or copied into the application; service reuse terms are also unverified."
       ],
-      "variables": ["state geometry", "district geometry", "Census 2011 administrative codes"]
+      "variables": [
+        "state geometry",
+        "district geometry",
+        "Census 2011 administrative codes"
+      ]
     },
     {
       "id": "census-2011-pca",
@@ -250,15 +258,85 @@
         "populationTotal": null
       },
       "knownGaps": [
-        "Report downloaded HTTP 200, 11737505 bytes to temporary storage. Current policy response is a 2644-byte app shell; redistribution terms and table extraction not verified. No new all-state clothing/bedding or footwear rows ingested. Existing Karnataka benchmarks remain separate."
+        "State/sector clothing+bedding and footwear values are now extracted into the versioned HCES artifact and benchmark catalog. They are joined to the state map only; the source table is non-spatial and supplies no district, city or PIN observations. The separately named state_sector geography level is therefore not populated in market_geographies."
       ],
       "variables": [
         "clothing_bedding_mpce",
         "footwear_mpce"
       ]
+    },
+    {
+      "id": "geoboundaries-india-adm1",
+      "sourceId": "geoboundaries-ind-adm1",
+      "title": "geoBoundaries India ADM1, simplified geometry",
+      "publisher": "geoBoundaries; underlying source: DataMeet India community / Election Commission of India",
+      "sourceUrl": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM1/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "sourceVintage": "2011 boundary vintage; source data updated 2023-01-19; build 2023-12-12",
+      "level": "state",
+      "featureLevel": "state",
+      "codeScheme": "ISO 3166-2 shapeISO; source shapeID retained",
+      "license": {
+        "status": "verified",
+        "url": "https://creativecommons.org/licenses/by/2.5/in/",
+        "note": "Underlying DataMeet India community / Election Commission of India boundary data is marked CC BY 2.5 India. Attribute geoBoundaries and the underlying source; see the linked API metadata. Geometry is a simplified derivative."
+      },
+      "status": "available",
+      "artifact": "data/india-geography/india-state-features.geojson",
+      "sha256": "d7bf21b53522c69dec63129422e04122a4e97e9f38d77fafd659ee95d7c5bb92",
+      "coverage": {
+        "featureCount": 36,
+        "rowCount": 36,
+        "populationTotal": 1112978963,
+        "mappedPopulationGeographies": 32,
+        "sourcePopulationTotal": 1210193422,
+        "hcesStateSectorRows": 36
+      },
+      "knownGaps": [
+        "Boundary is simplified and is for cartographic display, not cadastral/legal determination.",
+        "Population coverage is partial: legacy Andhra Pradesh and Jammu and Kashmir cannot be split into later boundaries from the state-level table; their successor geographies remain missing.",
+        "Population is Census 2011, while apparel expenditure is HCES 2023-24; annual estimates are hybrid and high uncertainty.",
+        "Households, age bands, income proxies, district and PIN mappings, local competition and observed footfall are not integrated."
+      ],
+      "variables": [
+        "state/UT geometry",
+        "Census 2011 population rural/urban where geography matches",
+        "HCES 2023-24 rural/urban clothing+bedding and footwear MPCE",
+        "derived annual clothing/footwear expenditure"
+      ]
     }
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "id": "geoboundaries-ind-adm1-source",
+      "title": "Pinned geoBoundaries India ADM1 simplified source GeoJSON",
+      "publisher": "geoBoundaries; underlying source: DataMeet India / Election Commission of India",
+      "path": "data/india-geography/sources/geoBoundaries-IND-ADM1-simplified.geojson",
+      "sourceUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "license": "CC BY 2.5 India",
+      "sha256": "4c63fe43294a391e8f2de4e9f86f3edb60f8688275b9fee90c61fb2aa0c26061"
+    },
+    {
+      "id": "census-state-population-2011",
+      "title": "State-wise Rural and Urban Population as per 2001 and 2011 Census",
+      "publisher": "Ministry of Health and Family Welfare, Government of India; source data attributed to the Office of the Registrar General & Census Commissioner, India",
+      "path": "data/india-geography/census-state-population-2011.json",
+      "sourceUrl": "https://nhm.gov.in/images/pdf/monitoring/rhs/rhs-march-2011-tables-final-9-4-2012.pdf",
+      "referencePeriod": "2011",
+      "license": "Government publication; numeric observations are attributed to Census of India. No open-data license was established for redistribution of the report itself.",
+      "sha256": "1fb13466f5edc0ce9532b344410521e58899ed108224a41dae2e0cb72b31335c"
+    },
+    {
+      "id": "hces-state-sector-2023-24",
+      "title": "Household Consumption Expenditure Survey 2023-24, NSS Report No. 592",
+      "publisher": "Ministry of Statistics and Programme Implementation",
+      "path": "data/india-geography/hces-state-sector.json",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "referencePeriod": "2023-24",
+      "license": "Government statistical publication; link and attribute NSS Report 592, Tables 3R/3U.",
+      "sha256": "df3ae9e3e7e9a2ae253ffe321a445361ad247f7c268415b0ab547d6d15c084a8"
+    }
+  ],
   "geographies": [],
   "relationships": [],
   "backendContract": {

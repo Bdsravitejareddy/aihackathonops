@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "observations": [
     {
       "sourceId": "mospi-hces-2023-24-report-592",
@@ -7,13 +7,20 @@
       "value": 273.17,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "rural"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3R",
       "page": "S5",
       "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
-      "components": { "clothing_bedding": 231.22, "footwear": 41.95 },
+      "components": {
+        "clothing_bedding": 231.22,
+        "footwear": 41.95
+      },
       "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
     },
     {
@@ -22,13 +29,20 @@
       "value": 374.22,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "urban"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3U",
       "page": "S11",
       "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
-      "components": { "clothing_bedding": 315.29, "footwear": 58.93 },
+      "components": {
+        "clothing_bedding": 315.29,
+        "footwear": 58.93
+      },
       "notes": "Sum of published clothing and bedding and footwear MPCE; clothing and bedding excludes tailoring charges."
     },
     {
@@ -37,7 +51,11 @@
       "value": 231.22,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "rural"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3R",
@@ -51,7 +69,11 @@
       "value": 41.95,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "rural" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "rural"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3R",
@@ -64,7 +86,11 @@
       "value": 315.29,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "urban"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3U",
@@ -78,7 +104,11 @@
       "value": 58.93,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "urban"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "without_imputation",
       "statement": "3U",
@@ -91,7 +121,11 @@
       "value": 317.61,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "urban"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "with_imputation",
       "statement": "10U",
@@ -105,12 +139,4636 @@
       "value": 59.53,
       "unit": "INR/person/month",
       "referencePeriod": "2023-24",
-      "geography": { "level": "state_sector", "state": "Karnataka", "sector": "urban" },
+      "geography": {
+        "level": "state_sector",
+        "state": "Karnataka",
+        "sector": "urban"
+      },
       "evidenceClass": "official_survey_estimate",
       "imputation": "with_imputation",
       "statement": "10U",
       "page": "S45",
       "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf"
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 252.18,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 252.18,
+        "footwear": 36.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 36.15,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 252.18,
+        "footwear": 36.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 288.33,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 252.18,
+        "footwear": 36.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 315.4,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 315.4,
+        "footwear": 48.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 48.1,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 315.4,
+        "footwear": 48.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 363.5,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andhra Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 315.4,
+        "footwear": 48.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 353.12,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.12,
+        "footwear": 62.28
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 62.28,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.12,
+        "footwear": 62.28
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 415.4,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.12,
+        "footwear": 62.28
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 458,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 458,
+        "footwear": 79.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 79.45,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 458,
+        "footwear": 79.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 537.45,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Arunachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 458,
+        "footwear": 79.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 235.04,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 235.04,
+        "footwear": 32.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 32.41,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 235.04,
+        "footwear": 32.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 267.45,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 235.04,
+        "footwear": 32.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 358.81,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.81,
+        "footwear": 46.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 46.15,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.81,
+        "footwear": 46.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 404.96,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Assam",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.81,
+        "footwear": 46.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 207.52,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 207.52,
+        "footwear": 27.6
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 27.6,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 207.52,
+        "footwear": 27.6
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 235.12,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 207.52,
+        "footwear": 27.6
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 264.86,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 264.86,
+        "footwear": 36.39
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 36.39,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 264.86,
+        "footwear": 36.39
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 301.25,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Bihar",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 264.86,
+        "footwear": 36.39
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 184.63,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 184.63,
+        "footwear": 28.67
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 28.67,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 184.63,
+        "footwear": 28.67
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 213.3,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 184.63,
+        "footwear": 28.67
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 287.18,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 287.18,
+        "footwear": 44.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 44.8,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 287.18,
+        "footwear": 44.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 331.98,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chhattisgarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 287.18,
+        "footwear": 44.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 365.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 365.99,
+        "footwear": 53.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 53.78,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 365.99,
+        "footwear": 53.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 419.77,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S4",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 365.99,
+        "footwear": 53.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 380.06,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 380.06,
+        "footwear": 64.35
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 64.35,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 380.06,
+        "footwear": 64.35
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 444.41,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Delhi",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S10",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 380.06,
+        "footwear": 64.35
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 343.61,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 343.61,
+        "footwear": 58.81
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 58.81,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 343.61,
+        "footwear": 58.81
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 402.42,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 343.61,
+        "footwear": 58.81
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 438.72,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 438.72,
+        "footwear": 79.48
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 79.48,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 438.72,
+        "footwear": 79.48
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 518.2,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Goa",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 438.72,
+        "footwear": 79.48
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 243.32,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.32,
+        "footwear": 40.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 40.53,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.32,
+        "footwear": 40.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 283.85,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.32,
+        "footwear": 40.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 353.31,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.31,
+        "footwear": 60.91
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 60.91,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.31,
+        "footwear": 60.91
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 414.22,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Gujarat",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 353.31,
+        "footwear": 60.91
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 291.2,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.2,
+        "footwear": 71.24
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 71.24,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.2,
+        "footwear": 71.24
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 362.44,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.2,
+        "footwear": 71.24
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 473.31,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 473.31,
+        "footwear": 118.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 118.29,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 473.31,
+        "footwear": 118.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 591.6,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Haryana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 473.31,
+        "footwear": 118.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 340.83,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 340.83,
+        "footwear": 93.11
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 93.11,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 340.83,
+        "footwear": 93.11
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 433.94,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 340.83,
+        "footwear": 93.11
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 579.94,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 579.94,
+        "footwear": 134.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 134.54,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 579.94,
+        "footwear": 134.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 714.48,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Himachal Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 579.94,
+        "footwear": 134.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 175.36,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 175.36,
+        "footwear": 27.73
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 27.73,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 175.36,
+        "footwear": 27.73
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 203.09,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S5",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 175.36,
+        "footwear": 27.73
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 322.11,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 322.11,
+        "footwear": 51.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 51.29,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 322.11,
+        "footwear": 51.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 373.4,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jharkhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S11",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 322.11,
+        "footwear": 51.29
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 291.71,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.71,
+        "footwear": 51.94
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 51.94,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.71,
+        "footwear": 51.94
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 343.65,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 291.71,
+        "footwear": 51.94
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 310.82,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 310.82,
+        "footwear": 57.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 57.86,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 310.82,
+        "footwear": 57.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 368.68,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Kerala",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 310.82,
+        "footwear": 57.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 219.13,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.13,
+        "footwear": 41.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 41.57,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.13,
+        "footwear": 41.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 260.7,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.13,
+        "footwear": 41.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 303.11,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.11,
+        "footwear": 58.05
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 58.05,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.11,
+        "footwear": 58.05
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 361.16,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Madhya Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.11,
+        "footwear": 58.05
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 229.87,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 229.87,
+        "footwear": 42.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 42.15,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 229.87,
+        "footwear": 42.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 272.02,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 229.87,
+        "footwear": 42.15
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 333.79,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 333.79,
+        "footwear": 62.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 62.56,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 333.79,
+        "footwear": 62.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 396.35,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Maharashtra",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 333.79,
+        "footwear": 62.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 206.04,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 206.04,
+        "footwear": 57.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 57.1,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 206.04,
+        "footwear": 57.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 263.14,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 206.04,
+        "footwear": 57.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 297.73,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 297.73,
+        "footwear": 68.03
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 68.03,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 297.73,
+        "footwear": 68.03
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 365.76,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Manipur",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 297.73,
+        "footwear": 68.03
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 240.58,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 240.58,
+        "footwear": 63.19
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 63.19,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 240.58,
+        "footwear": 63.19
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 303.77,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 240.58,
+        "footwear": 63.19
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 421.51,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.51,
+        "footwear": 110.58
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 110.58,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.51,
+        "footwear": 110.58
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 532.09,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Meghalaya",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.51,
+        "footwear": 110.58
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 295.91,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 295.91,
+        "footwear": 123.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 123.32,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 295.91,
+        "footwear": 123.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 419.23,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S6",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 295.91,
+        "footwear": 123.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 436.95,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 436.95,
+        "footwear": 172.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 172.53,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 436.95,
+        "footwear": 172.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 609.48,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Mizoram",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S12",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 436.95,
+        "footwear": 172.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 421.74,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.74,
+        "footwear": 158.75
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 158.75,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.74,
+        "footwear": 158.75
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 580.49,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 421.74,
+        "footwear": 158.75
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 610.29,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 610.29,
+        "footwear": 197.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 197.74,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 610.29,
+        "footwear": 197.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 808.03,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Nagaland",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 610.29,
+        "footwear": 197.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 219.51,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.51,
+        "footwear": 29.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 29.53,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.51,
+        "footwear": 29.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 249.04,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 219.51,
+        "footwear": 29.53
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 358.72,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.72,
+        "footwear": 59.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 59.74,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.72,
+        "footwear": 59.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 418.46,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Odisha",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 358.72,
+        "footwear": 59.74
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 318.85,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 318.85,
+        "footwear": 92.4
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 92.4,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 318.85,
+        "footwear": 92.4
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 411.25,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 318.85,
+        "footwear": 92.4
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 419.13,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 419.13,
+        "footwear": 110.47
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 110.47,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 419.13,
+        "footwear": 110.47
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 529.6,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Punjab",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 419.13,
+        "footwear": 110.47
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 243.11,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.11,
+        "footwear": 50.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 50.54,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.11,
+        "footwear": 50.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 293.65,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 243.11,
+        "footwear": 50.54
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 338.03,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 338.03,
+        "footwear": 66.85
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 66.85,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 338.03,
+        "footwear": 66.85
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 404.88,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Rajasthan",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 338.03,
+        "footwear": 66.85
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 523.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 523.99,
+        "footwear": 153.06
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 153.06,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 523.99,
+        "footwear": 153.06
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 677.05,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 523.99,
+        "footwear": 153.06
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 749.53,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 749.53,
+        "footwear": 221.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 221.8,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 749.53,
+        "footwear": 221.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 971.33,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Sikkim",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 749.53,
+        "footwear": 221.8
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 269.27,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 269.27,
+        "footwear": 36.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 36.57,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 269.27,
+        "footwear": 36.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 305.84,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S7",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 269.27,
+        "footwear": 36.57
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 319.82,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 319.82,
+        "footwear": 50.25
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 50.25,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 319.82,
+        "footwear": 50.25
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 370.07,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tamil Nadu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S13",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 319.82,
+        "footwear": 50.25
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 347.96,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.96,
+        "footwear": 39.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 39.41,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.96,
+        "footwear": 39.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 387.37,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.96,
+        "footwear": 39.41
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 361.15,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 361.15,
+        "footwear": 57.27
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 57.27,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 361.15,
+        "footwear": 57.27
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 418.42,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Telangana",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 361.15,
+        "footwear": 57.27
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 490.06,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 490.06,
+        "footwear": 69.62
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 69.62,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 490.06,
+        "footwear": 69.62
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 559.68,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 490.06,
+        "footwear": 69.62
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 560.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 560.99,
+        "footwear": 94.09
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 94.09,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 560.99,
+        "footwear": 94.09
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 655.08,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Tripura",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 560.99,
+        "footwear": 94.09
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 203.37,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 203.37,
+        "footwear": 35.83
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 35.83,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 203.37,
+        "footwear": 35.83
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 239.2,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 203.37,
+        "footwear": 35.83
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 296.14,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 296.14,
+        "footwear": 50.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 50.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 296.14,
+        "footwear": 50.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 347.13,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttar Pradesh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 296.14,
+        "footwear": 50.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 336.09,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 336.09,
+        "footwear": 66.33
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 66.33,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 336.09,
+        "footwear": 66.33
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 402.42,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 336.09,
+        "footwear": 66.33
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 395.56,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 395.56,
+        "footwear": 81.72
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 81.72,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 395.56,
+        "footwear": 81.72
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 477.28,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Uttarakhand",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 395.56,
+        "footwear": 81.72
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 226.12,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 226.12,
+        "footwear": 28.5
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 28.5,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 226.12,
+        "footwear": 28.5
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 254.62,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 226.12,
+        "footwear": 28.5
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 325.93,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 325.93,
+        "footwear": 45.69
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 45.69,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 325.93,
+        "footwear": 45.69
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 371.62,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "West Bengal",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 325.93,
+        "footwear": 45.69
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 377.86,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 377.86,
+        "footwear": 63.77
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 63.77,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 377.86,
+        "footwear": 63.77
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 441.63,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S8",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 377.86,
+        "footwear": 63.77
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 488.12,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 488.12,
+        "footwear": 80.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 80.78,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 488.12,
+        "footwear": 80.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 568.9,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Andaman and Nicobar Islands",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S14",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 488.12,
+        "footwear": 80.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 750.01,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 750.01,
+        "footwear": 108.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 108.86,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 750.01,
+        "footwear": 108.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 858.87,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 750.01,
+        "footwear": 108.86
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 908.04,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 908.04,
+        "footwear": 202.88
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 202.88,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 908.04,
+        "footwear": 202.88
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 1110.92,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Chandigarh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 908.04,
+        "footwear": 202.88
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 281.66,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 281.66,
+        "footwear": 42.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 42.1,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 281.66,
+        "footwear": 42.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 323.76,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 281.66,
+        "footwear": 42.1
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 399.46,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 399.46,
+        "footwear": 54.97
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 54.97,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 399.46,
+        "footwear": 54.97
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 454.43,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Dadra and Nagar Haveli and Daman and Diu",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 399.46,
+        "footwear": 54.97
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 304.75,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 304.75,
+        "footwear": 61.49
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 61.49,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 304.75,
+        "footwear": 61.49
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 366.24,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 304.75,
+        "footwear": 61.49
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 359.3,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 359.3,
+        "footwear": 71.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 71.56,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 359.3,
+        "footwear": 71.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 430.86,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Jammu and Kashmir",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 359.3,
+        "footwear": 71.56
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 247,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 247,
+        "footwear": 49.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 49.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 247,
+        "footwear": 49.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 296.99,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 247,
+        "footwear": 49.99
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 350.29,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 350.29,
+        "footwear": 75.66
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 75.66,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 350.29,
+        "footwear": 75.66
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 425.95,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Ladakh",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 350.29,
+        "footwear": 75.66
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 312.81,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 312.81,
+        "footwear": 57.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 57.78,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 312.81,
+        "footwear": 57.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 370.59,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 312.81,
+        "footwear": 57.78
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 255.89,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 255.89,
+        "footwear": 40.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 40.32,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 255.89,
+        "footwear": 40.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 296.21,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Lakshadweep",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 255.89,
+        "footwear": 40.32
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 303.33,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.33,
+        "footwear": 56.87
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 56.87,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.33,
+        "footwear": 56.87
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 360.2,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "rural"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3R",
+      "page": "S9",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 303.33,
+        "footwear": 56.87
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_mpce",
+      "value": 347.87,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.87,
+        "footwear": 62.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "footwear_mpce",
+      "value": 62.45,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.87,
+        "footwear": 62.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
+    },
+    {
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "metric": "clothing_bedding_footwear_mpce",
+      "value": 410.32,
+      "unit": "INR/person/month",
+      "referencePeriod": "2023-24",
+      "geography": {
+        "level": "state_sector",
+        "state": "Puducherry",
+        "sector": "urban"
+      },
+      "evidenceClass": "official_survey_estimate",
+      "imputation": "without_imputation",
+      "statement": "3U",
+      "page": "S15",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "components": {
+        "clothing_bedding": 347.87,
+        "footwear": 62.45
+      },
+      "notes": "Published MoSPI state/sector HCES estimate; clothing and bedding excludes tailoring charges. No household conversion or PIN allocation."
     }
   ]
 }

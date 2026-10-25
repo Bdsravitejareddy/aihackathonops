@@ -1,6 +1,7 @@
 'use strict';
 
 const http = require('node:http');
+const { createHash } = require('node:crypto');
 const { validateWorkspacePayload } = require('./validation.cjs');
 const { validatePin, calculateMarketAssessment } = require('./market-engine.cjs');
 const { projectStoreEconomics, scoreMarketViability } = require('./market-forecast.cjs');
@@ -36,7 +37,7 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketMapStore, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
+function createHandler({ store, marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -53,12 +54,12 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
     if (url.pathname.startsWith('/api/market/')) {
       if (url.pathname.startsWith('/api/market/map/')) {
         if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
-        const allowedMetrics = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+        const allowedMetrics = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
         const legendFor = (metric, year) => {
           const defs = {
             population: ['people', [10000, 50000, 200000, 1000000]], populationDensity: ['people/km²', [100, 500, 1500, 5000]], households: ['households', [2000, 10000, 40000, 200000]],
             monthlyPerCapitaSpend: ['INR/person/month', [100, 250, 500, 1000]], incomeProxy: ['INR/person/month', [10000, 20000, 40000, 80000]],
-            tam: ['INR/year', [10000000, 100000000, 1000000000, 10000000000]], sam: ['INR/year', [5000000, 50000000, 500000000, 5000000000]], som: ['INR/year', [1000000, 10000000, 100000000, 1000000000]],
+            apparelExpenditure: ['INR/year', [25000000000, 100000000000, 300000000000, 750000000000]], tam: ['INR/year', [10000000, 100000000, 1000000000, 10000000000]], sam: ['INR/year', [5000000, 50000000, 500000000, 5000000000]], som: ['INR/year', [1000000, 10000000, 100000000, 1000000000]],
             competitorCount: ['stores', [1, 5, 20, 100]], saturation: ['index', [0.2, 0.4, 0.6, 0.8]], revenue: ['INR/year', [1000000, 10000000, 100000000, 1000000000]], revenuePerKm2: ['INR/year/km²', [1000000, 10000000, 100000000, 1000000000]],
             growthPotential3Year: ['% nominal / 3 years', [5, 10, 20, 35]], growthPotential5Year: ['% nominal / 5 years', [10, 20, 40, 70]], breakEvenRevenue: ['INR/year', [1000000, 5000000, 25000000, 100000000]], paybackMonths: ['months', [12, 24, 36, 60]], viability: ['score / 100', [25, 45, 65, 80]]
           };
@@ -66,9 +67,79 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
           const [unit, thresholds] = defs[metric];
           return { scope: 'national', metric, year, unit, thresholds, colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'] };
         };
+        const segmentOf = value => typeof value === 'string' && value.trim().length <= 100 ? value.trim() : 'mass-market-family-apparel';
+        const buildResearchContext = async (geographyId, payload) => {
+          const scenario = payload.assumptions && typeof payload.assumptions === 'object' && !Array.isArray(payload.assumptions) ? payload.assumptions : {};
+          const geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', scenario);
+          if (!geography) return { error: { status:404, message:'Geography not found' } };
+          let assessment = null;
+          if (payload.assessmentId !== undefined || payload.workspaceId !== undefined) {
+            if (!UUID.test(payload.assessmentId || '') || !UUID.test(payload.workspaceId || '') || !marketStore?.getAssessment) return { error:{ status:400, message:'A valid workspace and assessment are required together.' } };
+            assessment = await marketStore.getAssessment(payload.workspaceId, payload.assessmentId);
+            if (!assessment) return { error:{ status:404, message:'Market assessment not found in this workspace.' } };
+          }
+          let deterministicFinancialForecast = null;
+          const financialKeys = ['aov','areaSqFt','investment','workingCapital','monthlyFixedCosts','grossMargin','royaltyRate','conversionRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate'];
+          if (financialKeys.every(key => Number.isFinite(scenario[key]))) {
+            try {
+              const forecast = projectStoreEconomics({ store:{ aov:scenario.aov, areaSqFt:scenario.areaSqFt, initialInvestment:scenario.investment, workingCapital:scenario.workingCapital,
+                monthlyFixedCosts:scenario.monthlyFixedCosts, grossMargin:scenario.grossMargin, royaltyRate:scenario.royaltyRate, conversionRate:scenario.conversionRate,
+                monthlyPassingPedestrianTraffic:scenario.monthlyPassingPedestrianTraffic, entryRate:scenario.entryRate, salesRampMonths:scenario.salesRampMonths, initialRampFraction:scenario.initialRampFraction },
+              market:{ samAnnual:geography.metrics?.sam?.value, captureBenchmark:scenario.captureRate },
+              forecast:{ years:5, annualNominalGrowth:scenario.annualNominalGrowth, annualInflation:scenario.annualInflation, discountRate:scenario.discountRate } });
+              deterministicFinancialForecast = { breakEvenRevenueMonthly:forecast.economics?.breakEvenRevenueMonthly ?? null, requiredAnnualCaptureRate:forecast.economics?.requiredAnnualCaptureRate ?? null,
+                scenarios:Object.fromEntries(Object.entries(forecast.scenarios || {}).map(([key,value])=>[key,{roiPercent:value.roiPercent,paybackMonths:value.paybackMonths,annualRevenue:value.years?.[0]?.nominalRevenue ?? null,year5Revenue:value.years?.at(-1)?.nominalRevenue ?? null,npv:value.npv}])) };
+            } catch { return { error:{ status:400, message:'Financial assumptions are invalid.' } }; }
+          }
+          const extra = await marketMapStore.getMapEvidence?.(geographyId);
+          const snapshot = assessment?.snapshot || {};
+          const context = {
+            location:{ id:geography.id, name:geography.name, level:geography.level, sourceVersion:marketMapStore.sourceVersion || 'india-geography-1.1.2' },
+            targetApparelSegment:segmentOf(payload.segment),
+            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:geography.metrics, demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
+            assumptions:scenario,
+            sourceEvidence:(extra?.evidence || geography.evidence || []).slice(0,20),
+            dataWarnings:[...(geography.warnings || []), ...(extra?.warnings || [])]
+          };
+          return { context, segment:segmentOf(payload.segment), assessmentId:assessment?.id || null, assessmentVersion:assessment?.version || null,
+            assessmentKey:assessment ? `${assessment.id}:${assessment.version}` : 'none' };
+        };
+        const researchError = result => result.error?.code === 'rate_limited' ? 429 : result.error?.code === 'invalid_context' || result.error?.code === 'invalid_question' ? 400 : 503;
         try {
+          const researchMatch = url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)\/(research|ask)$/);
+          if (researchMatch && req.method === 'POST') {
+            if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error:'Content-Type must be application/json' });
+            if (!marketResearchService || !marketResearchStore) return reply(res, 503, { error:'Market research is unavailable; configure Gemini credentials and initialize the research tables.' });
+            const payload = await readBody(req, Math.min(maxBodyBytes, 100_000));
+            const geographyId = decodeURIComponent(researchMatch[1]);
+            const built = await buildResearchContext(geographyId, payload);
+            if (built.error) return reply(res, built.error.status, { error:built.error.message });
+            const contextHash = createHash('sha256').update(JSON.stringify(built.context)).digest('hex');
+            const modelVersion = marketResearchService.modelVersion || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+            const clientId = req.socket?.remoteAddress || 'local-client';
+            if (researchMatch[2] === 'research') {
+              if (payload.refresh === true) await marketResearchStore.markStale({ geographyId, segment:built.segment });
+              else {
+                const cached = await marketResearchStore.getCached({ geographyId, segment:built.segment, assessmentKey:built.assessmentKey, modelVersion, contextHash });
+                if (cached) return reply(res, 200, { ...cached.result, citations:cached.citations, retrievedAt:cached.retrievedAt, modelVersion, cached:true, assessmentVersion:built.assessmentVersion });
+              }
+              const result = await marketResearchService.researchLocation(built.context, { clientId });
+              if (!result.ok) return reply(res, researchError(result), { error:result.error.message, code:result.error.code });
+              await marketResearchStore.save({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'cards', result, citations:result.citations });
+              return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion });
+            }
+            const question = typeof payload.question === 'string' ? payload.question.trim() : '';
+            if (!question || question.length > 2000) return reply(res, 400, { error:'Question must contain 1–2,000 characters.' });
+            const promptHash = createHash('sha256').update(question).digest('hex');
+            const cached = await marketResearchStore.getCached({ geographyId, segment:built.segment, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'answer', promptHash });
+            if (cached) return reply(res, 200, { ...cached.result, citations:cached.citations, retrievedAt:cached.retrievedAt, modelVersion, cached:true, assessmentVersion:built.assessmentVersion });
+            const result = await marketResearchService.answerQuestion({ context:built.context, question, clientId });
+            if (!result.ok) return reply(res, researchError(result), { error:result.error.message, code:result.error.code });
+            await marketResearchStore.save({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'answer', promptHash, result, citations:result.citations });
+            return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion });
+          }
           if (req.method === 'GET' && url.pathname === '/api/market/map/levels') {
-            const metric = url.searchParams.get('metric') || 'population';
+            const metric = url.searchParams.get('metric') || 'apparelExpenditure';
             if (!allowedMetrics.has(metric)) return reply(res, 400, { error: 'Unsupported map metric' });
             const parentId = url.searchParams.get('parentId') || null;
             const rawBbox = url.searchParams.get('bbox');
@@ -79,7 +150,11 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
             if (!level) return reply(res, 400, { error: 'Unknown map parent geography' });
             const scenario = { captureRate: null };
             const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario });
-            return reply(res, 200, { level, features, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1', legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings: features.length ? [] : ['No verified child boundaries are available at this level.'] });
+            const missingExpenditure = metric === 'apparelExpenditure' ? features.filter(feature => feature.metrics.apparelExpenditure.value === null).length : 0;
+            const warnings = features.length ? [] : ['No verified child boundaries are available at this level.'];
+            if (missingExpenditure) warnings.push(`${missingExpenditure} of ${features.length} state/UTs have no annual expenditure value because the 2011 Census population cannot be defensibly crosswalked to those later boundaries.`);
+            if (features.some(feature => feature.evidence.some(item => item.sourceId === 'census-of-india-2011-state-sector'))) warnings.push('Annual market expenditure combines Census 2011 population with HCES 2023-24 spending. It is a high-uncertainty market estimate, not actual franchise sales.');
+            return reply(res, 200, { level, features, sourceVersion: marketMapStore.sourceVersion || 'india-geography-1.1.2', legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings });
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/search') {
             const q = (url.searchParams.get('q') || '').trim();
@@ -90,10 +165,10 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
           const detailMatch = url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)$/);
           if (req.method === 'GET' && detailMatch) {
             const id = decodeURIComponent(detailMatch[1]);
-            const geography = await marketMapStore.getMapGeography(id, 'population', { captureRate: null });
+            const geography = await marketMapStore.getMapGeography(id, 'apparelExpenditure', { captureRate: null });
             if (!geography) return reply(res, 404, { error: 'Geography not found' });
             const extra = await marketMapStore.getMapEvidence(id);
-            return reply(res, 200, { geography: { ...geography, ...(extra || {}) }, evidence: extra?.evidence || geography.evidence, confidence: geography.confidence, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1' });
+            return reply(res, 200, { geography: { ...geography, ...(extra || {}) }, evidence: extra?.evidence || geography.evidence, confidence: geography.confidence, sourceVersion: marketMapStore.sourceVersion || 'india-geography-1.1.2' });
           }
           if (req.method === 'POST' && url.pathname === '/api/market/map/compare') {
             const payload = await readBody(req, maxBodyBytes);
@@ -138,7 +213,7 @@ function createHandler({ store, marketStore, marketMapStore, marketSources, mark
               warnings:[...(!financeInputsComplete?['Store costs, margins, conversion, passing traffic and discount assumptions are required for ROI and payback; those values remain unavailable.']:[]),
                 ...(!selected[0]?.metrics?.sam?.value?['A compatible serviceable market estimate is unavailable; revenue-to-market capture comparison is incomplete.']:[]),
                 'Revenue is a scenario projection and must not be interpreted as observed sales.'] };
-            return reply(res, 200, { scenarioId, map: { level, features: mapRows, sourceVersion: marketMapStore.sourceVersion || 'india-geography-v1', legend: legendFor(payload.metric || 'population', Number(payload.year) || 2026), warnings: [] }, forecast, warnings: forecast.warnings });
+            return reply(res, 200, { scenarioId, map: { level, features: mapRows, sourceVersion: marketMapStore.sourceVersion || 'india-geography-1.1.2', legend: legendFor(payload.metric || 'apparelExpenditure', Number(payload.year) || 2026), warnings: [] }, forecast, warnings: forecast.warnings });
           }
           res.setHeader('allow', 'GET, POST');
           return reply(res, 405, { error: 'Method not allowed' });

@@ -17,10 +17,10 @@ test('source inventory records provenance and limitations for every listed datas
     assert.ok(source.referencePeriod && source.geography && source.variables.length);
     assert.ok(source.updateFrequency);
     assert.ok(source.licenseNote && source.limitations.length);
-    assert.ok(['official_observed', 'official_survey_estimate', 'derived_estimate'].includes(source.evidenceClass));
+    assert.ok(['official_observed', 'official_survey_estimate', 'derived_estimate', 'derived_geometry'].includes(source.evidenceClass));
   }
   const hces = sources.sources.find(source => source.id === 'mospi-hces-2023-24-report-592');
-  assert.equal(hces.referencePeriod, '2023-08 to 2024-07; released 2025-01-31');
+  assert.equal(hces.referencePeriod, '2023-08 to 2024-07');
   assert.equal(hces.releaseDate, '2025-01-31');
   assert.match(hces.url, /Final_Report_HCES_2023-24L\.pdf$/);
 });

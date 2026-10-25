@@ -3,7 +3,7 @@
 const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
 const CHILD = { state: 'district', district: 'city', city: 'pin', pin: 'catchment' };
 const MAX_BY_LEVEL = { state: 40, district: 250, city: 750, pin: 1200, catchment: 500 };
-const ALLOWED_METRICS = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+const ALLOWED_METRICS = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
 const canonicalId = (kind, id) => String(id).startsWith(`${kind}:`) ? String(id) : `${kind}:${id}`;
 
 function metric(value, unit, evidenceClass, source = null, warnings = []) {
@@ -27,6 +27,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
   const addressability = Number.isFinite(Number(p.addressabilityFactor)) ? Number(p.addressabilityFactor) : null;
   const accessibility = Number.isFinite(Number(p.accessibilityFactor)) ? Number(p.accessibilityFactor) : null;
   const tam = population !== null && spend !== null ? population * spend * 12 : null;
+  const apparelExpenditure = Number.isFinite(Number(p.annualApparelExpenditure)) && p.annualApparelExpenditure !== null ? Number(p.annualApparelExpenditure) : tam;
   const sam = tam !== null && addressability !== null && accessibility !== null ? tam * addressability * accessibility : null;
   const som = sam !== null && capture !== null ? sam * capture : null;
   const sourceRows = Array.isArray(p.evidence) ? p.evidence : [];
@@ -44,6 +45,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     ageGroups: p.demographics?.ageGroups ? { value: p.demographics.ageGroups, unit: 'people', evidenceClass, evidence: sourceFor('ageGroups') ? [sourceFor('ageGroups')] : [], warnings: [] } : metric(null, 'people', null),
     monthlyPerCapitaSpend: metric(spend, 'INR/person/month', incomeAdjustedSpend !== null ? 'derived_estimate' : p.apparelSpendEvidenceClass || evidenceClass, sourceFor(incomeAdjustedSpend !== null ? 'regionalApparelSpendMonthly' : 'apparelSpendPerPersonMonthly'), incomeAdjustedSpend !== null ? [`Regional spend ${regionalSpend} × (local income proxy ${localIncome} / regional income proxy ${regionalIncome})^${elasticity}; estimated, not observed at PIN level.`] : ['PIN-level income adjusted spend requires a local income proxy and a matching regional spend/income benchmark.']),
     incomeProxy: metric(income, 'INR/person/month', income === null ? null : 'derived_estimate', sourceFor('incomeProxy'), ['A PIN-level income proxy is not inferred from banking deposits.']),
+    apparelExpenditure: { ...metric(apparelExpenditure, 'INR/year', p.annualExpenditureEvidenceClass || 'derived_estimate', sourceFor('apparelSpendPerPersonMonthly'), ['Estimated annual clothing, bedding and footwear expenditure = population × rural/urban-weighted monthly per-capita expenditure × 12. It is market expenditure, not actual store sales.']), evidence: sourceRows.filter(item => ['population','apparelSpendPerPersonMonthly'].includes(item.metric)) },
     tam: metric(tam, 'INR/year', 'derived_estimate', sourceFor('apparelSpendPerPersonMonthly'), ['Annual market expenditure = population × monthly per-capita apparel expenditure × 12; not store sales.']),
     sam: metric(sam, 'INR/year', 'derived_estimate', sourceFor('addressabilityFactor'), ['Requires evidenced category/brand addressability and accessibility factors.']),
     som: metric(som, 'INR/year', 'model_assumption', sourceFor('captureRate'), ['Scenario capture rate applied to SAM; not observed store revenue.']),

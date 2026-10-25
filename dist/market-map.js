@@ -1,0 +1,380 @@
+'use strict';
+(function (root) {
+  const MISSING = '#b9c1c5';
+  const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
+  const ZOOMS = [3.5, 6, 9, 12, 14];
+  const METRICS = {
+    population: 'Population', populationDensity: 'Population density', households: 'Households',
+    monthlyPerCapitaSpend: 'Monthly per-capita apparel spend', incomeProxy: 'Purchasing power / income proxy · modeled', tam: 'Annual TAM · modeled',
+    sam: 'Annual SAM · modeled', som: 'Annual SOM · modeled', competitorCount: 'Competition · supply indicator', saturation: 'Competition / saturation',
+    revenue: 'Store revenue · scenario', revenuePerKm2: 'Expected franchise revenue per km² · scenario',
+    growthPotential3Year: '3-year growth potential · scenario', growthPotential5Year: '5-year growth potential · scenario',
+    breakEvenRevenue: 'Break-even revenue', paybackMonths: 'Payback · months',
+    viability: 'Market viability score'
+  };
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const numeric = value => typeof value === 'number' && Number.isFinite(value);
+  const metricValue = metric => numeric(metric) ? metric : numeric(metric?.value) && metric.status !== 'unavailable' ? metric.value : null;
+  const display = metric => {
+    const value = metricValue(metric);
+    return value === null ? 'Unavailable' : value.toLocaleString('en-IN', { maximumFractionDigits: 2 }) + (metric?.unit ? ' ' + metric.unit : '');
+  };
+  const label = key => METRICS[key] || key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
+  const safeUrl = value => {
+    try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? url.href : null; }
+    catch { return null; }
+  };
+  const list = value => Array.isArray(value) ? value : value ? [value] : [];
+  function evidenceHTML(value) {
+    const rows = list(value);
+    return rows.length ? `<ul class="expansion-sources">${rows.map(e => {
+      if (typeof e === 'string') return `<li>${escape(e)}</li>`;
+      const url = safeUrl(e.url || e.sourceUrl), title = escape(e.title || e.dataset || e.sourceId || 'Source');
+      return `<li>${url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${title} ↗</a>` : title}
+        <small>${[e.publisher, e.evidenceClass, e.referenceYear || e.referencePeriod || e.vintage, e.geographicResolution || e.geography?.level, e.sourceVersion, e.allocationMethod, e.uncertainty].filter(v => v !== undefined && v !== null).map(escape).join(' · ')}</small>
+        ${e.caveats || e.warnings ? `<small>${list(e.caveats || e.warnings).map(escape).join(' · ')}</small>` : ''}</li>`;
+    }).join('')}</ul>` : '<p class="hint">Source evidence unavailable.</p>';
+  }
+  function metricHTML(key, metric) {
+    return `<div class="expansion-metric"><span>${escape(label(key))}</span><strong>${escape(display(metric))}</strong>
+      <small>${escape(metric?.evidenceClass || (metricValue(metric) === null ? 'unavailable' : 'Evidence class unavailable'))}${metric?.referenceYear || metric?.referencePeriod ? ' · ' + escape(metric.referenceYear || metric.referencePeriod) : ''}</small>
+      ${metricValue(metric) === null ? '<small>Missing evidence: no compatible source or complete model inputs at this resolution.</small>' : ''}
+      ${metric?.warnings ? `<small>${list(metric.warnings).map(escape).join(' · ')}</small>` : ''}
+      ${metric?.evidence ? evidenceHTML(metric.evidence) : ''}</div>`;
+  }
+  function geographyHTML(raw) {
+    const geo = raw?.geography || raw || {}, metrics = raw?.metrics || geo.metrics || {};
+    const evidence = list(raw?.evidence || geo.evidence), years = [...new Set([...evidence.map(e => e.referenceYear || e.referencePeriod || e.vintage), ...Object.values(metrics).map(m => m?.referenceYear || m?.referencePeriod)].filter(Boolean))];
+    const resolutions = [...new Set(evidence.map(e => e.geographicResolution || e.geography?.level).filter(Boolean))];
+    const groups = [
+      ['Demographics', ['population','populationDensity','households','malePopulation','femalePopulation','ageGroups']],
+      ['Spend and modeled demand', ['monthlyPerCapitaSpend','incomeProxy','tam','sam','som']],
+      ['Competition and store economics', ['competitorCount','saturation','revenue','revenuePerKm2','breakEvenRevenue','paybackMonths','viability']],
+      ['Growth scenarios', ['growthPotential3Year','growthPotential5Year']]
+    ];
+    return `<h3>${escape(geo.name || geo.id || 'Selected geography')}</h3><p class="hint">${escape(geo.level || '')} · Confidence: ${escape(raw?.confidence || geo.confidence || 'unavailable')} · ${escape(raw?.sourceVersion || geo.sourceVersion || 'Source version unavailable')}</p>
+      <p class="hint">Source year: ${escape(years.join(', ') || 'Unavailable')}<br>Geographic resolution: ${escape(resolutions.join(', ') || 'Source resolution unavailable')} · Selected area: ${escape(geo.level || 'unavailable')}</p>
+      ${groups.map(([title, keys]) => `<h4>${title}</h4><div class="expansion-metrics">${keys.map(key => metricHTML(key, metrics[key])).join('')}</div>`).join('')}
+      <details><summary>Evidence, vintage and allocation</summary>${evidenceHTML(raw?.evidence || geo.evidence)}${raw?.warnings ? `<p>${list(raw.warnings).map(escape).join(' · ')}</p>` : ''}</details>`;
+  }
+  function reportHTML(value) {
+    if (value === null || value === undefined) return '<span class="muted">Unavailable</span>';
+    if (typeof value !== 'object') return escape(value);
+    if ('value' in value) return `<strong>${escape(display(value))}</strong><small>${escape(value.evidenceClass || '')}</small>`;
+    if (Array.isArray(value)) return `<ul>${value.map(row => `<li>${reportHTML(row)}</li>`).join('')}</ul>`;
+    return `<dl class="expansion-report">${Object.entries(value).filter(([key]) => !['geometry','coordinates'].includes(key)).map(([key,item]) => `<div><dt>${escape(label(key))}</dt><dd>${reportHTML(item)}</dd></div>`).join('')}</dl>`;
+  }
+  function normalizeLegend(legend) {
+    if (!legend || !Array.isArray(legend.thresholds) || !Array.isArray(legend.colors)) return null;
+    if (legend.scope && legend.scope !== 'national') return null;
+    const { thresholds, colors } = legend;
+    if (!thresholds.every((v,i) => numeric(v) && (i === 0 || v > thresholds[i-1])) || colors.length !== thresholds.length + 1) return null;
+    if (!colors.every(c => /^#[0-9a-f]{6}$/i.test(c))) return null;
+    return { ...legend, thresholds: [...thresholds], colors: [...colors] };
+  }
+  function colorFor(value, legend) {
+    if (value === null || !legend) return MISSING;
+    let i = 0; while (i < legend.thresholds.length && value >= legend.thresholds[i]) i++;
+    return legend.colors[i];
+  }
+  function boundsFor(geometry) {
+    const points = [];
+    function walk(coords) {
+      if (!Array.isArray(coords)) return;
+      if (numeric(coords[0]) && numeric(coords[1])) points.push(coords);
+      else coords.forEach(walk);
+    }
+    walk(geometry?.coordinates);
+    if (!points.length) return null;
+    return [[Math.min(...points.map(p=>p[0])), Math.min(...points.map(p=>p[1]))], [Math.max(...points.map(p=>p[0])), Math.max(...points.map(p=>p[1]))]];
+  }
+
+  // Map adapter: owns WebGL and popups; API loading and market assumptions live in mountPage.
+  function mount({ container, onSelect = () => {}, onViewport = () => {}, options = {} }) {
+    const lib = options.maplibre || root.maplibregl;
+    if (!lib) throw Error('Self-hosted MapLibre is unavailable. Reload to retry.');
+    let features = [], metric = options.metric || 'population', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup;
+    const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17,
+      style: { version: 8, sources: {}, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } }] },
+      attributionControl: true });
+    map.addControl(new lib.NavigationControl(), 'top-right');
+    const data = () => ({ type: 'FeatureCollection', features: features.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
+      properties: { id: String(f.id), name: f.name, level: f.level, color: colorFor(metricValue(f.metrics?.[metric]), legend) } })) });
+    const highlight = () => { if (ready && !destroyed) map.setFilter('market-selected', ['==', ['get','id'], selected === null ? '' : String(selected)]); };
+    const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(data()); highlight(); } };
+    function showPopup(event) {
+      const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id, geo = features.find(f => String(f.id) === String(id));
+      if (!geo) return;
+      popup?.remove(); popup = new lib.Popup({ closeButton: true, maxWidth: '310px' }).setLngLat(event.lngLat)
+        .setHTML(`<div class="expansion-popup"><strong>${escape(geo.name)}</strong><p>${escape(label(metric))}: ${escape(display(geo.metrics?.[metric]))}</p><small>Confidence: ${escape(geo.confidence || 'unavailable')}</small>${evidenceHTML(geo.evidence)}</div>`).addTo(map);
+    }
+    map.on('load', () => {
+      if (destroyed) return;
+      map.addSource('market-geographies', { type: 'geojson', data: data() });
+      map.addLayer({ id: 'market-fill', type: 'fill', source: 'market-geographies', filter: ['==',['geometry-type'],'Polygon'], paint: { 'fill-color': ['get','color'], 'fill-opacity': 0.82 } });
+      map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': 1 } });
+      map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': ['get','color'], 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
+      map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#143f35', 'line-width': 3 }, filter: ['==',['get','id'],''] });
+      ready = true; update();
+    });
+    for (const layer of ['market-fill','market-points']) {
+      map.on('click', layer, event => { const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id; if (id !== undefined) { selected = id; highlight(); showPopup(event); onSelect(String(id)); } });
+      map.on('mouseenter', layer, event => { map.getCanvas().style.cursor = 'pointer'; showPopup(event); });
+      map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
+    }
+    map.on('moveend', () => { if (!destroyed) onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
+    map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
+    return {
+      setMetric(value) { metric = value; popup?.remove(); update(); },
+      setYear() { popup?.remove(); }, setScenario() { popup?.remove(); },
+      setLegend(value) { legend = normalizeLegend(value); update(); },
+      setFeatures(value) { features = Array.isArray(value) ? value : []; popup?.remove(); update(); },
+      selectGeography(id) { selected = id; highlight(); },
+      focusGeography(geo, zoom) { const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: 0 }); },
+      reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: 0 }); },
+      destroy() { destroyed = true; popup?.remove(); map.remove(); }
+    };
+  }
+
+  function pageHTML(year) {
+    return `<div class="page-heading"><div><div class="eyebrow">INDIA · APPAREL & FASHION</div><h1>Expansion Intelligence</h1><p>Explore market evidence, test assumptions and compare places.</p></div><span class="tag green">Separate from applicant eligibility</span></div>
+      <div class="expansion-layout"><section class="expansion-workspace" aria-label="Expansion map">
+        <div class="expansion-toolbar panel"><label>Map layer<select class="input" name="metric">${Object.entries(METRICS).map(([key,title]) => `<option value="${key}">${title}</option>`).join('')}</select></label>
+          <label>Analysis year<input class="input" name="year" type="number" min="2011" max="2100" step="1" value="${year}"></label>
+          <button class="button small" type="button" data-map-national>India · reset</button></div>
+        <section class="panel expansion-place-search"><form data-map-global-form><label>Find a place across India<input class="input" data-map-global-query type="search" minlength="2" maxlength="100" required placeholder="State, district, city or PIN"></label><button class="button small" type="submit">Search India ↗</button></form><div data-map-global-results aria-live="polite"></div></section>
+        <div class="expansion-map-frame panel"><div class="expansion-map" data-map-canvas aria-label="India market map. Use the area list for keyboard selection."></div>
+          <div class="expansion-map-caption">Source boundaries only · no external basemap</div></div>
+        <div class="expansion-legend panel" data-map-legend aria-label="Fixed national scale"></div>
+        <div class="expansion-status" role="status" aria-live="polite" data-map-status>Loading sourced state aggregates…</div>
+        <div class="expansion-breadcrumbs" data-map-path></div>
+        <div class="panel expansion-area-list"><label>Search loaded areas<input class="input" type="search" data-map-search placeholder="Name or source ID"></label><p class="hint">Select a state, then drill into districts, cities, PINs and available catchments. Search covers the loaded level only.</p><div data-map-results class="expansion-results"></div></div>
+        <details class="panel expansion-assumptions" open><summary>Scenario assumptions</summary>
+          <p class="hint">Every editable input is a user assumption. Blank inputs stay missing. Market totals are modeled spend, and store revenue is a scenario projection.</p>
+          <form data-map-scenario-form><div class="market-grid">
+            <label>Horizon · assumption<select class="input" name="horizonYears"><option value="0">Baseline</option><option value="3">3 years</option><option value="5">5 years</option></select></label>
+            <label>Scenario case · assumption<select class="input" name="scenario"><option value="base">Base</option><option value="conservative">Conservative</option><option value="optimistic">Optimistic</option></select></label>
+            <label>Elasticity · assumption<select class="input" name="elasticity">${[0.5,0.75,1,1.25].map(v => `<option value="${v}" ${v===1?'selected':''}>${v.toFixed(2)}</option>`).join('')}</select></label>
+            <label>Target demographics · assumption<input class="input" name="targetDemographics" placeholder="Describe audience; no unsupported splits"></label>
+            <label>Capture rate · fraction, assumption<input class="input" type="number" name="captureRate" min="0" max="1" step="any" placeholder="0–1"></label>
+            <label>AOV · ₹/transaction, assumption<input class="input" type="number" name="aov" min="0.01" step="any" placeholder="Missing"></label>
+            <label>Store size · sq ft, assumption<input class="input" type="number" name="areaSqFt" min="0.01" step="any" placeholder="Missing"></label>
+            <label>Investment · ₹, assumption<input class="input" type="number" name="investment" min="0" step="any" placeholder="Missing"></label>
+            <label>Travel time · minutes, assumption<input class="input" type="number" name="travelTimeMinutes" min="1" max="120" step="1" placeholder="Requires routing source"></label>
+          </div><p class="hint">Travel-time input is an assumption, not a computed drive-time catchment. A routing source is required to draw travel-time boundaries. Radius bands, if supplied, are distance proxies.</p>
+          <div class="market-actions"><button class="button primary" data-map-apply>Apply scenario</button><span class="hint" data-map-scenario-status>Default elasticity 1.00 · other inputs missing</span></div></form>
+          <div data-map-forecast class="expansion-forecast" aria-live="polite"></div></details>
+      </section><aside class="expansion-side" aria-label="Geography details and comparison">
+        <section class="panel expansion-detail"><div data-map-detail aria-live="polite"><h2>Select an area</h2><p class="hint">Inspect the evidence before drawing an investment conclusion. Missing metrics stay unavailable.</p></div>
+          <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add to comparison</button></div></section>
+        <section class="panel expansion-compare"><h2>Compare places</h2><p class="hint">Select 2–4 areas. Overlap and missing evidence must be reviewed.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></section>
+      </aside></div>`;
+  }
+
+  function mountPage({ container, workspaceId, options = {} }) {
+    let year = options.year || new Date().getFullYear(), metric = 'population', scenario = 'base', appliedScenario = 'base';
+    let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
+    let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, searchResults = [];
+    let level = 'state', sourceVersion, currentLegend, map;
+    const legends = new Map(), compared = new Map(), aborters = new Map();
+    container.innerHTML = pageHTML(year);
+    const $ = selector => container.querySelector(selector);
+    const status = text => { $('[data-map-status]').textContent = text; };
+    const clearResults = () => { $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
+    const childIndex = () => path.length ? Math.min(LEVELS.indexOf(path.at(-1).level) + 1, LEVELS.length-1) : 0;
+    async function request(kind, endpoint, body) {
+      aborters.get(kind)?.abort();
+      const controller = new AbortController(); aborters.set(kind, controller);
+      const response = await (options.fetch || root.fetch.bind(root))(endpoint, { signal: controller.signal,
+        ...(body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {}) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw Error(result.error || `Market map API returned ${response.status}`);
+      return result;
+    }
+    function renderLegend() {
+      $('[data-map-legend]').innerHTML = `<strong>Fixed national scale · ${escape(label(metric))} · ${escape(year)}</strong><div class="expansion-legend-items">${currentLegend ? currentLegend.colors.map((color,i) => {
+        const low = i ? currentLegend.thresholds[i-1].toLocaleString('en-IN') : null, high = currentLegend.thresholds[i]?.toLocaleString('en-IN');
+        return `<span><i style="background:${color}"></i>${escape(low === null ? '< ' + high : high === undefined ? '≥ ' + low : low + ' – < ' + high)}</span>`;
+      }).join('') : '<span>National thresholds unavailable; values remain gray.</span>'}<span><i style="background:${MISSING}"></i>Missing / unavailable</span></div><small>${escape(currentLegend?.unit || '')} · Vintage is shown in evidence, not implied by the analysis year.</small>`;
+    }
+    function renderAreas() {
+      const term = $('[data-map-search]').value.trim().toLowerCase();
+      $('[data-map-results]').innerHTML = features.filter(f => `${f.name} ${f.id}`.toLowerCase().includes(term)).map(f => `<button class="expansion-area" type="button" data-map-result="${escape(f.id)}" aria-pressed="${String(f.id)===String(selected)}"><span>${escape(f.name)}</span><small>${escape(display(f.metrics?.[metric]))}</small></button>`).join('') || '<p class="hint">No matching sourced areas at this level.</p>';
+      $('[data-map-path]').textContent = ['India', ...path.map(f => f.name)].join(' › ');
+    }
+    function renderCompared() {
+      $('[data-map-compare-list]').innerHTML = [...compared.values()].map(f => `<div class="expansion-compare-item"><span>${escape(f.name)}</span><button class="text-button" type="button" data-map-remove="${escape(f.id)}" aria-label="Remove ${escape(f.name)}">Remove</button></div>`).join('');
+      $('[data-map-compare]').disabled = compared.size < 2;
+    }
+    function updateSelectionActions() {
+      const loaded = features.find(f => String(f.id) === selected);
+      $('[data-map-drill]').disabled = !selectedDetail || !loaded || LEVELS.indexOf(loaded.level) >= LEVELS.length-1;
+      $('[data-map-add-compare]').disabled = !selectedDetail || compared.has(selected) || compared.size >= 4;
+    }
+    function acceptLevels(data) {
+      if (!Array.isArray(data?.features) || !LEVELS.includes(data.level)) throw Error('Map API returned an invalid geography level.');
+      // Defend the national view even if a backend accidentally returns all PINs.
+      const expected = LEVELS[childIndex()];
+      if (data.level !== expected || data.features.some(f => f.level !== expected)) throw Error(`Expected ${expected} aggregates; refusing unexpected geography level.`);
+      sourceVersion = data.sourceVersion; level = data.level;
+      const key = metric + ':' + year, legend = normalizeLegend(data.legend);
+      if (!legends.has(key) && legend && (!legend.metric || legend.metric === metric) && (!legend.year || Number(legend.year) === Number(year))) legends.set(key, legend);
+      currentLegend = legends.get(key) || null; map?.setLegend(currentLegend);
+      features = data.features; map?.setFeatures(features); renderLegend(); renderAreas(); updateSelectionActions();
+      status(features.length ? `${features.length} ${level} areas · source ${sourceVersion || 'version unavailable'}. Missing values are gray.` : `No sourced ${level} features available for this selection. Missing evidence is not zero.`);
+    }
+    async function loadLevels() {
+      const revision = ++levelRevision, context = contextRevision;
+      const parent = path.at(-1);
+      // Only one child level per selected parent. Zooming into India cannot fetch PINs.
+      const requestZoom = parent ? ZOOMS[childIndex()] : Math.min(zoom, 5);
+      const query = new URLSearchParams({ zoom: String(requestZoom), metric, year: String(year), scenario: appliedScenario });
+      if (parent) query.set('parentId', parent.id);
+      if (bounds) query.set('bbox', bounds.flat().join(','));
+      features = []; map?.setFeatures([]); renderAreas(); status(`Loading ${parent ? 'children of ' + parent.name : 'state aggregates'}…`);
+      try {
+        const result = await request('levels', '/api/market/map/levels?' + query);
+        if (!destroyed && revision === levelRevision && context === contextRevision) acceptLevels(result);
+      } catch (error) {
+        if (destroyed || revision !== levelRevision || context !== contextRevision || error.name === 'AbortError') return;
+        features = []; map?.setFeatures([]); renderAreas();
+        $('[data-map-status]').innerHTML = `${escape(error.message)} <button class="text-button" type="button" data-map-retry>Retry map</button>`;
+      }
+    }
+    async function selectGeography(id) {
+      selected = String(id); selectedDetail = null; const revision = ++detailRevision, context = contextRevision;
+      map?.selectGeography(selected); renderAreas();
+      $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
+      $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
+      const query = new URLSearchParams({ workspaceId: workspaceId || '', year: String(year), scenario: appliedScenario });
+      try {
+        const result = await request('detail', `/api/market/map/geographies/${encodeURIComponent(id)}?${query}`);
+        if (destroyed || revision !== detailRevision || context !== contextRevision) return;
+        selectedDetail = result.geography || result;
+        const loaded = features.find(f => String(f.id) === selected);
+        selectedDetail = { ...loaded, ...selectedDetail, id: selected };
+        $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
+        updateSelectionActions();
+      } catch (error) {
+        if (!destroyed && revision === detailRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-detail]').innerHTML = `<p>${escape(error.message)}</p><button class="text-button" type="button" data-map-retry-detail>Retry detail</button>`;
+      }
+    }
+    function invalidate() {
+      contextRevision++; detailRevision++; compareRevision++; scenarioRevision++;
+      for (const controller of aborters.values()) controller.abort();
+      selectedDetail = null; currentLegend = legends.get(metric + ':' + year) || null;
+      appliedScenario = scenario; map?.setScenario(scenario); map?.setMetric(metric); map?.setYear(year); map?.setLegend(currentLegend);
+      renderLegend(); clearResults(); $('[data-map-apply]').disabled = false;
+      if (selected !== null) selectGeography(selected);
+    }
+    function setMetric(value) { if (!Object.hasOwn(METRICS,value)) return; metric = value; $('[name="metric"]').value = value; invalidate(); loadLevels(); }
+    function setYear(value) { if (!Number.isInteger(Number(value)) || value < 2011 || value > 2100) return; year = Number(value); $('[name="year"]').value = year; invalidate(); loadLevels(); }
+    function setScenario(value) { scenario = String(value); $('[name="scenario"]').value = value; invalidate(); loadLevels(); }
+    async function compare() {
+      if (compared.size < 2) return;
+      const revision = ++compareRevision, context = contextRevision;
+      $('[data-map-comparison]').textContent = 'Comparing sourced areas…';
+      try {
+        const result = await request('compare', '/api/market/map/compare', { workspaceId, geographyIds: [...compared.keys()], year, metric, scenario: appliedScenario });
+        if (destroyed || revision !== compareRevision || context !== contextRevision) return;
+        $('[data-map-comparison]').innerHTML = list(result.geographies || result.features).map(geographyHTML).join('') + reportHTML(Object.fromEntries(Object.entries(result).filter(([k])=>!['geographies','features'].includes(k))));
+      } catch (error) { if (!destroyed && revision === compareRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-comparison]').textContent = error.message; }
+    }
+    async function applyScenario(event) {
+      event.preventDefault(); const form = $('[data-map-scenario-form]');
+      if (!form.reportValidity()) return;
+      const values = new FormData(form), assumptions = { evidenceClass: 'user_assumption' };
+      for (const key of ['elasticity','captureRate','aov','areaSqFt','investment','travelTimeMinutes']) { const value = values.get(key); if (value !== '') assumptions[key] = Number(value); }
+      if (String(values.get('targetDemographics') || '').trim()) assumptions.targetDemographics = String(values.get('targetDemographics')).trim();
+      const revision = ++scenarioRevision, context = ++contextRevision;
+      levelRevision++; detailRevision++; compareRevision++; for (const c of aborters.values()) c.abort();
+      clearResults(); features = []; map?.setFeatures([]); renderAreas();
+      $('[data-map-apply]').disabled = true; $('[data-map-scenario-status]').textContent = 'Calculating on the server…';
+      try {
+        const result = await request('scenario', '/api/market/map/scenario', { workspaceId, geographyIds: selected ? [selected] : [], parentId: path.at(-1)?.id, zoom: ZOOMS[childIndex()], metric, year,
+          scenario: values.get('scenario'), horizonYears: Number(values.get('horizonYears')), assumptions });
+        if (destroyed || revision !== scenarioRevision || context !== contextRevision) return;
+        appliedScenario = result.scenarioId || result.scenario?.id || String(values.get('scenario')); map?.setScenario(appliedScenario);
+        if (result.map) acceptLevels(result.map); else await loadLevels();
+        if (destroyed || revision !== scenarioRevision || context !== contextRevision) return;
+        $('[data-map-forecast]').innerHTML = `<h3>Server scenario · projection</h3>${result.forecast ? reportHTML(result.forecast) : '<p>Forecast unavailable: required evidence or inputs may be missing.</p>'}${result.warnings ? reportHTML(result.warnings) : ''}`;
+        $('[data-map-scenario-status]').textContent = 'Applied user assumptions · server results';
+        if (selected) selectGeography(selected);
+      } catch (error) {
+        if (!destroyed && revision === scenarioRevision && context === contextRevision && error.name !== 'AbortError') { $('[data-map-scenario-status]').textContent = error.message; status('Scenario unavailable. Apply again or reload a map layer.'); }
+      } finally { if (!destroyed && revision === scenarioRevision) $('[data-map-apply]').disabled = false; }
+    }
+    try {
+      map = mount({ container: $('[data-map-canvas]'), onSelect: selectGeography, onViewport(view) {
+        zoom = view.zoom; bounds = view.bounds;
+        // Coarsen when zooming out; zooming in still requires explicit parent selection.
+        let changed = false;
+        while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
+        if (changed) { selected = null; invalidate(); }
+        loadLevels(); options.onViewport?.(view);
+      }, options: { ...options, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+    } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
+    container.addEventListener('click', onClick);
+    function onClick(event) {
+      const button = event.target.closest('button'); if (!button) return;
+      const d = button.dataset;
+      if ('mapGlobalResult' in d) {
+        const geo = searchResults.find(f => String(f.id) === d.mapGlobalResult); if (!geo) return;
+        const index = LEVELS.indexOf(geo.level);
+        if (index >= 0 && (index === 0 || geo.parentId)) {
+          path = index === 0 ? [] : Array.isArray(geo.ancestors) && geo.ancestors.length ? geo.ancestors : [{ id: geo.parentId, name: `Parent of ${geo.name}`, level: LEVELS[index-1] }];
+          selected = null; invalidate(); zoom = ZOOMS[index]; bounds = undefined;
+          if (geo.geometry) map?.focusGeography(geo, zoom);
+          loadLevels();
+        }
+        selectGeography(geo.id);
+      }
+      if ('mapResult' in d) { selectGeography(d.mapResult); const geo=features.find(f=>String(f.id)===d.mapResult); if(geo) map?.focusGeography(geo, ZOOMS[Math.max(0,LEVELS.indexOf(geo.level))]); }
+      if ('mapRetry' in d) loadLevels();
+      if ('mapRetryDetail' in d && selected) selectGeography(selected);
+      if ('mapDrill' in d && selectedDetail) {
+        const geo = features.find(f => String(f.id) === selected); if (!geo || LEVELS.indexOf(geo.level) >= 4) return;
+        path.push(geo); selected = null; invalidate(); map?.selectGeography(null);
+        $('[data-map-detail]').innerHTML = '<h2>Select an area</h2><p class="hint">Inspect a child geography.</p>';
+        $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
+        zoom = ZOOMS[childIndex()]; map?.focusGeography(geo,zoom); loadLevels();
+      }
+      if ('mapNational' in d) { path = []; selected = null; zoom = ZOOMS[0]; bounds = undefined; invalidate(); map?.selectGeography(null); map?.reset(); $('[data-map-detail]').innerHTML = '<h2>Select an area</h2>'; $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true; loadLevels(); }
+      if ('mapAddCompare' in d && selectedDetail && compared.size < 4) { compared.set(selected,selectedDetail); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); button.disabled = true; }
+      if ('mapRemove' in d) { compared.delete(d.mapRemove); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); $('[data-map-add-compare]').disabled = !selectedDetail || compared.has(selected) || compared.size>=4; }
+      if ('mapCompare' in d) compare();
+    }
+    $('[data-map-search]').addEventListener('input', renderAreas);
+    $('[data-map-global-form]').addEventListener('submit', searchPlaces);
+    async function searchPlaces(event) {
+      event.preventDefault();
+      const query = $('[data-map-global-query]').value.trim(); if (query.length < 2) return;
+      const revision = ++searchRevision; searchResults = [];
+      $('[data-map-global-results]').textContent = 'Searching sourced places…';
+      try {
+        const result = await request('search', '/api/market/map/search?' + new URLSearchParams({ q: query, limit: '20' }));
+        if (destroyed || revision !== searchRevision) return;
+        searchResults = list(result.results || result.features || result.geographies || (Array.isArray(result) ? result : [])).slice(0,20);
+        $('[data-map-global-results]').innerHTML = searchResults.length ? searchResults.map(f => `<button type="button" class="expansion-area" data-map-global-result="${escape(f.id)}"><span>${escape(f.name || f.id)}</span><small>${escape(f.level || 'Resolution unavailable')} · ${escape(f.id)}</small></button>`).join('') : '<p class="hint">No sourced places match this search. Try another city or PIN.</p>';
+      } catch (error) { if (!destroyed && revision === searchRevision && error.name !== 'AbortError') $('[data-map-global-results]').textContent = `Place search unavailable: ${error.message}`; }
+    }
+    container.addEventListener('change', onChange);
+    function onChange(event) {
+      const { name, value } = event.target;
+      if (name === 'metric') setMetric(value);
+      else if (name === 'year') setYear(Number(value));
+      else if (event.target.closest('[data-map-scenario-form]')) {
+        scenarioRevision++; aborters.get('scenario')?.abort(); $('[data-map-apply]').disabled = false;
+        $('[data-map-scenario-status]').textContent = 'Inputs edited · apply scenario to recalculate';
+        $('[data-map-forecast]').innerHTML = '';
+      }
+    }
+    $('[data-map-scenario-form]').addEventListener('submit', applyScenario);
+    renderLegend(); renderCompared(); loadLevels();
+    return { setMetric, setYear, setScenario, selectGeography,
+      setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
+      destroy() { destroyed = true; contextRevision++; searchRevision++; for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+    };
+  }
+  root.MarketMap = { mount, mountPage };
+})(typeof globalThis === 'undefined' ? this : globalThis);

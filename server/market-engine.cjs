@@ -14,6 +14,19 @@ function unavailable(unit, reason, assumptions = []) {
   return metric('unavailable', null, unit, 'derived_estimate', assumptions, [reason]);
 }
 
+function finiteEstimate(value, unit, assumptions, warning) {
+  return Number.isFinite(value)
+    ? metric('estimated', value, unit, 'derived_estimate', assumptions)
+    : unavailable(unit, warning, assumptions);
+}
+
+function provenanceField(value, label) {
+  const present = value !== undefined && value !== null && value !== '';
+  return present
+    ? { status: 'available', value }
+    : { status: 'unavailable', value: null, warnings: [`${label} was not supplied.`] };
+}
+
 function validatePin(pin) {
   return typeof pin === 'string' && /^[1-9][0-9]{5}$/.test(pin);
 }
@@ -70,12 +83,12 @@ function calculateMarketAssessment(input = {}) {
   }
 
   metrics.annualPerCapitaSpend = isPositiveFinite(monthlyPerCapitaSpend)
-    ? metric('estimated', monthlyPerCapitaSpend * 12, 'INR/person/year', 'derived_estimate', [...spendAssumptions, 'Monthly per-capita spend multiplied by 12.'])
+    ? finiteEstimate(monthlyPerCapitaSpend * 12, 'INR/person/year', [...spendAssumptions, 'Monthly per-capita spend multiplied by 12.'], 'Annualizing monthly per-capita spend overflowed the supported numeric range.')
     : unavailable('INR/person/year', 'A positive monthly per-capita spend or convertible household spend is required.', spendAssumptions);
 
   const population = demand.population;
   metrics.tam = isPositiveFinite(population) && metrics.annualPerCapitaSpend.value !== null
-    ? metric('estimated', population * metrics.annualPerCapitaSpend.value, 'INR/year', 'derived_estimate', [`Population ${population} × annual per-capita spend; no household conversion applied.`])
+    ? finiteEstimate(population * metrics.annualPerCapitaSpend.value, 'INR/year', [`Population ${population} × annual per-capita spend; no household conversion applied.`], 'TAM multiplication overflowed the supported numeric range.')
     : unavailable('INR/year', 'TAM requires positive population and per-capita spend.');
 
   const names = ['categoryShare', 'audienceFit', 'priceEligibility', 'accessibility'];
@@ -83,16 +96,16 @@ function calculateMarketAssessment(input = {}) {
   const captureRate = factor(segmentation.captureRate, 'captureRate', [], warnings);
   if (metrics.tam.value !== null && factors.every(value => value !== null)) {
     const share = factors.reduce((product, value) => product * value, 1);
-    metrics.sam = metric('estimated', metrics.tam.value * share, 'INR/year', 'derived_estimate', names.map((name, index) => `${name}=${factors[index]} applied once.`));
+    metrics.sam = finiteEstimate(metrics.tam.value * share, 'INR/year', names.map((name, index) => `${name}=${factors[index]} applied once.`), 'SAM calculation overflowed the supported numeric range.');
   } else {
     metrics.sam = unavailable('INR/year', 'SAM requires TAM and explicit category, audience, price, and accessibility factors.');
   }
   metrics.som = metrics.sam.value !== null && captureRate !== null
-    ? metric('estimated', metrics.sam.value * captureRate, 'INR/year', 'derived_estimate', [`Capture rate ${captureRate} applied once to SAM.`])
+    ? finiteEstimate(metrics.sam.value * captureRate, 'INR/year', [`Capture rate ${captureRate} applied once to SAM.`], 'SOM calculation overflowed the supported numeric range.')
     : unavailable('INR/year', 'SOM requires SAM and an explicit capture rate from 0 to 1.');
 
   if (isPositiveFinite(economics.monthlyFixedCosts) && isPositiveFinite(economics.grossMargin) && economics.grossMargin <= 1) {
-    metrics.breakEvenRevenue = metric('estimated', economics.monthlyFixedCosts / economics.grossMargin, 'INR/month', 'derived_estimate', ['Monthly fixed costs divided by gross margin.']);
+    metrics.breakEvenRevenue = finiteEstimate(economics.monthlyFixedCosts / economics.grossMargin, 'INR/month', ['Monthly fixed costs divided by gross margin.'], 'Break-even calculation overflowed the supported numeric range.');
   } else {
     metrics.breakEvenRevenue = unavailable('INR/month', 'Break-even revenue requires positive monthly fixed costs and gross margin from 0 to 1.');
   }
@@ -100,13 +113,19 @@ function calculateMarketAssessment(input = {}) {
     ? economics.monthlyRevenue * economics.grossMargin - (Number.isFinite(economics.monthlyFixedCosts) && economics.monthlyFixedCosts >= 0 ? economics.monthlyFixedCosts : NaN)
     : NaN;
   metrics.paybackMonths = isPositiveFinite(economics.initialInvestment) && Number.isFinite(monthlyContribution) && monthlyContribution > 0
-    ? metric('estimated', economics.initialInvestment / monthlyContribution, 'months', 'derived_estimate', ['Initial investment divided by positive monthly contribution after fixed costs; assumes constant monthly performance.'])
+    ? finiteEstimate(economics.initialInvestment / monthlyContribution, 'months', ['Initial investment divided by positive monthly contribution after fixed costs; assumes constant monthly performance.'], 'Payback calculation overflowed the supported numeric range.')
     : unavailable('months', 'Payback requires positive initial investment and positive monthly contribution after fixed costs.');
 
   const riskWarnings = [];
   if (input.risk?.downsideCashFlowNegative === true) riskWarnings.push('Downside scenario has negative cash flow.');
   if (input.risk?.criticalEvidenceMissing === true) riskWarnings.push('Critical evidence is missing.');
   warnings.push(...riskWarnings);
+  const sourceVintage = provenanceField(input.sourceVintage, 'Source vintage');
+  const geography = provenanceField(input.geography, 'Geography');
+  for (const result of Object.values(metrics)) {
+    result.sourceVintage = sourceVintage;
+    result.geography = geography;
+  }
   const decision = riskWarnings.length
     ? { status: 'gated', warnings: riskWarnings }
     : { status: 'provisional', warnings: ['Market calculations do not determine franchisee eligibility or constitute an unconditional investment approval.'] };

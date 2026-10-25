@@ -72,3 +72,42 @@ test('every calculated metric exposes structured evidence and outputs are JSON s
   }
   assert.doesNotThrow(() => JSON.stringify(result));
 });
+
+test('metrics carry explicit source vintage and geography, with missing provenance unavailable', () => {
+  const input = {
+    sourceVintage: 'HCES 2023-24',
+    geography: { level: 'state', name: 'Karnataka' },
+    demand: { population: 100, monthlyPerCapitaSpend: 100 }
+  };
+  const withProvenance = calculateMarketAssessment(input);
+  assert.deepEqual(withProvenance.metrics.tam.sourceVintage, { status: 'available', value: 'HCES 2023-24' });
+  assert.deepEqual(withProvenance.metrics.tam.geography, { status: 'available', value: { level: 'state', name: 'Karnataka' } });
+  const withoutProvenance = calculateMarketAssessment({ demand: input.demand });
+  assert.equal(withoutProvenance.metrics.tam.sourceVintage.status, 'unavailable');
+  assert.equal(withoutProvenance.metrics.tam.geography.status, 'unavailable');
+});
+
+test('annualization and TAM overflow return unavailable metrics with warnings', () => {
+  const annualizationOverflow = calculateMarketAssessment({ demand: { monthlyPerCapitaSpend: Number.MAX_VALUE } });
+  assert.equal(annualizationOverflow.metrics.annualPerCapitaSpend.status, 'unavailable');
+  assert.equal(annualizationOverflow.metrics.annualPerCapitaSpend.value, null);
+  assert.ok(annualizationOverflow.metrics.annualPerCapitaSpend.warnings.length);
+
+  const tamOverflow = calculateMarketAssessment({ demand: { population: Number.MAX_VALUE, monthlyPerCapitaSpend: 1 } });
+  assert.equal(tamOverflow.metrics.annualPerCapitaSpend.status, 'estimated');
+  assert.equal(tamOverflow.metrics.tam.status, 'unavailable');
+  assert.equal(tamOverflow.metrics.tam.value, null);
+  assert.ok(tamOverflow.metrics.tam.warnings.length);
+});
+
+test('zero SAM factors are valid boundaries while invalid factors block SAM and SOM', () => {
+  const base = { demand: { population: 100, monthlyPerCapitaSpend: 100 } };
+  const zero = calculateMarketAssessment({ ...base, segmentation: { categoryShare: 0, audienceFit: 1, priceEligibility: 1, accessibility: 1, captureRate: 0 } });
+  assert.equal(zero.metrics.sam.value, 0);
+  assert.equal(zero.metrics.som.value, 0);
+
+  const invalid = calculateMarketAssessment({ ...base, segmentation: { categoryShare: -0.1, audienceFit: 1, priceEligibility: 1, accessibility: 1, captureRate: 1 } });
+  assert.equal(invalid.metrics.sam.status, 'unavailable');
+  assert.equal(invalid.metrics.som.status, 'unavailable');
+  assert.ok(invalid.warnings.some(warning => /categoryShare/.test(warning)));
+});

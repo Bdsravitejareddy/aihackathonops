@@ -30,3 +30,18 @@ Implemented and committed on `feat/india-fashion-market-intelligence`.
 ## Commit
 
 See commit recorded in repository history for this task.
+
+## Scoped review fix round
+
+### Findings addressed
+
+- Added `sourceVintage` and `geography` fields to every assessment metric. Callers supply these explicitly at the assessment input level; absent values are represented as `{ status: 'unavailable', value: null, warnings: [...] }` rather than inferred.
+- Guarded annualization, TAM, SAM, SOM, break-even, and payback arithmetic. Non-finite derived values now return `status: 'unavailable'`, `value: null`, and a calculation-specific warning.
+- Added the deferred SAM factor boundary coverage: zero is accepted as a valid boundary; a negative factor blocks SAM/SOM and emits a warning.
+
+### Fix verification
+
+1. Added provenance and overflow assertions before changing implementation. The focused suite failed on missing provenance output and on annualization producing an estimated non-finite result, confirming RED.
+2. Ran `node --test tests/market-engine.test.cjs` after implementation: **11 passed, 0 failed**.
+3. Ran `npm test`: **115 passed, 1 failed**. The failure is the pre-existing untracked `tests/market-data.test.cjs`, which aborts because `data/india-market-sources.json` is absent. Neither that test nor the data source file was changed in this Task 1 fix round.
+4. Added tests for both important findings and the deferred factor boundary. Applicant scoring code remains untouched.

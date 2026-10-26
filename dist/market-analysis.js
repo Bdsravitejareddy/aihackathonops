@@ -51,7 +51,7 @@
 
   function rangeHTML(result) {
     const s = result.scenarios, rows = [
-      ['Investment', k => money(s[k].investment)], ['Annual revenue (yr 1 run-rate)', k => money(s[k].annualRevenue)],
+      ['Investment', k => money(s[k].investment)], ['Annual sales (full rate, after ramp-up)', k => money(s[k].annualRevenue)],
       ['Revenue limited by', k => ({ demand_limited: 'Area demand', store_capacity_limited: 'Store size', no_demand_data: 'Store size*', user_input: 'Your input' }[s[k].revenueConstraint] || '—')],
       ['ROI · 5-year cumulative', k => pct(s[k].roi5YearPercent)], ['ROI · annual (year 2)', k => pct(s[k].annualRoiPercent)],
       ['Payback', k => months(s[k].paybackMonths)], ['Break-even revenue / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]

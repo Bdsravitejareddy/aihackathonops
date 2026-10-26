@@ -80,7 +80,7 @@
       <div class="small-text muted te-place">${escape(territory.tier)} · ${escape(territory.state)}</div>
       ${territory.issues?.length ? `<div class="info-row warning">${territory.issues.map(escape).join('<br>')}</div>` : ''}
       <div class="te-meta"><div><span class="te-meta-label" data-tip-key="applications" tabindex="0">Applications</span><span class="te-meta-value">${apps.length}</span></div><div>${slots}</div></div>
-      <div class="te-kpi-holder" data-te-kpis="${escape(territory.id)}"><div class="te-kpis te-kpis--loading" aria-busy="true">${['Catchment population', 'TAM · category spend', 'Investment required', 'Payback · base case'].map(label => `<div class="te-kpi"><span class="te-label">${label}</span><strong class="te-value">…</strong></div>`).join('')}</div></div>
+      <div class="te-kpi-holder" data-te-kpis="${escape(territory.id)}"><div class="te-kpis te-kpis--loading" aria-busy="true">${['Residents', 'TAM · category spend', 'Investment required', 'Payback · best PIN'].map(label => `<div class="te-kpi"><span class="te-label">${label}</span><strong class="te-value">…</strong></div>`).join('')}</div></div>
       ${noSlots ? '<p class="te-note-line">This territory has no open slots, so no store investment is counted.</p>' : ''}
       ${orphan ? `<p class="te-note-line">${orphan} application${orphan === 1 ? '' : 's'} list a PIN outside this territory.</p>` : ''}
       ${toggleButton(key, 'PINs in this city', territory.pins.length)}

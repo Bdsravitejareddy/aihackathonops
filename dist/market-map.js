@@ -159,11 +159,12 @@
     population: metrics.population, tam: metrics.apparelExpenditure || metrics.tam,
     potentialRevenue: metrics.potentialRevenue, spending: metrics.monthlyPerCapitaSpend
   });
-  const formatMonths = months => !numeric(months) ? '> 5 yrs' : months < 12 ? `${months} mo` : `${(months / 12).toFixed(1).replace(/\.0$/, '')} yrs`;
+  // Same payback wording as the Analysis panel and Territories cards.
+  const formatMonths = months => !numeric(months) ? 'over 5 years' : months < 24 ? `${months} months` : `${(months / 12).toFixed(1).replace(/\.0$/, '')} years`;
   // Why the base case does or does not pay back within the 5-year horizon, in one short clause.
   function paybackReason(mid, money) {
     if (numeric(mid?.paybackMonths) || !numeric(mid?.annualRevenue) || !numeric(mid?.breakEvenRevenueAnnual)) return '';
-    return mid.annualRevenue < mid.breakEvenRevenueAnnual ? `Store sales ${money(mid.annualRevenue)}/yr are below the ${money(mid.breakEvenRevenueAnnual)}/yr break-even · ` : 'Recovers the investment after year 5 · ';
+    return mid.annualRevenue < mid.breakEvenRevenueAnnual ? `Store sales ${money(mid.annualRevenue)}/yr are below the ${money(mid.breakEvenRevenueAnnual)}/yr break-even · ` : `Store sales clear break-even by only ${money(mid.annualRevenue - mid.breakEvenRevenueAnnual)}/yr · `;
   }
   // Investment and payback from the cost model: the base case, with the downside–upside range.
   function storeEconomics(result) {
@@ -286,13 +287,13 @@
       loadAnalysis(id); loadCompetitors(id);
     }
 
-    const TILE_TIPS = { TAM: 'tam', 'Potential revenue': 'potentialRevenue', Catchment: 'catchment', 'Consumer spend': 'spend', 'Investment required': 'investment', Payback: 'payback' };
+    const TILE_TIPS = { TAM: 'tam', 'Potential revenue': 'potentialRevenue', Residents: 'residents', 'Consumer spend': 'spend', 'Investment required': 'investment', Payback: 'payback' };
     const tile = (title, value, sub = '', tone = '') => `<div class="expansion-popup-kpi${tone ? ' is-' + tone : ''}"><span${TILE_TIPS[title] ? ` data-tip-key="${TILE_TIPS[title]}" tabindex="0"` : ''}>${escape(title)}</span><strong>${escape(value)}</strong>${sub ? `<small>${escape(sub)}</small>` : ''}</div>`;
     const metricTiles = metrics => {
       const m = reliableMetrics(metrics), out = [];
       if (metricValue(m.tam) !== null) out.push(tile('TAM', display(m.tam), 'Annual category spend', 'prominent'));
       if (metricValue(m.potentialRevenue) !== null) out.push(tile('Potential revenue', display(m.potentialRevenue), 'Organised store demand', 'prominent'));
-      if (metricValue(m.population) !== null) out.push(tile('Catchment', display(m.population), 'Residents in this area'));
+      if (metricValue(m.population) !== null) out.push(tile('Residents', display(m.population), 'Living in this PIN'));
       if (metricValue(m.spending) !== null) out.push(tile('Consumer spend', display(m.spending), 'Per person, apparel'));
       return out;
     };
@@ -538,7 +539,7 @@
           <div class="expansion-side-head"><div><div class="eyebrow">MARKET INTELLIGENCE</div><h1 data-map-place-title>India</h1><p data-map-place-path>National overview · Apparel & fashion</p></div><button type="button" class="button small" data-map-sidebar-close aria-label="Hide insights">×</button></div>
           <div class="expansion-action-row"><button class="button primary small" type="button" data-map-open-market>Open Market Intelligence</button><button class="button small" type="button" data-map-screen-pin disabled>Screen PIN</button></div>
           <div class="expansion-market-overview" data-map-overview aria-live="polite">
-            ${[['tam','Annual category-spend TAM'],['population','Catchment population'],['spending','Consumer spend / person / month']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span data-tip-key="${key==='population'?'catchment':key}" tabindex="0">${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
+            ${[['tam','Annual category-spend TAM'],['population','Residents'],['spending','Consumer spend / person / month']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span data-tip-key="${key==='population'?'residents':key}" tabindex="0">${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
           </div>
           <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
           <section class="analysis-section" aria-label="Store cost and return analysis"><h2 class="analysis-title">Analysis <span>store costs, ROI &amp; payback</span></h2><div data-map-analysis aria-live="polite"></div></section>

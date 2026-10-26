@@ -215,10 +215,9 @@ test('PIN and district rows from Neon resolve tiers from district names, India P
   assert.equal(resolveTier({ id: 'district:IN-KA-bangalore', name: 'Bangalore', level: 'district', state: 'Karnataka' }).tierClass, 'X');
   assert.equal(resolveTier({ id: 'district:IN-TG-hyderabad', name: 'Hyderabad', level: 'district', state: 'Telangana' }).tierClass, 'X');
   assert.equal(resolveTier({ id: 'district:IN-DL-north-west', name: 'North West', level: 'district', state: 'Delhi' }).tierClass, 'X');
-  // A mostly rural PIN in a metro district steps down one class instead of taking metro costs.
-  const fringe = resolveTier(neonPin('562157', 'Karnataka', 'district:IN-KA-bangalore', { demographics: { urbanShare: 0.12 } }));
-  assert.equal(fringe.tierClass, 'Y');
-  assert.ok(fringe.warnings.some(w => /mostly rural/.test(w)));
+  // A PIN takes its city's class whatever its modelled urban share, so one territory is priced at one tier.
+  const fringe = resolveTier(neonPin('560048', 'Karnataka', 'district:IN-KA-bangalore', { demographics: { urbanShare: 0.19 } }));
+  assert.equal(fringe.tierClass, 'X');
   // With no city or district name at all, costs span the state's tier mix.
   assert.equal(resolveTier({ id: 'pin:999999', name: '999999', level: 'pin', state: 'Karnataka' }).tierClass, 'mixed');
   // A metro PIN gets metro rent in the full analysis.

@@ -166,7 +166,7 @@ test('area popup shows category, potential and catchment figures, and its detail
   h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});await tick();
   const popup=h.window.maplibregl.Popup.instances.at(-1);
   assert.equal(popup.options.maxWidth,'340px');
-  assert.match(popup.html,/Annual category spend/);assert.match(popup.html,/Potential revenue/);assert.match(popup.html,/Catchment/);
+  assert.match(popup.html,/Annual category spend/);assert.match(popup.html,/Potential revenue/);assert.match(popup.html,/Residents/);
   assert.doesNotMatch(popup.html,/Annual SOM|Estimated customers|Ideal investment|growth|Test source|areal_interpolation|https:\/\/example\.org/i);
   const details=h.host.querySelector('[data-map-detail]').closest('details');
   h.click('[data-map-sidebar-toggle]');assert.ok(h.host.querySelector('.expansion-side').classList.contains('is-collapsed'));
@@ -181,7 +181,7 @@ test('area popup labels each supported geography level and keeps population as c
     h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
     const html=h.window.maplibregl.Popup.instances.at(-1).html;
     assert.match(html,new RegExp(`<small>${level[0].toUpperCase()+level.slice(1)}</small>`));
-    assert.match(html,/<span[^>]*>Catchment<\/span>/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
+    assert.match(html,/<span[^>]*>Residents<\/span>/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
   }
 });
 

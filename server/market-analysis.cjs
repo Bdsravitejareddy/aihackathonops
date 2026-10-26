@@ -62,14 +62,10 @@ function resolveTier(geography = {}) {
   if (!match && stateKey === 'delhi') { match = tierCatalog.cities.find(city => city.printedName === 'Delhi (UA)'); matchedOn = 'NCT of Delhi'; }
   if (match) {
     const inherited = level === 'pin' || level === 'catchment', warnings = match.note ? [match.note] : [];
-    const urbanShare = geography.demographics?.urbanShare;
-    let cls = match.class, basis = `${inherited ? 'PIN inherits its district class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`;
-    // A largely rural PIN inside a metro district should not carry metro costs: step down one class.
-    if (inherited && finite(urbanShare) && urbanShare < 0.3 && cls !== 'Z') {
-      cls = cls === 'X' ? 'Y' : 'Z';
-      basis += ` Urban share ${Math.round(urbanShare * 100)}% (< 30%), so costs step down to class ${cls}.`;
-      warnings.push(`This PIN is mostly rural (${Math.round(urbanShare * 100)}% urban) within ${match.printedName}; costs use class ${cls} instead of ${match.class}.`);
-    }
+    // A PIN takes its city's class, as the case assigns tiers by city. A rural step-down was dropped: modelled
+    // PIN urban shares are unreliable (central Bengaluru 560048 shows 19%), and it priced PINs in one
+    // territory at different tiers.
+    const cls = match.class, basis = `${inherited ? 'PIN inherits its district class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`;
     return { tierClass: cls, tier: tierLabel(cls), classesPresent: [cls], levels: { low: cls, mid: cls, high: cls }, matchedCity: match.printedName, matchedOn, basis, evidence, warnings };
   }
   if (!candidates.length && stateKey) {

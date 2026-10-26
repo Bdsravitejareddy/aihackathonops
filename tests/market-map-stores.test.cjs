@@ -182,26 +182,26 @@ test('clicking a PIN marker opens a popup with reliable figures only', async t =
   await loadPins();
   await clickPin(h, 'pin:560059');
   const popup = popupOf(h);
-  for (const text of ['Annual category spend', 'Potential revenue', 'Catchment', 'Consumer spend']) assert.match(popup.textContent, new RegExp(text));
+  for (const text of ['Annual category spend', 'Potential revenue', 'Residents', 'Consumer spend']) assert.match(popup.textContent, new RegExp(text));
   for (const text of ['Serviceable', 'Competitor intensity', 'Relevant customers', 'Market opportunity', 'Unavailable']) assert.doesNotMatch(popup.textContent, new RegExp(text));
   assert.match(popup.textContent, /#1 next-best PIN to open/);
 });
 
-test('PIN popup shows investment and payback from the cost model, and "> 5 yrs" when payback is unknown', async t => {
+test('PIN popup shows investment and payback from the cost model, and "over 5 years" when payback is unknown', async t => {
   const known = mountAdapter({ responder: pinApi({ analysis: economics(30) }) });
   t.after(() => { known.adapter.destroy(); known.dom.window.close(); });
   await loadPins();
   await clickPin(known, 'pin:560059');
   assert.match(popupOf(known).textContent, /Investment required/);
   assert.match(popupOf(known).textContent, /Payback/);
-  assert.match(popupOf(known).textContent, /2\.5 yrs/);
+  assert.match(popupOf(known).textContent, /2\.5 years/);
 
   const unknown = mountAdapter({ responder: pinApi({ analysis: economics(null) }) });
   t.after(() => { unknown.adapter.destroy(); unknown.dom.window.close(); });
   await loadPins();
   await clickPin(unknown, 'pin:560059');
   assert.match(popupOf(unknown).textContent, /Payback/);
-  assert.match(popupOf(unknown).textContent, /> 5 yrs/);
+  assert.match(popupOf(unknown).textContent, /over 5 years/);
 });
 
 test('storePins option marks listed PINs as stores and is sent with the opportunity request', async t => {

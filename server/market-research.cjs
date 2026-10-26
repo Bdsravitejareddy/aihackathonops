@@ -154,7 +154,7 @@ function createMarketResearchService(options = {}) {
     return { allowed: true };
   }
 
-  async function generate({ prompt, clientId }) {
+  async function generate({ prompt, clientId, searchRetry = false }) {
     if (!apiKeys.length) return fail('missing_api_key', 'Gemini research is not configured on the server.');
     if (typeof fetchImpl !== 'function') return fail('unavailable', 'Gemini research is unavailable in this runtime.');
     const limit = allow(clientId);
@@ -169,7 +169,7 @@ function createMarketResearchService(options = {}) {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         tools: [{ google_search: {} }]
       };
-      if (/^gemini-[34]\./.test(model)) body.generationConfig = { thinkingConfig: { thinkingLevel } };
+      if (/^gemini-[34]\./.test(model)) body.generationConfig = { thinkingConfig: { thinkingLevel: searchRetry && thinkingLevel === 'LOW' ? 'MEDIUM' : thinkingLevel } };
       const request = {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -197,8 +197,15 @@ function createMarketResearchService(options = {}) {
       if (!candidate || candidate.finishReason === 'SAFETY') return fail('invalid_response', 'Research provider returned no usable response.');
       const retrievedAt = new Date(now()).toISOString();
       const citations = extractCitations(candidate.groundingMetadata).map(citation => ({ ...citation, publicationDate: null, retrievedAt }));
-      if (typeof logger.info === 'function') logger.info('Gemini market research usage', { model, usage: payload.usageMetadata || null, groundingQueries: candidate.groundingMetadata?.webSearchQueries?.length || 0, estimatedCostUsd:costPerRequestUsd, costRateConfigured:costPerRequestUsd !== null });
-      return { ok: true, text: extractResponseText(payload), citations, supports: extractSupports(candidate.groundingMetadata), usage: payload.usageMetadata || null, retrievedAt };
+      const supports = extractSupports(candidate.groundingMetadata), groundingQueries = candidate.groundingMetadata?.webSearchQueries?.length || 0;
+      if (typeof logger.info === 'function') logger.info('Gemini market research usage', { model, usage: payload.usageMetadata || null, groundingQueries, citations: citations.length, supports: supports.length, searchRetry, estimatedCostUsd:costPerRequestUsd, costRateConfigured:costPerRequestUsd !== null });
+      // At low thinking the model sometimes answers from memory without searching, which leaves nothing to cite;
+      // retry once with more thinking and an explicit instruction to search first.
+      if (!citations.length && !searchRetry) {
+        clearTimeout(timer);
+        return generate({ prompt: `Run Google Search before answering; do not answer from memory.\n\n${prompt}`, clientId, searchRetry: true });
+      }
+      return { ok: true, text: extractResponseText(payload), citations, supports, groundingQueries, usage: payload.usageMetadata || null, retrievedAt };
     } catch (error) {
       if (timedOut || error?.name === 'AbortError') return fail('timeout', 'Research request timed out. Try again.');
       logger.error('Gemini market research request failed', { name: safeText(error?.name, 80) || 'Error' });

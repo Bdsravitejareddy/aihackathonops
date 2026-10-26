@@ -119,8 +119,14 @@ function createCompetitorService({ pool, research = null, sectors, fetchImpl = g
     try { result = await research.generate({ prompt, clientId }); }
     catch (error) { logger.error?.('Competitor research failed', { name: error?.name }); return { error: 'Competitor research failed.' }; }
     if (!result.ok) return { error: result.error?.message || 'Competitor research failed.' };
-    const competitors = shapeResearched(research.parseJson?.(result.text), result.citations || [], result.supports || []);
-    return { competitors, citations: result.citations || [], retrievedAt: result.retrievedAt };
+    const parsed = research.parseJson?.(result.text), competitors = shapeResearched(parsed, result.citations || [], result.supports || []);
+    if (competitors.length || (result.citations || []).length) return { competitors, citations: result.citations || [], retrievedAt: result.retrievedAt };
+    // No search ran, so nothing is citable. Show only brands the sector already lists as majors, clearly unverified.
+    const known = new Set((profile.majorBrands || []).map(brandKey));
+    const unverified = (Array.isArray(parsed?.competitors) ? parsed.competitors : []).map(row => clean(row?.name, 80)).filter(name => known.has(brandKey(name))).slice(0, 8)
+      .map(name => ({ name, parent: null, format: null, priceTier: null, presence: null, citation: null, unverified: true }));
+    return { competitors: unverified, citations: [], retrievedAt: result.retrievedAt,
+      ...(unverified.length ? { note: 'Search was unavailable; listed brands are known sector majors suggested by the model, not verified for this area.' } : {}) };
   }
 
   async function compute(geographyId, profile, clientId) {
@@ -130,11 +136,11 @@ function createCompetitorService({ pool, research = null, sectors, fetchImpl = g
     const [observed, researched] = await Promise.all([observe(geo.geometry, profile, geographyId), researchMajor(geo, profile, clientId)]);
     const counts = observed.brandCounts || {}, observedNames = new Set(Object.keys(counts));
     const majorCompetitors = [
-      ...(researched.competitors || []).map(c => ({ ...c, observedInArea: observedNames.has(brandKey(c.name)), evidenceClass: 'derived_estimate' })),
+      ...(researched.competitors || []).map(c => ({ ...c, observedInArea: observedNames.has(brandKey(c.name)), evidenceClass: c.unverified ? 'model_assumption' : 'derived_estimate' })),
       ...(observed.brands || []).filter(b => !(researched.competitors || []).some(c => brandKey(c.name) === brandKey(b.name)))
         .slice(0, 5).map(b => ({ name: b.name, parent: null, format: null, priceTier: null, presence: 'in area', observedInArea: true, storesInArea: b.count, evidenceClass: 'observed_osm', citation: null }))
     ].map(c => ({ ...c, storesInArea: c.storesInArea ?? counts[brandKey(c.name)] ?? 0 }));
-    const warnings = [observed.error, researched.error].filter(Boolean);
+    const warnings = [observed.error, researched.error, researched.note].filter(Boolean);
     if (!observed.error && observed.totalStores === 0) warnings.push('No stores of this sector are mapped in OpenStreetMap for this area; that may mean thin map coverage rather than no competition.');
     return { geographyId, name: geo.name, level: geo.kind, sector: profile.id, sectorName: profile.name, modelVersion: MODEL_VERSION,
       observed: observed.error ? null : observed, majorCompetitors, citations: researched.citations || [], warnings, computedAt: new Date(now()).toISOString() };

@@ -233,3 +233,17 @@ test('research cards take sources from grounding supports and same-site URLs, ne
   ], citations, supports);
   assert.deepEqual(cards.map(card => [card.headline, card.evidenceUrls]), [['Dense catchment', [citations[0].url]], ['Spend data', [citations[1].url]]]);
 });
+
+test('an answer without any grounding search is retried once with an explicit search instruction', async () => {
+  const { createMarketResearchService } = require('../server/market-research.cjs');
+  const bodies = [];
+  const reply = grounding => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '{"ok":true}' }] }, groundingMetadata: grounding }] }) });
+  const service = createMarketResearchService({ apiKey: 'test', logger: { error() {}, info() {} }, fetchImpl: async (url, request) => {
+    bodies.push(JSON.parse(request.body));
+    return bodies.length === 1 ? reply({}) : reply({ webSearchQueries: ['q'], groundingChunks: [{ web: { uri: 'https://example.com/a', title: 'example.com' } }] });
+  } });
+  const result = await service.generate({ prompt: 'Find brands', clientId: 'retry-test' });
+  assert.equal(bodies.length, 2);
+  assert.match(bodies[1].contents[0].parts[0].text, /Run Google Search before answering/);
+  assert.equal(result.citations.length, 1);
+});

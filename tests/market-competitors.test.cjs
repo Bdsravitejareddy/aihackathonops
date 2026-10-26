@@ -197,3 +197,20 @@ test('researched competitors are matched to citations through grounding supports
     [{ text: 'Westside operates a store on Rajajinagar main road.', urls: ['https://a.example/stores'] }]);
   assert.deepEqual(rows.map(r => [r.name, r.citation.url]), [['Westside', 'https://a.example/stores'], ['Zudio', 'https://b.example/zudio-bengaluru']]);
 });
+
+test('without any citations only known sector brands are shown, labelled unverified', async () => {
+  const { createCompetitorService } = require('../server/market-competitors.cjs');
+  const { createSectorRegistry } = require('../server/market-sectors.cjs');
+  const pool = { async query(sql) {
+    if (/CREATE TABLE/.test(sql)) return { rows: [] };
+    if (/FROM market_area_competitors/.test(sql)) return { rows: [] };
+    if (/FROM market_geographies WHERE external_id/.test(sql)) return { rows: [{ kind: 'pin', external_id: 'pin:560058', name: '560058', properties: { state: 'Karnataka' }, geometry: null }] };
+    if (/to_regclass/.test(sql)) return { rows: [{ ok: false }] };
+    return { rows: [] };
+  } };
+  const research = { generate: async () => ({ ok: true, text: '{"competitors":[{"name":"Zudio"},{"name":"Made Up Mart"}]}', citations: [], supports: [] }), parseJson: JSON.parse };
+  const service = createCompetitorService({ pool, research, sectors: createSectorRegistry(), fetchImpl: async () => { throw new Error('no network'); }, logger: { error() {} } });
+  const result = await service.getCompetitors({ geographyId: 'pin:560058', sectorId: 'apparel' });
+  assert.deepEqual(result.majorCompetitors.map(c => [c.name, c.evidenceClass]), [['Zudio', 'model_assumption']]);
+  assert.ok(result.warnings.some(w => /not verified/.test(w)));
+});

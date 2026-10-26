@@ -13,7 +13,7 @@ test('same pin and slot limit only recommend one',()=>{let r=run([norm(),norm({i
 test('duplicate IDs require clarification',()=>{a.ok(run([norm(),norm({},1)]).every(x=>x.status==='Clarification needed'));});
 test('overlapping territories require clarification',()=>{a.equal(run([norm()],[...ter,{...ter[0],id:'TER-02'}])[0].status,'Territory review');});
 test('contradictory space is held',()=>{a.equal(run([norm({space:'Owned',notes:'Still searching for a shop'})])[0].status,'Clarification needed');});
-test('Upper does not imply first floor',()=>{a.equal(run([norm({floor:'Upper'})])[0].status,'Site needed');});
+test('an Upper-floor site is identified; only an unknown floor needs confirming',()=>{a.notEqual(run([norm({floor:'Upper'})])[0].status,'Site needed');let r=run([norm({floor:'Not known'})])[0];a.equal(r.status,'Site needed');a.equal(r.category,'Data required');a.match(r.reasons.join(' '),/confirm which floor/);});
 test('ground floor natural language update proposes change',()=>{const x=E.parseUpdate('APP-001 has now found a ground-floor space',[norm()]);a.equal(x.field,'floor');a.equal(x.value,'Ground');});
 test('blank not equal to zero experience',()=>{a.equal(norm({experience:0}).experience,0);a.equal(norm({experience:''}).experience,null);});
 test('zero experience earns no experience points',()=>{a.equal(run([norm({experience:0})])[0].components.find(c=>c.key==='experience').points,0);});

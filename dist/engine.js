@@ -51,8 +51,11 @@ function territoryCapacity(territories,stores=[]){let occupied=new Set(stores.ma
 // Editable screening policy: criterion weights (points out of 100), hard filters and grade bands.
 const scoreKeys=['investment','space','area','experience','business','launch'];
 const tierNames=['Tier 1','Tier 2','Tier 3'];
-// Floors that count as a confirmed site. The template's 'Upper', 'Mall unit' and 'Not known' still need the actual floor confirmed (Edit application).
-const confirmedFloors=['Ground','First','Other confirmed'];
+// Floors that count as a confirmed site. Only 'Not known' (or a blank floor) still needs the floor confirmed (Edit application).
+const confirmedFloors=['Ground','First','Upper','Mall unit','Other confirmed'];
+// The three decision categories shown to the team. Detailed statuses stay for reasons and next actions.
+const categories=['Recommended','Data required','Future expansion'];
+function categoryOf(a){return a.status==='Recommended'?'Recommended':a.status==='Waitlisted'||a.status==='Location unavailable'||a.locationMismatch?'Future expansion':'Data required';}
 const defaultPolicy=Object.freeze({model:'industry-v2',minInvestment:30,minArea:400,minLaunch:3,targetLaunch:6,
  weights:Object.freeze({investment:35,space:15,area:15,experience:20,business:5,launch:10}),grades:Object.freeze({A:80,B:65,C:50}),allowedTiers:Object.freeze([...tierNames]),pinPrefixes:Object.freeze([])});
 const policyLabels={minInvestment:'Required investment',minArea:'Minimum area',minLaunch:'Minimum feasible launch',targetLaunch:'Target latest launch'};
@@ -104,20 +107,22 @@ if(a.floor==='Ground'&&/\b(?:shop|space|premises|unit)\b.{0,30}\b(?:first|upper|
 if(a.space==='Not yet identified'&&(a.area>0||['Ground','First'].includes(a.floor)))reasons.push('Site details are present although space is not yet identified.');
 if(pending.length)reasons.push(`${pending.length} proposed data correction${pending.length>1?'s':''} awaiting confirmation.`);
 if(missing.length)reasons.push('Missing: '+missing.join(', ')+'.');
-const matches=territories.filter(t=>t.pins?.includes(a.pin));let t=matches.length===1?matches[0]:null,status='Eligible';
+const matches=territories.filter(t=>t.pins?.includes(a.pin));let t=matches.length===1?matches[0]:null,status='Eligible',locationMismatch=false;
 if(reasons.length)status='Clarification needed';
 else if(stores.some(s=>String(s.pin)===a.pin)){status='Location unavailable';reasons.push('An existing store already occupies this pin code. Choose a different pin code.');}
-else if(v2&&!policy.allowedTiers.includes(tier)){status='Requirements not met';reasons.push(`${a.city} is ${tier}; the screening policy only accepts ${policy.allowedTiers.join(', ')}.`);}
-else if(v2&&policy.pinPrefixes.length&&!policy.pinPrefixes.some(p=>a.pin.startsWith(p))){status='Requirements not met';reasons.push(`Pin code ${a.pin} is outside the targeted prefixes (${policy.pinPrefixes.join(', ')}).`);}
-else if(!t||matches.length>1){status='Territory review';reasons.push(matches.length>1?'Pin code appears in more than one territory. Resolve territory overlap.':'Pin code is not covered by an uploaded territory.');}
+else if(v2&&!policy.allowedTiers.includes(tier)){status='Requirements not met';locationMismatch=true;reasons.push(`${a.city} is ${tier}; the screening policy only accepts ${policy.allowedTiers.join(', ')}.`);}
+else if(v2&&policy.pinPrefixes.length&&!policy.pinPrefixes.some(p=>a.pin.startsWith(p))){status='Requirements not met';locationMismatch=true;reasons.push(`Pin code ${a.pin} is outside the targeted prefixes (${policy.pinPrefixes.join(', ')}).`);}
+else if(!t||matches.length>1){status='Territory review';locationMismatch=!t;reasons.push(matches.length>1?'Pin code appears in more than one territory. Resolve territory overlap.':'Pin code is not covered by an uploaded territory.');}
 else if(t.issues?.length||t.city!==a.city||t.state!==a.state||!Number.isInteger(t.slots)||t.slots<0){status='Territory review';reasons.push('Territory details are incomplete, invalid or conflict with the application.');}
 else if(v2&&(!(Number(settings.minInvestment)>0)||!(Number(settings.minArea)>0)||!(Number(settings.minLaunch)>0)||!(Number(settings.targetLaunch)>=Number(settings.minLaunch)))){status='Policy needed';reasons.push('Configure a positive investment requirement, area minimum and feasible launch window before allocating. These are brand assumptions, not universal standards.');}
-else if(a.space==='Not yet identified'||!a.area||!confirmedFloors.includes(a.floor)){status='Site needed';reasons.push('Confirm an identified site, positive usable area and actual floor.');}
+else if(a.space==='Not yet identified'||!a.area){status='Site needed';reasons.push('No site identified yet. Add the premises and its usable area.');}
+else if(!confirmedFloors.includes(a.floor)){status='Site needed';reasons.push('The site is identified; confirm which floor it is on.');}
 else if((settings.minInvestment!==''&&settings.minInvestment!=null&&a.investment<Number(settings.minInvestment))||(settings.minArea!==''&&settings.minArea!=null&&a.area<Number(settings.minArea))){status='Requirements not met';reasons.push('Investment or area is below the configured brand minimum.');}
 else if(settings.minLaunch!==''&&settings.minLaunch!=null&&(!Number.isFinite(a.launch)||a.launch<Number(settings.minLaunch))){status='Timeline review';reasons.push('Confirm a target launch that meets the configured minimum preparation time.');}
-return {...a,tier,model:v2?'industry-v2':'legacy',grade:v2?(unknown?'U':score>=policy.grades.A?'A':score>=policy.grades.B?'B':score>=policy.grades.C?'C':'D'):null,territory:t?.id||null,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
+return {...a,tier,model:v2?'industry-v2':'legacy',grade:v2?(unknown?'U':score>=policy.grades.A?'A':score>=policy.grades.B?'B':score>=policy.grades.C?'C':'D'):null,territory:t?.id||null,locationMismatch,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
 let usedPins=new Set(stores.map(s=>String(s.pin))),counts=Object.create(null);let candidates=out.filter(a=>a.status==='Eligible').sort((a,b)=>b.score-a.score||(Number.isFinite(a.launch)?a.launch:Infinity)-(Number.isFinite(b.launch)?b.launch:Infinity)||String(a.id).localeCompare(String(b.id))||a.key.localeCompare(b.key));
 for(let a of candidates){let t=territories.find(t=>t.id===a.territory);if(usedPins.has(a.pin)){a.status='Waitlisted';a.reasons.push('A higher-ranked or tie-break-winning candidate is recommended for this pin code.');}else if((counts[t.id]||0)>=t.slots){a.status='Waitlisted';a.reasons.push(t.slots===0?'This territory has no open slots; the brand is not adding stores there now.':'All available slots in this territory have provisional recommendations.');}else{a.status='Recommended';usedPins.add(a.pin);counts[t.id]=(counts[t.id]||0)+1;a.reasons.push('Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval.');}}
+for(let a of out)a.category=categoryOf(a);
 return out;}
 function parseUpdate(text,apps){
  let t=String(text).trim(),lower=t.toLowerCase();
@@ -176,5 +181,5 @@ for(let [key,task] of Object.entries(s.tasks)){if(!keys.has(key)||!obj(task)||Ob
 for(let [key,dates] of Object.entries(s.taskDates)){if(!keys.has(key)||!obj(dates)||Object.entries(dates).some(([k,v])=>!/^([0-6])$/.test(k)||!str(v)||!/^$|^\d{4}-\d{2}-\d{2}$/.test(v)))return false;}
 if(s.audit.some(a=>!obj(a)||!str(a.text)||!str(a.at)||!Number.isFinite(Date.parse(a.at))))return false;return true;
 }catch(e){return false;}}
-const api={territoryCapacity,policyErrors,defaultPolicy,resolvePolicy,rebalanceWeights,compareResults,parsePrefixes,validSettings,scoreKeys,tierNames,confirmedFloors,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
+const api={territoryCapacity,policyErrors,defaultPolicy,resolvePolicy,rebalanceWeights,compareResults,parsePrefixes,validSettings,scoreKeys,tierNames,confirmedFloors,categories,categoryOf,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

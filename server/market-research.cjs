@@ -213,7 +213,8 @@ function createMarketResearchService(options = {}) {
     return { ok: true, answer: result.text.slice(0, 5000), citations: citations.map(item => ({ ...item, publicationDate: item.publicationDate || null, retrievedAt: item.retrievedAt || result.retrievedAt })), retrievedAt: result.retrievedAt, usage: result.usage };
   }
 
-  return Object.freeze({ modelVersion: model, researchLocation, answerQuestion });
+  // generate is shared by competitor and sector research, which validate their own JSON shapes.
+  return Object.freeze({ modelVersion: model, researchLocation, answerQuestion, generate, parseJson });
 }
 
 module.exports = { createMarketResearchService, extractCitations, shapeContextCards };

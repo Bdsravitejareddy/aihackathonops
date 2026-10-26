@@ -4,16 +4,28 @@ const fields=['id','name','city','state','pin','investment','experience','busine
 const numeric=['investment','experience','area','launch'];
 const cities={'Bengaluru':['560','Tier 1'],'Mysuru':['570','Tier 2'],'Mangaluru':['575','Tier 2'],'Hubballi-Dharwad':['580','Tier 2'],'Belagavi':['590','Tier 2'],'Tumakuru':['572','Tier 3'],'Davanagere':['577','Tier 3']};
 const labels={id:'Application ID',name:'Applicant name',city:'City',state:'State',pin:'Pin code',investment:'Investment capacity (₹ lakh)',experience:'Retail experience (years)',business:'Current / past business',space:'Space available',area:'Space size (sq ft)',floor:'Floor',launch:'Target launch (months)',language:'Preferred language',notes:'Notes from applicant'};
+// Investment is entered in lakh. A plain figure of 1,00,000 or more can only be rupees (₹1 lakh+), so it is proposed, not accepted.
+const RUPEES_THRESHOLD_LAKH=100000;
+function investmentFromRupees(n){return {value:null,proposed:n/100000,reason:`Looks like rupees (₹${Number(n).toLocaleString('en-IN')}); confirm the amount in lakh`};}
 function parseNumber(field,input){
  if(input===null||input===undefined||String(input).trim()==='')return {value:null,proposed:null,reason:'Missing value'};
- if(typeof input==='number')return Number.isFinite(input)&&input>=0?{value:input}:{value:null,proposed:null,reason:'Use a non-negative finite number'};
+ if(typeof input==='number')return Number.isFinite(input)&&input>=0?(field==='investment'&&input>=RUPEES_THRESHOLD_LAKH?investmentFromRupees(input):{value:input}):{value:null,proposed:null,reason:'Use a non-negative finite number'};
  let text=String(input).trim(),clean=text.replace(/,/g,'').trim();
+ if(field==='investment'){
+  let m=clean.match(/^(₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(lakhs?|lacs?|l|crores?|cr|rupees?|inr|rs\.?)?$/i);
+  if(m){
+   let n=Number(m[2]),unit=(m[3]||'').toLowerCase(),rupeeMarked=!!m[1]||/^(rupee|inr|rs)/.test(unit);
+   if(/^(crore|cr)/.test(unit))return {value:null,proposed:n*100,reason:'Confirm amount in lakh (converted from crore)'};
+   if(/^(lakh|lac|l$)/.test(unit))return {value:null,proposed:n,reason:'Confirm amount in lakh'};
+   if(rupeeMarked)return investmentFromRupees(n);
+   if(/^\d+$/.test(clean)&&n>=RUPEES_THRESHOLD_LAKH)return investmentFromRupees(n);
+   return {value:n};
+  }
+  return {value:null,proposed:null,reason:'Confirm the value and its units'};
+ }
  if(/^\d+(\.\d+)?$/.test(text)&&Number.isFinite(Number(text)))return {value:Number(text)};
  let m,proposed=null,reason='Confirm the value and its units';
- if(field==='investment'){
-  m=clean.match(/^(?:(₹|rs\.?|inr)\s*)?(\d+(?:\.\d+)?)\s*(lakhs?|lacs?|l|crores?|cr|rupees?|inr|rs\.?)?$/i);
-  if(m){let n=Number(m[2]),unit=(m[3]||'').toLowerCase();proposed=/^(crore|cr)/.test(unit)?n*100:/^(lakh|lac|l$)/.test(unit)?n:m[1]||/^(rupee|inr|rs)/.test(unit)?n/100000:n;reason='Confirm amount in lakh';}
- }else{const units={area:'sq\\.?\\s*ft\\.?|sqft|square feet',experience:'years?|yrs?',launch:'months?|mos?'};m=clean.match(new RegExp('^(\\d+(?:\\.\\d+)?)\\s*(?:'+units[field]+')?$','i'));if(m){proposed=Number(m[1]);reason='Confirm '+labels[field];}}
+ {const units={area:'sq\\.?\\s*ft\\.?|sqft|square feet',experience:'years?|yrs?',launch:'months?|mos?'};m=clean.match(new RegExp('^(\\d+(?:\\.\\d+)?)\\s*(?:'+units[field]+')?$','i'));if(m){proposed=Number(m[1]);reason='Confirm '+labels[field];}}
  if(!Number.isFinite(proposed)||proposed<0)proposed=null;return {value:null,proposed,reason};
 }
 function normalize(raw,key){const r={key,raw:{...raw},pending:[],...Object.fromEntries(fields.map(f=>[f,null]))};
@@ -28,30 +40,58 @@ function percentile(v,values){let a=values.filter(Number.isFinite).sort((a,b)=>a
 }
 function band(p){return p===null?null:p>=.9?3:p>=.5?2:p>=.3?1:0;}
 function benchmarks(apps){let counts=Object.create(null);for(let a of apps){let id=String(a.id||'').trim().toUpperCase();counts[id]=(counts[id]||0)+1;}apps=apps.filter(a=>a.id&&counts[String(a.id).trim().toUpperCase()]===1&&cities[a.city]);let all={},tiers={};for(let f of numeric)all[f]=apps.map(a=>a[f]).filter(Number.isFinite);for(let tier of ['Tier 1','Tier 2','Tier 3']){tiers[tier]={};for(let f of numeric)tiers[tier][f]=apps.filter(a=>cities[a.city]?.[1]===tier).map(a=>a[f]).filter(Number.isFinite);}return {all,tiers};}
+// Owner verbs followed by a trade noun. Plurals and common trade words (boutique, bakery, showroom) count.
+const TRADE_NOUNS='(?:shop|store|business|retail|outlet|restaurant|cafe|agency|company|firm|enterprise|showroom|boutique|bakery|parlou?r|salon|unit|mart|kiosk|stall|dealership|workshop|clinic|hotel|shoppe|provision|garment|footwear|jewel+ery|tailoring|grocery|saree|cloth|clothing|stationery|tailor|beauty)s?';
+const OWNER_PATTERN=new RegExp('\\b(?:runs?|ran|owns?|owned|founded|operat(?:es?|ed|ing))\\b.{0,45}\\b'+TRADE_NOUNS+'\\b|\\bbusiness owner|\\bproprietor|\\bself.employed','i');
 function businessPoints(s){if(!s)return null;
 if(/^(?:no|none|na|n\/a|nil|not applicable)\b|\bno (?:previous |prior )?business\b|\bnever (?:owned|run)\b|first.time entrepreneur|only (?:an? )?employee|\b(?:do not|don't|never)\s+(?:own|run|operate)(?:\s+\w+){0,3}\s+(?:business|shop|store)\b/i.test(s))return 0;
 if(/\b(?:father|mother|brother|sister|spouse|family|friend)\b/i.test(s)&&! /\bI (?:own|run|operate|founded)|\bmy (?:own |previous |past )?(?:business|shop|store)\b/i.test(s))return null;
-return /\b(?:runs?|ran|owns?|owned|founded|operat(?:es?|ed|ing))\b.{0,45}\b(?:shop|store|business|retail|outlet|restaurant|cafe|agency|company|firm|enterprise)\b|\bbusiness owner|\bproprietor|\bself.employed/i.test(s)?1:null;}
+return OWNER_PATTERN.test(s)?1:null;}
 function territoryCapacity(territories,stores=[]){let occupied=new Set(stores.map(s=>String(s.pin))),byTerritory={};let total=0;for(let t of territories){let valid=Array.isArray(t.pins)&&!t.issues?.length&&t.city in cities&&t.state==='Karnataka'&&Number.isInteger(t.slots)&&t.slots>=0&&territories.filter(x=>x.id===t.id).length===1;let pins=valid?[...new Set(t.pins)].filter(p=>/^\d{6}$/.test(p)&&p.startsWith(cities[t.city][0])&&!occupied.has(p)&&territories.filter(x=>x.pins?.includes(p)).length===1):[];let available=valid?Math.min(t.slots,pins.length):0;Object.defineProperty(byTerritory,t.id,{value:available,enumerable:true,configurable:true});total+=available;}return {total,byTerritory};}
-function policyErrors(p){let errors=[];for(let f of ['minInvestment','minArea','minLaunch','targetLaunch'])if(!(Number(p[f])>0)||!Number.isFinite(Number(p[f])))errors.push(labels[f]||f);if(Number(p.targetLaunch)<Number(p.minLaunch))errors.push('Target latest launch must be at least the minimum feasible launch.');return errors;}
-const defaultPolicy={model:'industry-v2',minInvestment:30,minArea:400,minLaunch:3,targetLaunch:6};
-function assess(apps,territories,stores,reference,settings={}){let v2=settings.model==='industry-v2';let idCounts=Object.create(null);apps.forEach(a=>{let id=String(a.id||'').trim().toUpperCase();idCounts[id]=(idCounts[id]||0)+1;});let out=apps.map(a=>{let reasons=[],missing=[],components=[],tier=cities[a.city]?.[1],pending=a.pending||[];
+// Editable screening policy: criterion weights (points out of 100), hard filters and grade bands.
+const scoreKeys=['investment','space','area','experience','business','launch'];
+const tierNames=['Tier 1','Tier 2','Tier 3'];
+// Floors that count as a confirmed site. The template's 'Upper', 'Mall unit' and 'Not known' still need the actual floor confirmed (Edit application).
+const confirmedFloors=['Ground','First','Other confirmed'];
+const defaultPolicy=Object.freeze({model:'industry-v2',minInvestment:30,minArea:400,minLaunch:3,targetLaunch:6,
+ weights:Object.freeze({investment:35,space:15,area:15,experience:20,business:5,launch:10}),grades:Object.freeze({A:80,B:65,C:50}),allowedTiers:Object.freeze([...tierNames]),pinPrefixes:Object.freeze([])});
+const policyLabels={minInvestment:'Required investment',minArea:'Minimum area',minLaunch:'Minimum feasible launch',targetLaunch:'Target latest launch'};
+function parsePrefixes(value){return [...new Set((Array.isArray(value)?value:String(value??'').split(/[,;\s]+/)).map(v=>String(v).trim()).filter(Boolean))];}
+/** Settings merged over the defaults; older workspaces without weights, grades or filters keep the default policy. */
+function resolvePolicy(settings={}){const s=settings||{};const weights={...defaultPolicy.weights};if(s.weights&&typeof s.weights==='object')for(const k of scoreKeys)if(Number.isFinite(Number(s.weights[k])))weights[k]=Number(s.weights[k]);
+ const grades={...defaultPolicy.grades};if(s.grades&&typeof s.grades==='object')for(const k of ['A','B','C'])if(Number.isFinite(Number(s.grades[k])))grades[k]=Number(s.grades[k]);
+ return {...s,weights,grades,allowedTiers:Array.isArray(s.allowedTiers)?s.allowedTiers.filter(t=>tierNames.includes(t)):[...tierNames],pinPrefixes:parsePrefixes(s.pinPrefixes)};}
+function policyErrors(p){let errors=[];for(let f of ['minInvestment','minArea','minLaunch','targetLaunch'])if(!(Number(p[f])>0)||!Number.isFinite(Number(p[f])))errors.push(policyLabels[f]+' must be a positive number.');if(Number(p.targetLaunch)<Number(p.minLaunch))errors.push('Target latest launch must be at least the minimum feasible launch.');
+ if(p.weights!==undefined){const w=p.weights||{};if(scoreKeys.some(k=>!(Number(w[k])>=0)))errors.push('Every criterion weight must be zero or more.');else if(Math.abs(scoreKeys.reduce((t,k)=>t+Number(w[k]),0)-100)>0.01)errors.push('Criterion weights must total 100%.');}
+ if(p.grades!==undefined){const g=p.grades||{};if(!['A','B','C'].every(k=>Number(g[k])>=0&&Number(g[k])<=100))errors.push('Grade thresholds must be between 0 and 100.');else if(!(Number(g.A)>Number(g.B)&&Number(g.B)>Number(g.C)))errors.push('Grade thresholds must decrease: A above B above C.');}
+ if(p.allowedTiers!==undefined&&(!Array.isArray(p.allowedTiers)||!p.allowedTiers.length||p.allowedTiers.some(t=>!tierNames.includes(t))))errors.push('Allow at least one city tier.');
+ if(p.pinPrefixes!==undefined){const list=parsePrefixes(p.pinPrefixes);if(list.some(v=>!/^\d{1,6}$/.test(v)))errors.push('PIN prefixes must be 1 to 6 digits, separated by commas.');}
+ return errors;}
+/** Move one weight to `value` and spread the difference over the others in proportion; whole points that total 100. */
+function rebalanceWeights(weights,key,value){const target=Math.max(0,Math.min(100,Math.round(Number(value)||0))),others=scoreKeys.filter(k=>k!==key),rest=others.reduce((t,k)=>t+(Number(weights[k])||0),0),remaining=100-target;
+ const share=others.map(k=>rest>0?(Number(weights[k])||0)/rest*remaining:remaining/others.length),floors=share.map(Math.floor);let left=remaining-floors.reduce((t,v)=>t+v,0);
+ share.map((v,i)=>[v-floors[i],i]).sort((a,b)=>b[0]-a[0]).forEach(([,i])=>{if(left>0){floors[i]++;left--;}});return {...Object.fromEntries(others.map((k,i)=>[k,floors[i]])),[key]:target};}
+/** Applicants whose status, grade or score differ between two assessment runs. */
+function compareResults(before,after){const prior=new Map(before.map(a=>[a.key,a]));return after.map(a=>({a,b:prior.get(a.key)})).filter(({a,b})=>b&&(b.status!==a.status||b.grade!==a.grade||b.score!==a.score))
+ .map(({a,b})=>({key:a.key,id:a.id,name:a.name,status:[b.status,a.status],grade:[b.grade,a.grade],score:[b.score,a.score]}));}
+function assess(apps,territories,stores,reference,rawSettings={}){let settings=rawSettings||{},v2=settings.model==='industry-v2',policy=resolvePolicy(settings),W=policy.weights;let idCounts=Object.create(null);apps.forEach(a=>{let id=String(a.id||'').trim().toUpperCase();idCounts[id]=(idCounts[id]||0)+1;});let out=apps.map(a=>{let reasons=[],missing=[],components=[],tier=cities[a.city]?.[1],pending=a.pending||[];
 const comp=(key,points,max,weight,detail)=>{components.push({key,label:labels[key]||key,points,max,weight,contribution:points===null?0:points/max*weight,detail});};
 if(v2){
  let budget=Number(settings.minInvestment),areaMin=Number(settings.minArea),minTime=Number(settings.minLaunch),target=Number(settings.targetLaunch);
- comp('investment',Number.isFinite(a.investment)&&budget>0?Math.min(a.investment/budget,1):null,1,35,`Declared funds / illustrative requirement ₹${budget||'?'} lakh, capped at 100%; funds not verified`);
- comp('space',a.space==='Owned'||a.space==='Rented'?1:a.space==='Not yet identified'?0:null,1,15,'Identified premises 15; owned and rented receive equal points; legal control still needs verification');
- comp('area',Number.isFinite(a.area)&&areaMin>0?Math.min(a.area/areaMin,1):null,1,15,`Area / configured minimum ${areaMin||'?'} sq ft, capped at 100%; bigger is not automatically better`);
- comp('experience',a.experience===null?null:a.experience===0?0:a.experience<1?1:a.experience<3?2:a.experience<5?3:4,4,20,'Proposed anchors: 0 years 0; under 1 year 5; 1–under 3 years 10; 3–under 5 years 15; 5+ years 20');
- comp('business',businessPoints(a.business),1,5,'Explicit prior operation or ownership 5; none 0; unclear remains unknown');
- comp('launch',Number.isFinite(a.launch)&&minTime>0&&target>=minTime?(a.launch<minTime?0:a.launch<=target?2:1):null,2,10,`Illustrative feasible window ${minTime||'?'}–${target||'?'} months: 10; later 5; too soon 0 and timeline review`);
+ const pts=(w,f)=>+(w*f).toFixed(2);
+ comp('investment',Number.isFinite(a.investment)&&budget>0?Math.min(a.investment/budget,1):null,1,W.investment,`Declared funds / illustrative requirement ₹${budget||'?'} lakh, capped at 100%; funds not verified`);
+ comp('space',a.space==='Owned'||a.space==='Rented'?1:a.space==='Not yet identified'?0:null,1,W.space,`Identified premises ${W.space}; owned and rented receive equal points; legal control still needs verification`);
+ comp('area',Number.isFinite(a.area)&&areaMin>0?Math.min(a.area/areaMin,1):null,1,W.area,`Area / configured minimum ${areaMin||'?'} sq ft, capped at 100%; bigger is not automatically better`);
+ comp('experience',a.experience===null?null:a.experience===0?0:a.experience<1?1:a.experience<3?2:a.experience<5?3:4,4,W.experience,`Anchors: 0 years 0; under 1 year ${pts(W.experience,.25)}; 1–under 3 years ${pts(W.experience,.5)}; 3–under 5 years ${pts(W.experience,.75)}; 5+ years ${W.experience}`);
+ comp('business',businessPoints(a.business),1,W.business,`Explicit prior operation or ownership ${W.business}; none 0; unclear remains unknown`);
+ comp('launch',Number.isFinite(a.launch)&&minTime>0&&target>=minTime?(a.launch<minTime?0:a.launch<=target?2:1):null,2,W.launch,`Illustrative feasible window ${minTime||'?'}–${target||'?'} months: ${W.launch}; later ${pts(W.launch,.5)}; too soon 0 and timeline review`);
 }else{
 for(let [f,w] of [['investment',22.5],['area',22.5],['experience',15],['launch',10]]){let local=reference?.tiers?.[tier]?.[f], vals=local?.length>=5&&new Set(local).size>=2?local:reference?.all?.[f]||reference?.[f]||[];let p=percentile(a[f],vals);let pts=band(p===null?null:f==='launch'?1-p:p);if(a[f]===0&&f!=='launch')pts=0;comp(f,pts,3,w,p===null?'Insufficient reference data or missing value':`${Math.round(p*100)}th percentile${f==='launch'?' · fewer months scores higher':''} · ${local===vals?tier:'whole upload'}`);}
 comp('space',a.space==='Owned'?2:a.space==='Rented'?1:a.space==='Not yet identified'?0:null,2,15,'Owned 2 · rented 1 · no space 0');
 comp('floor',a.floor==='Ground'?2:a.floor==='First'?1:a.floor==='Other confirmed'?0:null,2,10,'Ground 2 · confirmed first 1 · other confirmed 0');
 comp('business',businessPoints(a.business),1,5,'Awarded for explicit evidence of running or owning a business');
 }
-let score=components.reduce((s,c)=>s+c.contribution,0),high=score+components.filter(c=>c.points===null).reduce((s,c)=>s+c.weight,0);
+let score=components.reduce((s,c)=>s+c.contribution,0),high=score+components.filter(c=>c.points===null).reduce((s,c)=>s+c.weight,0),unknown=components.some(c=>c.points===null&&c.weight>0);
 for(let f of ['id','name','city','state','pin','investment','experience','space'])if(a[f]===null||a[f]===undefined||a[f]==='')missing.push(labels[f]);
 if(a.id&&idCounts[String(a.id).trim().toUpperCase()]>1)reasons.push('Duplicate application ID; resolve the identity before allocation.');
 if(a.city&&!cities[a.city])reasons.push('City is outside the supported city list.');
@@ -67,15 +107,17 @@ if(missing.length)reasons.push('Missing: '+missing.join(', ')+'.');
 const matches=territories.filter(t=>t.pins?.includes(a.pin));let t=matches.length===1?matches[0]:null,status='Eligible';
 if(reasons.length)status='Clarification needed';
 else if(stores.some(s=>String(s.pin)===a.pin)){status='Location unavailable';reasons.push('An existing store already occupies this pin code. Choose a different pin code.');}
+else if(v2&&!policy.allowedTiers.includes(tier)){status='Requirements not met';reasons.push(`${a.city} is ${tier}; the screening policy only accepts ${policy.allowedTiers.join(', ')}.`);}
+else if(v2&&policy.pinPrefixes.length&&!policy.pinPrefixes.some(p=>a.pin.startsWith(p))){status='Requirements not met';reasons.push(`Pin code ${a.pin} is outside the targeted prefixes (${policy.pinPrefixes.join(', ')}).`);}
 else if(!t||matches.length>1){status='Territory review';reasons.push(matches.length>1?'Pin code appears in more than one territory. Resolve territory overlap.':'Pin code is not covered by an uploaded territory.');}
 else if(t.issues?.length||t.city!==a.city||t.state!==a.state||!Number.isInteger(t.slots)||t.slots<0){status='Territory review';reasons.push('Territory details are incomplete, invalid or conflict with the application.');}
 else if(v2&&(!(Number(settings.minInvestment)>0)||!(Number(settings.minArea)>0)||!(Number(settings.minLaunch)>0)||!(Number(settings.targetLaunch)>=Number(settings.minLaunch)))){status='Policy needed';reasons.push('Configure a positive investment requirement, area minimum and feasible launch window before allocating. These are brand assumptions, not universal standards.');}
-else if(a.space==='Not yet identified'||!a.area||!['Ground','First','Other confirmed'].includes(a.floor)){status='Site needed';reasons.push('Confirm an identified site, positive usable area and actual floor.');}
+else if(a.space==='Not yet identified'||!a.area||!confirmedFloors.includes(a.floor)){status='Site needed';reasons.push('Confirm an identified site, positive usable area and actual floor.');}
 else if((settings.minInvestment!==''&&settings.minInvestment!=null&&a.investment<Number(settings.minInvestment))||(settings.minArea!==''&&settings.minArea!=null&&a.area<Number(settings.minArea))){status='Requirements not met';reasons.push('Investment or area is below the configured brand minimum.');}
 else if(settings.minLaunch!==''&&settings.minLaunch!=null&&(!Number.isFinite(a.launch)||a.launch<Number(settings.minLaunch))){status='Timeline review';reasons.push('Confirm a target launch that meets the configured minimum preparation time.');}
-return {...a,tier,model:v2?'industry-v2':'legacy',grade:v2?(components.some(c=>c.points===null)?'U':score>=80?'A':score>=65?'B':score>=50?'C':'D'):null,territory:t?.id||null,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
+return {...a,tier,model:v2?'industry-v2':'legacy',grade:v2?(unknown?'U':score>=policy.grades.A?'A':score>=policy.grades.B?'B':score>=policy.grades.C?'C':'D'):null,territory:t?.id||null,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
 let usedPins=new Set(stores.map(s=>String(s.pin))),counts=Object.create(null);let candidates=out.filter(a=>a.status==='Eligible').sort((a,b)=>b.score-a.score||(Number.isFinite(a.launch)?a.launch:Infinity)-(Number.isFinite(b.launch)?b.launch:Infinity)||String(a.id).localeCompare(String(b.id))||a.key.localeCompare(b.key));
-for(let a of candidates){let t=territories.find(t=>t.id===a.territory);if(usedPins.has(a.pin)){a.status='Waitlisted';a.reasons.push('A higher-ranked or tie-break-winning candidate is recommended for this pin code.');}else if((counts[t.id]||0)>=t.slots){a.status='Waitlisted';a.reasons.push('All available slots in this territory have provisional recommendations.');}else{a.status='Recommended';usedPins.add(a.pin);counts[t.id]=(counts[t.id]||0)+1;a.reasons.push('Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval.');}}
+for(let a of candidates){let t=territories.find(t=>t.id===a.territory);if(usedPins.has(a.pin)){a.status='Waitlisted';a.reasons.push('A higher-ranked or tie-break-winning candidate is recommended for this pin code.');}else if((counts[t.id]||0)>=t.slots){a.status='Waitlisted';a.reasons.push(t.slots===0?'This territory has no open slots; the brand is not adding stores there now.':'All available slots in this territory have provisional recommendations.');}else{a.status='Recommended';usedPins.add(a.pin);counts[t.id]=(counts[t.id]||0)+1;a.reasons.push('Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval.');}}
 return out;}
 function parseUpdate(text,apps){
  let t=String(text).trim(),lower=t.toLowerCase();
@@ -108,6 +150,19 @@ function parseUpdate(text,apps){
  const entries=Object.entries(patch);return {key:a.key,id:a.id,patch,hypothetical,...(entries.length===1?{field:entries[0][0],value:entries[0][1]}:{})};
 }
 function invalidateTasks(tasks,patch){let start=7;if(['id','name','investment'].some(k=>k in patch))start=0;else if(['city','state','pin','space','area','floor','launch','notes'].some(k=>k in patch))start=1;else if(['language','experience','business'].some(k=>k in patch))start=5;let next={...tasks};for(let i=start;i<7;i++)next[i]=false;return next;}
+// Settings keys and their shapes; anything else makes a restored workspace invalid.
+function validSettings(settings){const num=x=>Number.isFinite(x)&&x>=0,numeric=v=>v===''||(typeof v==='number'?num(v):typeof v==='string'&&/^\d+(\.\d+)?$/.test(v));
+ for(const [k,v] of Object.entries(settings)){
+  if(k==='model'){if(typeof v!=='string')return false;}
+  else if(['minInvestment','minArea','minLaunch','targetLaunch','sectorVersion'].includes(k)){if(!numeric(v))return false;}
+  else if(k==='sector'){if(typeof v!=='string'||!/^[a-z0-9-]{1,60}$/.test(v))return false;}
+  else if(k==='sectorName'){if(typeof v!=='string'||v.length>80)return false;}
+  else if(k==='weights'){if(!v||typeof v!=='object'||Array.isArray(v)||Object.entries(v).some(([w,x])=>!scoreKeys.includes(w)||!num(x)))return false;}
+  else if(k==='grades'){if(!v||typeof v!=='object'||Array.isArray(v)||Object.entries(v).some(([g,x])=>!['A','B','C'].includes(g)||!num(x)))return false;}
+  else if(k==='allowedTiers'){if(!Array.isArray(v)||v.some(t=>!tierNames.includes(t)))return false;}
+  else if(k==='pinPrefixes'){if(!Array.isArray(v)||v.some(p=>typeof p!=='string'||!/^\d{1,6}$/.test(p)))return false;}
+  else return false;}
+ return true;}
 function validState(s){try{
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x), str=x=>typeof x==='string', num=x=>Number.isFinite(x)&&x>=0;
 if(s.messages!==undefined&&(!Array.isArray(s.messages)||s.messages.length>100||s.messages.some(m=>!obj(m)||!str(m.text)||(m.user!==undefined&&typeof m.user!=='boolean'))))return false;
@@ -116,10 +171,10 @@ if(!obj(s)||!str(s.source)||!Array.isArray(s.apps)||s.apps.length>20000||!Array.
 let keys=new Set();for(let a of s.apps){if(!obj(a)||!str(a.key)||!/^[-a-zA-Z0-9_]+$/.test(a.key)||['__proto__','constructor','prototype'].includes(a.key)||keys.has(a.key)||!obj(a.raw)||!Array.isArray(a.pending))return false;keys.add(a.key);for(let f of fields)if(a[f]!==null&&a[f]!==undefined&&!(numeric.includes(f)?num(a[f]):str(a[f])))return false;for(let p of a.pending)if(!obj(p)||!numeric.includes(p.field)||!(p.proposed===null||num(p.proposed))||!(str(p.raw)||Number.isFinite(p.raw)))return false;}
 for(let t of s.territories){if(!obj(t)||!str(t.id)||!str(t.city)||!str(t.state)||!Array.isArray(t.pins)||!t.pins.every(str)||!(t.slots===null||Number.isFinite(t.slots))||(t.issues!==undefined&&(!Array.isArray(t.issues)||!t.issues.every(str))))return false;}
 if(!obj(s.reference.all)||!obj(s.reference.tiers))return false;for(let group of [s.reference.all,...Object.values(s.reference.tiers)]){if(!obj(group))return false;for(let f of numeric)if(!Array.isArray(group[f])||!group[f].every(num))return false;}
-for(let [k,v] of Object.entries(s.settings))if(k!=='model'&&(v!==''&&!(typeof v==='number'?num(v):str(v)&&/^\d+(\.\d+)?$/.test(v))))return false;
+if(!validSettings(s.settings))return false;
 for(let [key,task] of Object.entries(s.tasks)){if(!keys.has(key)||!obj(task)||Object.entries(task).some(([k,v])=>!/^([0-6])$/.test(k)||typeof v!=='boolean'))return false;}
 for(let [key,dates] of Object.entries(s.taskDates)){if(!keys.has(key)||!obj(dates)||Object.entries(dates).some(([k,v])=>!/^([0-6])$/.test(k)||!str(v)||!/^$|^\d{4}-\d{2}-\d{2}$/.test(v)))return false;}
 if(s.audit.some(a=>!obj(a)||!str(a.text)||!str(a.at)||!Number.isFinite(Date.parse(a.at))))return false;return true;
 }catch(e){return false;}}
-const api={territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
+const api={territoryCapacity,policyErrors,defaultPolicy,resolvePolicy,rebalanceWeights,compareResults,parsePrefixes,validSettings,scoreKeys,tierNames,confirmedFloors,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

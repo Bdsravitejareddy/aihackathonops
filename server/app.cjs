@@ -9,6 +9,7 @@ const { createMarketLocationData } = require('./market-location-data.cjs');
 const { calculateCustomerMarket } = require('./customer-market-model.cjs');
 const { analyzeLocation, validateOverrides } = require('./market-analysis.cjs');
 const { buildCeoInsights } = require('./ceo-insights.cjs');
+const { parsePins, territoryMetrics } = require('./territory-metrics.cjs');
 const { APPAREL, researchSector, validateSectorProfile, profileFields } = require('./market-sectors.cjs');
 const { applySectorDemand, legendScale, itemCatalog } = require('./market-sector-demand.cjs');
 const HCES_ITEM_GROUPS = itemCatalog.itemGroups.map(group => ({ ...group, allIndiaRural: itemCatalog.allIndia.rural[group.key], allIndiaUrban: itemCatalog.allIndia.urban[group.key] }));
@@ -65,13 +66,14 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   // One geography loader for the Analysis panel and the CEO cards so both see identical inputs.
   async function loadAnalysisGeography(geographyId, sector = null) {
+    // Prefer the Neon row (the same metrics the map pins show); the postal snapshot adds names, or stands in when Neon has no row.
     const pinPlace = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
-    if (pinPlace) return withSector(pinPlace, sector);
-    if (!marketMapStore) throw new Error('Map geography catalog is unavailable');
+    if (!marketMapStore) { if (pinPlace) return withSector(pinPlace, sector); throw new Error('Map geography catalog is unavailable'); }
     let geography;
     try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
-    catch { throw new Error('Map geography service unavailable'); }
-    return withSector(geography, sector);
+    catch { if (pinPlace) return withSector(pinPlace, sector); throw new Error('Map geography service unavailable'); }
+    if (geography && pinPlace) geography = { ...geography, city: geography.city || pinPlace.city || null, postalCity: pinPlace.postalCity || null, postOffices: pinPlace.postOffices };
+    return withSector(geography || pinPlace || null, sector);
   }
   // ?sector= (default apparel). A researched sector re-derives potential revenue from its HCES item groups.
   async function sectorFor(id) {
@@ -149,6 +151,16 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
       if (!/^[a-z0-9-]{1,60}$/.test(sector)) return reply(res, 400, { error: 'Invalid sector' });
       try { return reply(res, 200, await competitorService.getCompetitors({ geographyId, sectorId: sector, clientId: req.socket?.remoteAddress || 'local-client', refresh: url.searchParams.get('refresh') === '1' })); }
       catch (error) { return reply(res, error.status === 404 ? 404 : 503, { error: error.status === 404 ? error.message : 'Competitor research is unavailable' }); }
+    }
+
+    if (url.pathname === '/api/territories/metrics') {
+      if (req.method !== 'GET') { res.setHeader('allow', 'GET'); return reply(res, 405, { error: 'Method not allowed' }); }
+      let pins;
+      try { pins = parsePins(url.searchParams.get('pins')); } catch (error) { return reply(res, 400, { error: error.message }); }
+      const slots = url.searchParams.has('slots') ? Number(url.searchParams.get('slots')) : null;
+      if (slots !== null && (!Number.isInteger(slots) || slots < 0 || slots > 100)) return reply(res, 400, { error: 'slots must be an integer from 0 to 100' });
+      try { return reply(res, 200, await territoryMetrics({ pins, slots, loadGeography: id => loadAnalysisGeography(id) })); }
+      catch { return reply(res, 503, { error: 'Territory metrics are unavailable; the map geography service did not respond.' }); }
     }
 
     if (url.pathname === '/api/insights/ceo') {

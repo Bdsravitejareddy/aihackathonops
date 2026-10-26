@@ -2,3 +2,19 @@
 .ts-financial{margin:20px 0 12px;border:1px solid var(--ts-line);border-radius:16px;padding:20px;background:#fff}.ts-financial-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.ts-financial-head h2{font-size:21px;margin:0 0 6px;letter-spacing:-.025em}.ts-financial-head p:not(.ts-eyebrow){font-size:12px;color:var(--ts-muted);margin:0;line-height:1.5;max-width:700px}.ts-assumption-badge{font-size:11px;white-space:nowrap;border-radius:999px;padding:8px 10px;background:#fff2de;color:#785523}.ts-financial-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.ts-financial-grid label{font-size:11px;color:#536a63;font-weight:650;display:grid;gap:5px}.ts-financial-grid input{width:100%;min-width:0;border:1px solid #cbd8d3;border-radius:8px;padding:9px 10px;font:inherit;color:var(--ts-ink);background:white}.ts-scenario-warning,.ts-financial-footnote{font-size:11px;color:var(--ts-muted);line-height:1.5}.ts-run{border:0;border-radius:8px;padding:10px 13px;background:#1f614e;color:white;cursor:pointer;font-weight:700}.ts-run:disabled{opacity:.6}.ts-scenario-warning{background:#fff8ec;border-radius:8px;padding:10px}.ts-financial-table-wrap{overflow-x:auto;margin-top:16px}.ts-financial-table{border-collapse:collapse;width:100%;font-size:12px;min-width:600px}.ts-financial-table th,.ts-financial-table td{padding:9px 10px;border-bottom:1px solid var(--ts-line);text-align:right;white-space:nowrap}.ts-financial-table thead th{background:#f5f8f6;color:#48665d}.ts-financial-table th:first-child,.ts-financial-table td:first-child{text-align:left}.ts-financial-table tbody th{font-weight:600}.ts-financial-table td[colspan="3"]{white-space:normal;text-align:left}.ts-financial-table small,.ts-financial-footnote,.ts-scenario-empty{color:var(--ts-muted)}.ts-financial-footnote{margin:10px 0}.ts-scenario-empty{font-size:12px;margin:14px 0}.ts-financial [data-scenario-message]{display:block;margin-top:8px;font-size:11px;color:#536a63}
 @media(max-width:760px){.ts-financial-head{display:block}.ts-assumption-badge{display:inline-block;margin-top:10px}.ts-financial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.ts-financial{padding:14px}.ts-financial-grid{grid-template-columns:1fr}}
+
+/* Liquid theme: the global header pill and the page h1 rule must not reach the screener's own heading. */
+#main .territory-screening header.ts-heading{height:auto;border:0;border-radius:0;padding:0;margin:0 0 4px;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+#main .territory-screening .ts-heading h1{font-family:inherit;font-size:clamp(28px,4vw,42px);font-weight:600;line-height:1.1;letter-spacing:-.04em;margin:3px 0 8px;color:var(--ts-ink)}
+/* Even grids: 14 market cards are 7 × 2 on wide screens and 2 × 7 otherwise; cards align label, value and note on shared rows. */
+.ts-market-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+@media(min-width:1100px){.ts-market-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
+.ts-metric{display:grid;grid-template-rows:2.6em auto 1fr;align-content:stretch;gap:6px;min-height:0;height:100%;overflow-wrap:anywhere}
+.ts-metric>span{align-self:start}
+.ts-metric strong{font-size:15px;align-self:start;font-variant-numeric:tabular-nums}
+/* 17 financial inputs plus one note cell make 18 cells: 3 × 6 on desktop, 2 × 9 on tablet, one column on phones. */
+.ts-financial-grid{align-items:stretch}
+.ts-financial-grid>label{align-content:start}
+.ts-financial-cell-note{border:1px dashed #cbd8d3;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.5;color:var(--ts-muted);display:flex;align-items:center}
+@media(max-width:760px){.ts-financial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.ts-financial-grid{grid-template-columns:1fr}}

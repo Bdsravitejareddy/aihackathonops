@@ -25,7 +25,7 @@ async function appHarness(t,{deferWorkspaceSave=false}={}){
       route==='api/health'?{ok:true}:{};
     return {ok:route.includes('/api/workspaces/')&&options.method==='PUT'?true:!route.includes('/api/workspaces/'),status:route.includes('/api/workspaces/')?(options.method==='PUT'?200:404):200,json:async()=>data};
   };
-  for(const file of ['engine.js','xlsx.js','bot.js','persistence.js','market-map.js','market-intelligence.js','territory-screening.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
+  for(const file of ['engine.js','xlsx.js','bot.js','persistence.js','market-map.js','market-intelligence.js','territory-screening.js','territory-economics.js','territories-view.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
   for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
   return {dom,w,requests,setApplicants(rows){applicants=rows;},releaseWorkspaceSave(){releaseWorkspaceSave?.();}};
 }

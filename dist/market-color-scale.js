@@ -7,6 +7,9 @@
   const DEFAULT_COLORS = Object.freeze(['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725']);
   const DEFAULT_NATIONAL_DOMAIN = Object.freeze([0, 1]);
   const MISSING_COLOR = '#b9c1c5';
+  // Map heatmap ramps: pale yellow → deep orange for opportunity areas, light mint → deep green where a store exists.
+  const OPPORTUNITY_COLORS = Object.freeze(['#fff4b8', '#ffd95a', '#ffb23e', '#f57f20', '#c84a0c']);
+  const STORE_COLORS = Object.freeze(['#dff6e4', '#a6e0b5', '#5dbf80', '#228b55', '#0b5a33']);
   const VALID_MODES = new Set(['linear', 'log', 'percentile', 'quantile']);
   const validNumber = value => typeof value === 'number' && Number.isFinite(value);
   const finiteValues = values => Array.isArray(values) ? values.filter(validNumber).slice().sort((a, b) => a - b) : [];
@@ -140,6 +143,11 @@
     else position = (value - min) / (max - min);
     return interpolateColor(position, scale.colors);
   }
+  // Same position on the scale, green ramp for store areas and yellow→orange for the rest.
+  function storeAwareColor(value, scale, hasStore) {
+    if (!scale) return MISSING_COLOR;
+    return colorForValue(value, { ...scale, colors: hasStore ? STORE_COLORS : OPPORTUNITY_COLORS });
+  }
   function formatNumber(value) {
     return new Intl.NumberFormat('en', { maximumFractionDigits: 2 }).format(value);
   }
@@ -167,6 +175,9 @@
     DEFAULT_COLORS,
     DEFAULT_NATIONAL_DOMAIN,
     MISSING_COLOR,
+    OPPORTUNITY_COLORS,
+    STORE_COLORS,
+    storeAwareColor,
     interpolateColor,
     getScaleDomain,
     createColorScale,

@@ -170,7 +170,10 @@
     const fetcher=options.fetch||root.fetch?.bind(root);
     const pinDebounce=Number.isFinite(options.pinDebounceMs)?options.pinDebounceMs:250;
     let features = [], pinFeatures = [], metric = options.metric || 'potentialRevenue', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, pinMeta=null, pinLegend=null, shownLevel=null, basemapMode='satellite', extruded=options.extruded!==false, pinState='idle', pinKey=null, pinTimer=null, pinAbort=null, pinRevision=0;
-    const popupContexts=new Map(), pinCache=boundedCache(24);
+    const popupContexts=new Map(), pinCache=boundedCache(24), competitorCache=new Map();
+    const sectorId=()=>options.sector||root.FranchiseSector?.active||'apparel';
+    // Areas holding one of the brand's stores (PINs plus their district and state) colour green.
+    let storeIds=new Set(list(options.storeAreaIds).map(String)), competitorTimer=null;
     const demSource=basemap.terrainSource&&typeof basemap.terrainSource==='object'?basemap.terrainSource:{type:'raster-dem',tiles:[TERRARIUM_URL],encoding:'terrarium',tileSize:256,maxzoom:15,attribution:TERRARIUM_ATTRIBUTION};
     const map = new lib.Map({ container, center: [80,21], zoom: reducedMotion ? ZOOMS[0] : 1.6, minZoom: 1, maxZoom: 17, pitch: reducedMotion ? 30 : 0, bearing: 0, maxPitch: 75,
       style: { version: 8, projection: { type: 'globe' },
@@ -209,7 +212,7 @@
     const setPinStatus=(state,text='')=>{ pinState=state; pinStatus.dataset.state=state; pinStatus.textContent=text; pinStatus.hidden=!text; };
 
     const collection = list => ({ type: 'FeatureCollection', features: list.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
-      properties: { id: String(f.id), name: f.name, level: f.level,
+      properties: { id: String(f.id), name: f.name, level: f.level, s_store: storeIds.has(String(f.id)) ? 1 : 0,
         ...Object.fromEntries(Object.entries(f.metrics||{}).filter(([,value])=>metricValue(value)!==null).map(([key,value])=>['v_'+key,metricValue(value)])) } })) });
     const hasMetric = (list,key) => list.some(f => metricValue(f.metrics?.[key]) !== null);
     // potentialRevenue is the default heatmap; until the API supplies it, fall back to category expenditure.
@@ -242,15 +245,17 @@
     // Builds colour and column-height expressions from one MarketColorScale so both always agree.
     function ramp(values, scope, nationalDomain, maxHeight, zoomScale) {
       const colorLib=root.MarketColorScale, key=activeMetric();
-      const scale=colorLib.createColorScale({mode:colorMode,scope,values,domain:scope==='national'?nationalDomain:undefined,nationalDomain,colors:colorLib.DEFAULT_COLORS});
-      const stops=colorLib.legendLabels(scale,scale.colors.length,{unit:''}).map((item,index)=>({value:item.value,color:scale.colors[index]}));
+      const scale=colorLib.createColorScale({mode:colorMode,scope,values,domain:scope==='national'?nationalDomain:undefined,nationalDomain,colors:colorLib.OPPORTUNITY_COLORS});
+      const stops=colorLib.legendLabels(scale,scale.colors.length,{unit:''}).map((item,index)=>({value:item.value,color:scale.colors[index],store:colorLib.STORE_COLORS[index]}));
       const increasing=stops.filter((stop,index)=>index===0||stop.value>stops[index-1].value);
       let input=['get','v_'+key];
       if(colorMode==='log')input=['log10',['max',Math.max(Number.MIN_VALUE,scale.domain[0]),input]];
-      const positioned=colorMode==='log'?increasing.map(stop=>({value:Math.log10(Math.max(scale.domain[0],stop.value)),color:stop.color})):increasing;
+      const positioned=colorMode==='log'?increasing.map(stop=>({...stop,value:Math.log10(Math.max(scale.domain[0],stop.value))})):increasing;
       const unique=positioned.filter((stop,index)=>index===0||stop.value>positioned[index-1].value);
       const guard=['all',['has','v_'+key],...(colorMode==='log'?[['>', ['get','v_'+key],0]]:[])];
-      const color=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,stop.color])]:unique[0]?.color||MISSING,MISSING];
+      // Store areas take the green ramp, everything else the yellow→orange opportunity ramp, both continuous.
+      const shade=pick=>unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,pick(stop)])]:(unique[0]?pick(unique[0]):MISSING);
+      const color=['case',guard,['case',['==',['get','s_store'],1],shade(stop=>stop.store),shade(stop=>stop.color)],MISSING];
       // PIN columns keep a taller floor so terrain relief does not poke through low columns.
       const floor=maxHeight*(maxHeight<=EXTRUSION_HEIGHT.pin?0.15:0.03), last=Math.max(1,unique.length-1);
       const byValue=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap((stop,index)=>[stop.value,floor+(maxHeight-floor)*index/last])]:floor,0];
@@ -288,7 +293,53 @@
     const findGeo = id => features.find(f=>String(f.id)===String(id)) || pinFeatures.find(f=>String(f.id)===String(id));
     const popupLevel=level=>({state:'State',district:'District',city:'City',pin:'PIN code',catchment:'Catchment',national:'National'})[level]||'Geography';
     const popupValue=item=>metricValue(item)===null?'Not estimated':display(item);
+    // Competitors per PIN and sector, fetched once and shared by the popup and the side panel.
+    function loadCompetitors(id) {
+      const key=`${id}|${sectorId()}`;
+      if(competitorCache.has(key))return competitorCache.get(key).promise;
+      const entry={status:'loading',data:null};
+      entry.promise=(async()=>{
+        // Live store searches can be slow; give up after 25 s rather than shimmer forever.
+        const controller=typeof AbortController==='function'?new AbortController():null, timer=setTimeout(()=>controller?.abort(),25000);
+        try{
+          if(!fetcher)throw Error('unavailable');
+          const response=await fetcher('/api/market/competitors?'+new URLSearchParams({geographyId:String(id),sector:sectorId()}),controller?{signal:controller.signal}:undefined);
+          const result=await response.json().catch(()=>({}));
+          if(!response.ok)throw Error(result.error||`Competitor API returned ${response.status}`);
+          entry.status='ready';entry.data=result;
+        }catch(error){entry.status='error';entry.data={error:error.message};}
+        clearTimeout(timer);
+        if(!destroyed&&lastPopup?.id===String(id)&&popup){const geo=findGeo(id);if(geo)popup.setHTML(popupHtml(geo));}
+        return entry;
+      })();
+      competitorCache.set(key,entry);
+      if(!destroyed&&lastPopup?.id===String(id)&&popup){const geo=findGeo(id);if(geo)popup.setHTML(popupHtml(geo));}
+      return entry.promise;
+    }
+    const competitorState=id=>competitorCache.get(`${id}|${sectorId()}`)||null;
+    function competitorsHtml(id) {
+      const entry=competitorState(id);
+      if(!entry)return '<p class="hint">Hover a moment or click to load major competitors.</p>';
+      if(entry.status==='loading')return '<div class="expansion-skeleton" aria-busy="true" aria-label="Loading competitors"><span></span><span></span><span></span></div>';
+      if(entry.status==='error')return '<p class="hint">Competitor research unavailable.</p>';
+      const data=entry.data||{}, major=list(data.majorCompetitors).filter(item=>item?.name), brands=list(data.observed?.brands).filter(item=>item?.name);
+      const names=major.length?major.slice(0,4).map(item=>`<li>${escape(item.name)}${item.priceTier?` <small>${escape(item.priceTier)}</small>`:''}</li>`)
+        :brands.slice(0,4).map(item=>`<li>${escape(item.name)} <small>${escape(item.count)} store${item.count===1?'':'s'}</small></li>`);
+      const total=Number.isFinite(data.observed?.totalStores)?`<small>${escape(data.observed.totalStores.toLocaleString('en-IN'))} ${escape(data.sectorName||'sector')} stores mapped nearby</small>`:'';
+      if(!names.length)return `<p class="hint">${escape(list(data.warnings)[0]||'No competitor evidence for this area yet.')}</p>`;
+      return `<ul class="expansion-popup-chips">${names.join('')}</ul>${total}`;
+    }
+    // Compact PIN popup: the numbers show instantly, competitors load on click or a short hover.
+    function pinPopupHtml(geo) {
+      const metrics=geo.metrics||{}, id=String(geo.id), store=storeIds.has(id);
+      const kpi=(title,value,sub,prominent)=>`<div class="expansion-popup-kpi${prominent?' is-prominent':''}"><span>${escape(title)}</span><strong>${escape(value)}</strong><small>${escape(sub)}</small></div>`;
+      const urban=numeric(geo.demographics?.urbanShare)?` · ${Math.round(geo.demographics.urbanShare*100)}% urban`:'';
+      const people=metricValue(metrics.population)!==null?`${display(metrics.population)}${urban}`:`Population unavailable${urban}`;
+      const segmentLabel=String(popupSegment).replace(/-/g,' ').replace(/\b[a-z]/g,char=>char.toUpperCase());
+      return `<div class="expansion-popup is-pin${store?' has-store':''}" data-popup-geography="${escape(id)}"><header><strong>${escape(geo.name||geo.pin||id)}</strong><small>PIN code · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header>${store?'<p class="expansion-popup-store">You have a store here</p>':''}<div class="expansion-popup-grid">${kpi('Potential TAM',popupValue(metrics.apparelExpenditure||metrics.tam),'Annual category spend',true)}${kpi('Potential revenue',popupValue(metrics.potentialRevenue),'Organised physical-store demand',true)}<div class="expansion-popup-kpi is-wide"><span>Consumer spend</span><strong>${escape(popupValue(metrics.monthlyPerCapitaSpend))}</strong><small>${escape(people)}</small></div></div><section class="expansion-popup-competitors" data-popup-competitors="${escape(id)}"><h4>Major competitors</h4>${competitorsHtml(id)}</section><button type="button" class="button small primary" data-map-popup-detail="${escape(id)}">View full details</button></div>`;
+    }
     function popupHtml(geo) {
+      if((geo.level||popupContexts.get(String(geo.id))?.geography?.level)==='pin')return pinPopupHtml(geo);
       const context=popupContexts.get(String(geo.id))||{}, selectedGeo=context.geography||geo, metrics=selectedGeo.metrics||geo.metrics||{}, estimate=context.estimate;
       const customerValue=estimate?.metrics?.potentialCustomers;
       const tamValue=estimate?.metrics?.customerTAM;
@@ -332,6 +383,13 @@
       const id=event.features?.[0]?.properties?.id??event.features?.[0]?.id,geo=findGeo(id);
       if(!geo)return;lastPopup={id:String(id),lngLat:event.lngLat};refreshPopup();popup?.addClassName?.('is-entering');
     }
+    const isPin=id=>findGeo(id)?.level==='pin';
+    function hoverPin(event) {
+      const hit=event.features?.[0], id=String(hit?.properties?.id??hit?.id??'');
+      if(!id||lastPopup?.id===id)return;
+      showPopup(event); clearTimeout(competitorTimer);
+      if(isPin(id))competitorTimer=setTimeout(()=>{ if(!destroyed&&lastPopup?.id===id)loadCompetitors(id); },400);
+    }
     function addGeographyLayers(source, layers, before) {
       map.addLayer({ id: layers.fill, type: 'fill', source, layout:{visibility:'none'}, paint: { 'fill-color': MISSING, 'fill-opacity': 0.78 } }, before);
       map.addLayer({ id: layers.extrusion, type: 'fill-extrusion', source, layout:{visibility:'none'}, filter: ['!=',['geometry-type'],'Point'],
@@ -347,6 +405,7 @@
     }
     async function fetchPins(bbox, key) {
       const query=new URLSearchParams({ level:'pin', bbox:bbox.join(','), metric:key, year:String(popupYear) });
+      query.set('sector', sectorId());
       const response=await fetcher('/api/market/map/levels?'+query, { signal: pinAbort.signal });
       const result=await response.json().catch(()=>({}));
       if (!response.ok) { const error=Error(result.error||`Market map API returned ${response.status}`); error.status=response.status; throw error; }
@@ -403,11 +462,12 @@
     map.on('click', event => {
       const hit=event.features?.[0]||map.queryRenderedFeatures?.(event.point,{layers:interactiveLayers()})?.[0];
       const id=hit?.properties?.id??hit?.id;
-      if(id!==undefined){selected=id;highlight();showPopup({...event,features:[hit]});onSelect(String(id));}
+      if(id!==undefined){selected=id;highlight();showPopup({...event,features:[hit]});if(isPin(id))loadCompetitors(String(id));onSelect(String(id));}
     });
     for (const layer of ['market-fill','market-extrusion','market-points','market-pin-fill','market-pin-extrusion']) {
-      map.on('mouseenter', layer, event => { map.getCanvas().style.cursor = 'pointer'; showPopup(event); });
-      map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
+      map.on('mouseenter', layer, event => { map.getCanvas().style.cursor = 'pointer'; if(layer.startsWith('market-pin'))hoverPin(event); else showPopup(event); });
+      if (layer.startsWith('market-pin')) map.on('mousemove', layer, hoverPin);
+      map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; clearTimeout(competitorTimer); });
     }
     map.on('moveend', () => { if (destroyed) return; requestPins(); onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
@@ -433,6 +493,9 @@
       setTerrain(active){ if(typeof map.setTerrain==='function')map.setTerrain(active?{source:'terrain-dem',exaggeration:1.3}:null); },
       setExtruded, isExtruded(){return extruded;},
       getPinState(){return pinState;},
+      setStoreAreas(ids){ storeIds=new Set(list(ids).map(String)); update(); updatePins(); paint(); refreshPopup(); options.onScaleChange?.(); },
+      hasStore(id){return storeIds.has(String(id));},
+      loadCompetitors,
       setTilt(active){const pitch=active?58:0; if(typeof map.easeTo==='function')map.easeTo({pitch,duration:motion(500)}); else map.setPitch(pitch);},
       resize(){map.resize?.();},
       getScaleMetadata(){return pinsVisible()&&pinMeta?pinMeta:scaleMeta;},
@@ -448,7 +511,7 @@
         const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: motion(600) });
       },
       reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: motion(800) }); },
-      destroy() { destroyed = true; clearTimeout(pinTimer); pinAbort?.abort(); pinStatus.remove(); popup?.remove();popupContexts.clear();lastPopup=null; map.remove(); }
+      destroy() { destroyed = true; clearTimeout(pinTimer); clearTimeout(competitorTimer); pinAbort?.abort(); pinStatus.remove(); popup?.remove();popupContexts.clear();lastPopup=null; map.remove(); }
     };
   }
 
@@ -494,6 +557,7 @@
           </div>
           <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
           <section class="analysis-section" aria-label="Store cost and return analysis"><h2 class="analysis-title">Analysis <span>store costs, ROI &amp; payback</span></h2><div data-map-analysis aria-live="polite"></div></section>
+          <section class="analysis-section expansion-competitors" aria-label="Major competitors"><h2 class="analysis-title">Competitors <span>major brands in this sector</span></h2><div data-map-competitors aria-live="polite"><p class="hint">Select a PIN to see observed stores and major competitors.</p></div></section>
           <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add comparison</button></div>
           <details class="expansion-drawer"><summary>Detailed evidence & methodology</summary><div data-map-detail aria-live="polite"><p class="hint">Select a state or city.</p></div></details>
           <details class="expansion-drawer"><summary>Compare locations <span data-map-compare-count></span></summary><p class="hint">Compare 2–4 places. Overlapping catchments can double-count residents.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></details>
@@ -516,6 +580,7 @@
     container.innerHTML = pageHTML(year);
     const analysisPanel = root.MarketAnalysisPanel?.create({ container: container.querySelector('[data-map-analysis]'), fetch: options.fetch || root.fetch?.bind(root) });
     const $ = selector => container.querySelector(selector);
+    const sectorId = () => options.sector || root.FranchiseSector?.active || 'apparel';
     const status = text => { $('[data-map-status]').textContent = text; };
     const clearResults = () => { comparisonResult=null; scenarioResult=null; $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
     const childIndex = () => path.length ? Math.min(LEVELS.indexOf(path.at(-1).level) + 1, LEVELS.length-1) : 0;
@@ -562,16 +627,45 @@
         $('[data-map-answer]').innerHTML = `<p>${escape(result.answer || 'No answer returned.')}</p><div>${citationsHTML(result.citations)}</div><small>${escape(result.cached ? 'Cached' : 'Retrieved')} ${escape(result.retrievedAt || '')} · ${escape(result.modelVersion || '')}</small>`;
       } catch (error) { if (error.name !== 'AbortError') $('[data-map-answer]').innerHTML = `<p class="hint">${escape(error.message)} Check the research configuration and selected location.</p>`; }
     }
+    // Full competitor evidence for the selected PIN; the popup only shows the top names.
+    async function renderCompetitors(id) {
+      const box=$('[data-map-competitors]'); if(!box)return;
+      const geo=features.find(feature=>String(feature.id)===String(id));
+      if(!map?.loadCompetitors||!(geo?.level==='pin'||/^pin:/.test(String(id)))){box.innerHTML='<p class="hint">Select a PIN to see observed stores and major competitors.</p>';return;}
+      box.innerHTML='<div class="expansion-skeleton" aria-busy="true" aria-label="Loading competitors"><span></span><span></span><span></span></div>';
+      const entry=await map.loadCompetitors(String(id));
+      if(destroyed||selected!==String(id))return;
+      if(entry.status!=='ready'){box.innerHTML='<p class="hint">Competitor research unavailable. Market evidence above is unaffected.</p>';return;}
+      const data=entry.data||{}, observed=data.observed, major=list(data.majorCompetitors).filter(item=>item?.name);
+      const cite=item=>{const c=item.citation;const url=safeUrl(typeof c==='string'?c:c?.url);return url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(c?.title||'Source')} ↗</a>`:item.storesInArea?`${escape(item.storesInArea)} mapped here`:'';};
+      const majorHtml=major.length?`<table class="analysis-range expansion-competitor-table"><thead><tr><th scope="col">Brand</th><th scope="col">Format</th><th scope="col">Tier</th><th scope="col">Presence</th></tr></thead><tbody>${major.map(item=>`<tr><th scope="row">${escape(item.name)}${item.parent?`<small>${escape(item.parent)}</small>`:''}<small>${cite(item)}</small></th><td>${escape(item.format||'—')}</td><td>${escape(item.priceTier||'—')}</td><td>${escape(item.presence||'—')}</td></tr>`).join('')}</tbody></table>`:'';
+      const observedHtml=observed?`<p class="expansion-competitor-total"><strong>${escape(Number(observed.totalStores||0).toLocaleString('en-IN'))}</strong> stores mapped in this PIN${observed.brandedStores?` · ${escape(observed.brandedStores)} branded`:''}</p>${list(observed.brands).length?`<ul class="expansion-popup-chips">${list(observed.brands).map(item=>`<li>${escape(item.name)} <small>${escape(item.count)}</small></li>`).join('')}</ul>`:''}<p class="hint">${escape(observed.source||'OpenStreetMap')}${observed.retrievedAt?` · ${escape(observed.retrievedAt)}`:''}${observed.license?` · ${escape(observed.license)}`:''}</p>`:'';
+      const warnings=list(data.warnings).length?`<ul class="analysis-warnings">${list(data.warnings).map(w=>`<li>${escape(w)}</li>`).join('')}</ul>`:'';
+      box.innerHTML=(majorHtml||observedHtml?majorHtml+observedHtml:'<p class="hint">No competitor evidence for this area yet.</p>')+warnings;
+    }
+    // Store PINs colour green straight away; their district and state follow once resolved.
+    async function resolveStoreAreas(pins) {
+      const ids=new Set(pins.map(pin=>`pin:${pin}`)); map?.setStoreAreas([...ids]);
+      const fetcher=options.fetch||root.fetch?.bind(root); if(!fetcher)return;
+      await Promise.all(pins.map(async pin=>{
+        try{
+          const response=await fetcher(`/api/market/map/geographies/${encodeURIComponent('pin:'+pin)}`); if(!response.ok)return;
+          const parent=(await response.json())?.geography?.parentId; if(!parent)return;
+          ids.add(String(parent)); const state=String(parent).match(/^district:(IN-[A-Z]+)-/)?.[1]; if(state)ids.add(`state:${state}`);
+        }catch{}
+      }));
+      if(!destroyed)map?.setStoreAreas([...ids]);
+    }
     function renderLegend() {
       const scale=root.MarketColorScale, mode=$('[data-map-color-mode]')?.value||'linear',scope=$('[data-map-scale-scope]')?.value||'national';
       const scaleMeta=map?.getScaleMetadata?.(), scaleLevel=scaleMeta?.level==='pin'?'PIN':scaleMeta?.level;
       const domain=scaleMeta?.domain||(currentLegend?.thresholds?.length?[currentLegend.thresholds[0],currentLegend.thresholds.at(-1)]:null);
-      const gradient=scale?.DEFAULT_COLORS?.map((color,index)=>`${color} ${Math.round(index/(scale.DEFAULT_COLORS.length-1)*100)}%`).join(',')||'#440154,#3b528b,#21918c,#5ec962,#fde725';
+      const stops=colors=>(colors||[]).map((color,index)=>`${color} ${Math.round(index/(colors.length-1)*100)}%`).join(',');
       const fmt=value=>/^(?:INR|₹)/i.test(String(currentLegend?.unit||''))&&root.FranchiseDisplay?root.FranchiseDisplay.money(value,currentLegend.unit):`${Number(value).toLocaleString('en-IN',{maximumFractionDigits:2})}${currentLegend?.unit?' '+currentLegend.unit:''}`;
       let ends=domain?`${fmt(domain[0])} <span>to</span> ${fmt(domain[1])}`:'No comparable metric range available';
       if(mode==='percentile')ends='Lower relative rank <span>to</span> higher relative rank among loaded areas';
       const labelText=mode==='percentile'?'Percentile rank within loaded geography level':`${scope==='national'||scaleMeta?.scope==='national'?'Fixed national':'Local rescale'} · ${scaleLevel?scaleLevel+'-level ':''}${mode==='log'?'logarithmic':'linear'} scale`;
-      $('[data-map-legend]').innerHTML=`<strong>${escape(label(metric))} · ${escape(labelText)}</strong><div class="expansion-gradient" style="background:linear-gradient(90deg,${gradient})" aria-hidden="true"></div><div class="expansion-legend-labels"><span>${ends.split('<span>to</span>')[0]}</span><span>${ends.split('<span>to</span>')[1]||''}</span></div><small>${escape(currentLegend?.unit||'Unit unavailable')} · ${escape(year)} view · Grey means no evidence. Colours show modelled values where marked.</small>`;
+      $('[data-map-legend]').innerHTML=`<strong>${escape(label(metric))} · ${escape(labelText)}</strong><div class="expansion-legend-ramp"><span>Opportunity</span><div class="expansion-gradient" style="background:linear-gradient(90deg,${stops(scale?.OPPORTUNITY_COLORS)})" aria-hidden="true"></div></div><div class="expansion-legend-ramp is-store"><span>Existing stores</span><div class="expansion-gradient" style="background:linear-gradient(90deg,${stops(scale?.STORE_COLORS)})" aria-hidden="true"></div></div><div class="expansion-legend-labels"><span>${ends.split('<span>to</span>')[0]}</span><span>${ends.split('<span>to</span>')[1]||''}</span></div><small>${escape(currentLegend?.unit||'Unit unavailable')} · ${escape(year)} view · Grey means no evidence. Colours show modelled values where marked.</small>`;
     }
     function metricNote(metric, fallback) {
       if(!metric||metricValue(metric)===null)return metric?.missing?.nextAction||fallback;
@@ -679,7 +773,7 @@
       const parent = path.at(-1);
       // Only one child level per selected parent. Zooming into India cannot fetch PINs.
       const requestZoom = ZOOMS[childIndex()];
-      const query = new URLSearchParams({ zoom: String(requestZoom), metric, year: String(year), scenario: appliedScenario });
+      const query = new URLSearchParams({ zoom: String(requestZoom), metric, year: String(year), scenario: appliedScenario, sector: sectorId() });
       if (parent) query.set('parentId', parent.id);
       const requestedLevel=LEVELS[childIndex()];
       if (bounds && ['pin','catchment'].includes(requestedLevel)) query.set('bbox', bounds.flat().join(','));
@@ -715,7 +809,7 @@
     async function selectGeography(id) {
       selected = String(id); selectedDetail = null; selectedRecord=null; selectedEstimate=null; const revision = ++detailRevision, context = contextRevision;
       map?.setPopupContext(selected,{geography:features.find(feature=>String(feature.id)===selected)||null});
-      map?.selectGeography(selected); renderAreas(); analysisPanel?.load(selected);
+      map?.selectGeography(selected); renderAreas(); analysisPanel?.load(selected); renderCompetitors(selected);
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
       $('[data-map-research]').innerHTML = '<p>Loading location context…</p>'; $('[data-map-answer]').innerHTML = '';
@@ -809,6 +903,8 @@
         loadLevels(); options.onViewport?.(view);
       }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onScaleChange(){ if(!destroyed)renderLegend(); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
+    const storePins=[...new Set(list(options.storePins).map(pin=>String(pin).trim()).filter(pin=>/^\d{6}$/.test(pin)))];
+    if(storePins.length)void resolveStoreAreas(storePins);
     container.addEventListener('click', onClick);
     function onClick(event) {
       const button = event.target.closest('button'); if (!button) return;

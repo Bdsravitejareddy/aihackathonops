@@ -31,7 +31,7 @@ body.expansion-fullscreen{overflow:hidden;background:#10191a}body.expansion-full
   border:1px solid var(--mx-smoke-line);box-shadow:var(--mx-smoke-shadow);color:var(--mx-text)}
 /* Toolbar: pill buttons and a pill search with a lime arrow */
 .expansion-topbar{gap:8px;align-items:center}
-.expansion-topbar>.button{border-radius:999px;min-height:40px;padding:8px 16px;font-size:12px;font-weight:500;letter-spacing:-.01em;
+.expansion-topbar>.button{white-space:nowrap;flex:none;border-radius:999px;min-height:40px;padding:8px 16px;font-size:12px;font-weight:500;letter-spacing:-.01em;
   transition:transform .35s var(--lq-ease),background .35s var(--lq-ease),box-shadow .35s var(--lq-ease)}
 .expansion-topbar>.button:hover{transform:translateY(-1px);background:var(--mx-smoke-hi);box-shadow:var(--mx-smoke-shadow),0 0 0 4px rgba(255,255,255,.06)}
 .expansion-search{border-radius:999px;padding:5px 5px 5px 18px;gap:6px}
@@ -253,3 +253,34 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
   body.expansion-fullscreen .bot-launcher{transition:none}
 }
 /* ==== end liquid glass ==== */
+
+/* ==== Store-aware heatmap: two-ramp legend, PIN popup and competitors ==================== */
+.expansion-legend-ramp{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;margin-top:6px}
+.expansion-legend-ramp>span{font-family:var(--lq-serif);font-size:13px;color:var(--mx-text-2)}
+.expansion-legend-ramp .expansion-gradient{margin:0}
+.expansion-legend-ramp+.expansion-legend-ramp{margin-bottom:6px}
+.expansion-popup.is-pin{width:min(300px,calc(100vw - 56px))}
+.expansion-popup.is-pin .expansion-popup-kpi.is-prominent{background:linear-gradient(165deg,#c84a0c 0%,#d9620f 100%)}
+.expansion-popup.has-store .expansion-popup-kpi.is-prominent{background:linear-gradient(165deg,#0b5a33 0%,#17744a 100%)}
+.expansion-popup-kpi.is-wide{grid-column:1/-1}
+.expansion-popup-store{display:inline-flex;align-items:center;gap:8px;margin:-4px 0 10px;padding:4px 12px 4px 6px;border-radius:999px;background:#dff6e4;color:#0b5a33;font-size:11px;font-weight:600}
+.expansion-popup-store::before{content:'';width:16px;height:16px;border-radius:50%;background:#228b55;box-shadow:0 0 0 4px rgba(34,139,85,.18)}
+.expansion-popup-competitors{margin:10px 0 8px}
+.expansion-popup-competitors h4{margin:0 0 6px;font-family:var(--lq-serif);font-weight:400;font-size:14px;color:var(--lq-ink-2)}
+.expansion-popup-competitors>small{display:block;margin-top:6px;font-size:10px;color:var(--lq-ink-2)}
+.expansion-popup-competitors .hint{margin:0;font-size:10px;line-height:1.5;color:var(--lq-ink-2)}
+.expansion-popup-chips{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0;list-style:none}
+.expansion-popup-chips li{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid #fff;font-size:11px;font-weight:500;color:var(--lq-ink);animation:mx-focus .45s var(--lq-ease) both}
+.expansion-popup-chips li:nth-child(2){animation-delay:50ms}.expansion-popup-chips li:nth-child(3){animation-delay:100ms}.expansion-popup-chips li:nth-child(n+4){animation-delay:150ms}
+.expansion-popup-chips small{color:var(--lq-ink-2);font-weight:400}
+.expansion-skeleton{display:grid;gap:6px}
+.expansion-skeleton span{height:12px;border-radius:999px;background:linear-gradient(90deg,rgba(155,135,236,.14) 0%,rgba(255,255,255,.9) 50%,rgba(155,135,236,.14) 100%);background-size:200% 100%;animation:mx-shimmer-load 1.2s linear infinite}
+.expansion-skeleton span:nth-child(2){width:80%}.expansion-skeleton span:nth-child(3){width:55%}
+@keyframes mx-shimmer-load{from{background-position:100% 0}to{background-position:-100% 0}}
+.expansion-competitor-total{margin:10px 0 6px;font-size:12px;color:var(--lq-ink-2)}
+.expansion-competitor-total strong{font:300 26px/1 var(--lq-sans);letter-spacing:-.04em;color:var(--lq-ink);margin-right:4px}
+.expansion-side .expansion-competitor-table td{text-align:left;font-size:10px}
+.expansion-side .expansion-competitor-table tbody th small{display:block}
+@media(max-width:560px){.expansion-legend-ramp{grid-template-columns:78px 1fr;gap:6px;margin-top:4px}.expansion-legend-ramp>span{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.expansion-skeleton span,.expansion-popup-chips li{animation:none!important}}
+/* ==== end store-aware heatmap ==== */

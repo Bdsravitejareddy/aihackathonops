@@ -96,23 +96,28 @@ test('validates and shapes cards, dropping malformed or uncited claims', () => {
   assert.equal(cards[0].headline, 'Price sensitivity');
 });
 
-test('sends structured context and grounded search through the documented REST endpoint', async () => {
-  let request;
+test('researches in grounded prose first, then formats only those notes as JSON without search', async () => {
+  const requests = [];
   const fetchImpl = async (url, options) => {
-    request = { url, options };
-    return groundedPayload(JSON.stringify({ cards: [{ headline: 'Opportunity', insight: 'A cited local retail update may improve access.', evidenceUrls: ['https://example.org/report'], confidence: 'medium', referenceDate: '2025-01-01', implication: 'Check opening timeline.' }] }), null, [{ web: { uri: 'https://example.org/report', title: 'Report' } }]);
+    requests.push({ url, options, body: JSON.parse(options.body) });
+    return requests.length === 1
+      ? groundedPayload('Opportunity. A cited local retail update may improve access. Confidence medium. Check opening timeline.', null, [{ web: { uri: 'https://example.org/report', title: 'Report' } }])
+      : groundedPayload(JSON.stringify({ cards: [{ headline: 'Opportunity', insight: 'A cited local retail update may improve access.', evidenceUrls: ['https://example.org/report'], confidence: 'medium', referenceDate: '2025-01-01', implication: 'Check opening timeline.' }] }), null, []);
   };
   const service = createMarketResearchService({ apiKey: 'secret-key', model: 'gemini-test', fetchImpl, now: () => new Date('2026-01-01T00:00:00Z') });
   const result = await service.researchLocation(validContext);
   assert.equal(result.ok, true);
   assert.equal(result.cards.length, 1);
   assert.equal(result.citations[0].url, 'https://example.org/report');
-  assert.equal(request.url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent');
-  assert.equal(request.options.headers['x-goog-api-key'], 'secret-key');
-  assert.deepEqual(request.options.body && JSON.parse(request.options.body).tools, [{ google_search: {} }]);
-  const sentBody = JSON.parse(request.options.body);
-  assert.match(JSON.stringify(sentBody), /1250000/);
-  assert.match(sentBody.contents[0].parts[0].text, /Google Search/i);
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0].url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent');
+  assert.equal(requests[0].options.headers['x-goog-api-key'], 'secret-key');
+  // The grounded step asks for prose and keeps search; JSON is only requested in the search-free formatting step.
+  assert.deepEqual(requests[0].body.tools, [{ google_search: {} }]);
+  assert.doesNotMatch(requests[0].body.contents[0].parts[0].text, /Reply with JSON/);
+  assert.match(JSON.stringify(requests[0].body), /1250000/);
+  assert.equal(requests[1].body.tools, undefined);
+  assert.match(requests[1].body.contents[0].parts[0].text, /Reply with JSON only/);
 });
 
 test('answers questions with grounded citations and preserves deterministic numerical context', async () => {

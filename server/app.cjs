@@ -50,7 +50,15 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024, allowRemote = false }) {
+// Research prompts only need each metric's value and provenance class; full source records travel separately in
+// sourceEvidence, and repeating them per metric pushes the context past its size limit.
+function compactMetrics(metrics = {}) {
+  return Object.fromEntries(Object.entries(metrics || {}).map(([key, metric]) => [key, metric && typeof metric === 'object'
+    ? { value: metric.value ?? null, unit: metric.unit || null, evidenceClass: metric.evidenceClass || null, ...(metric.warnings?.length ? { note: String(metric.warnings[0]).slice(0, 240) } : {}) }
+    : metric]));
+}
+
+function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, sectorRegistry = null, competitorService = null, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024, allowRemote = false }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   // One geography loader for the Analysis panel and the CEO cards so both see identical inputs.
   async function loadAnalysisGeography(geographyId) {
@@ -77,6 +85,16 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
       if (typeof store.listApplicationsByPin !== 'function') return reply(res,503,{error:'Screening lookup unavailable'});
       try { return reply(res,200,{applications:await store.listApplicationsByPin(workspaceId,pin)}); }
       catch { return reply(res,503,{error:'Screening lookup unavailable'}); }
+    }
+
+    if (url.pathname === '/api/market/competitors') {
+      if (req.method !== 'GET') { res.setHeader('allow', 'GET'); return reply(res, 405, { error: 'Method not allowed' }); }
+      if (!competitorService) return reply(res, 503, { error: 'Competitor research is unavailable' });
+      const geographyId = url.searchParams.get('geographyId') || '', sector = url.searchParams.get('sector') || 'apparel';
+      if (!/^(state|district|city|pin):[A-Za-z0-9._-]{1,80}$/.test(geographyId)) return reply(res, 400, { error: 'A valid geographyId is required' });
+      if (!/^[a-z0-9-]{1,60}$/.test(sector)) return reply(res, 400, { error: 'Invalid sector' });
+      try { return reply(res, 200, await competitorService.getCompetitors({ geographyId, sectorId: sector, clientId: req.socket?.remoteAddress || 'local-client', refresh: url.searchParams.get('refresh') === '1' })); }
+      catch (error) { return reply(res, error.status === 404 ? 404 : 503, { error: error.status === 404 ? error.message : 'Competitor research is unavailable' }); }
     }
 
     if (url.pathname === '/api/insights/ceo') {
@@ -184,7 +202,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
           const context = {
             location:{ id:geography.id, name:geography.name, level:geography.level, pin:geography.pin || null, city:geography.city || null, state:geography.state || null, sourceVersion:geography.sourceVersion || marketMapStore.sourceVersion || 'india-geography-1.1.2' },
             targetApparelSegment:segmentOf(payload.segment),
-            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:geography.metrics, demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
+            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:compactMetrics(geography.metrics), demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
             assumptions:scenario,
             sourceEvidence:[...(geography.evidence || []), ...(extra?.evidence || [])].filter((item, index, all) => all.findIndex(candidate => candidate.sourceId === item.sourceId && candidate.url === item.url) === index).slice(0,20),
             dataWarnings:[...(geography.warnings || []), ...(extra?.warnings || [])]

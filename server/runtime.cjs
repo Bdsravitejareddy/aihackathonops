@@ -10,6 +10,8 @@ const { createMarketMapStore } = require('./market-map-store.cjs');
 const { createMarketResearchStore } = require('./market-research-store.cjs');
 const { createMarketResearchService } = require('./market-research.cjs');
 const { normalizeDatabaseUrl } = require('./db-config.cjs');
+const { createSectorRegistry } = require('./market-sectors.cjs');
+const { createCompetitorService } = require('./market-competitors.cjs');
 
 function createApplicationRuntime({ allowRemote = false, logger = console } = {}) {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Set it in the server environment.');
@@ -26,12 +28,16 @@ function createApplicationRuntime({ allowRemote = false, logger = console } = {}
   const marketMapStore = createMarketMapStore(pool);
   marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}+${priorityPlacesVersion}`;
   const marketResearchService = createMarketResearchService({ logger });
+  const sectorRegistry = createSectorRegistry();
+  const competitorService = createCompetitorService({ pool, research: marketResearchService, sectors: sectorRegistry, logger });
   const api = createHandler({
     store: createStore(pool),
     marketStore: createMarketStore(pool),
     marketMapStore,
     marketResearchStore: createMarketResearchStore(pool),
     marketResearchService,
+    sectorRegistry,
+    competitorService,
     marketSources,
     marketBenchmarks,
     allowRemote

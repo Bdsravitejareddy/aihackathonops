@@ -7,7 +7,7 @@
   const safeUrl = value => { try { const url = new URL(value); return url.protocol === 'https:' ? url.href : null; } catch { return null; } };
   const LEVELS = ['low', 'mid', 'high'];
   const EDITABLE = [
-    ['annualRevenue', 'Annual revenue · ₹'], ['areaSqFt', 'Store area · sq ft'], ['rentPerSqFtMonth', 'Rent · ₹/sq ft/month'],
+    ['captureRate', 'Store capture of area potential · fraction'], ['annualRevenue', 'Annual revenue · ₹'], ['areaSqFt', 'Store area · sq ft'], ['rentPerSqFtMonth', 'Rent · ₹/sq ft/month'],
     ['fitOutPerSqFt', 'Fit-out · ₹/sq ft'], ['staffMonthlyWage', 'Staff wage · ₹/month'], ['sqFtPerEmployee', 'Sq ft per employee'],
     ['grossMargin', 'Gross margin · fraction'], ['royaltyRate', 'Royalty · fraction'], ['marketingRate', 'Marketing · fraction'],
     ['franchiseFee', 'Franchise fee · ₹'], ['depositMonthsOfRent', 'Deposit · months of rent'], ['inventoryTurnsPerYear', 'Inventory turns / year'],
@@ -51,12 +51,13 @@
   function rangeHTML(result) {
     const s = result.scenarios, rows = [
       ['Investment', k => money(s[k].investment)], ['Annual revenue (yr 1 run-rate)', k => money(s[k].annualRevenue)],
+      ['Revenue limited by', k => ({ demand_limited: 'Area demand', store_capacity_limited: 'Store size', no_demand_data: 'Store size*', user_input: 'Your input' }[s[k].revenueConstraint] || '—')],
       ['ROI · 5-year cumulative', k => pct(s[k].roi5YearPercent)], ['ROI · annual (year 2)', k => pct(s[k].annualRoiPercent)],
       ['Payback', k => months(s[k].paybackMonths)], ['Break-even revenue / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]
     ];
     return `<table class="analysis-range"><thead><tr><th scope="col"></th>${LEVELS.map(k => `<th scope="col" title="${escape(s[k].pairing)}">${escape(s[k].label)}</th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, fn]) => `<tr><th scope="row">${escape(label)}</th>${LEVELS.map(k => `<td class="${k === 'mid' ? 'is-base' : ''}">${fn(k)}</td>`).join('')}</tr>`).join('')}</tbody></table>
-      <p class="hint">Downside pairs low revenue with high costs; upside pairs high revenue with low costs. Revenue basis: ${escape(result.revenueBasis.label)} ${chip(result.revenueBasis.evidenceClass)}</p>`;
+      <p class="hint">Downside pairs low revenue with high costs; upside pairs high revenue with low costs. Revenue basis: ${escape(result.revenueBasis.label)} ${chip(result.revenueBasis.evidenceClass)}${result.revenueBasis.areaPotential ? ` Area potential ${money(result.revenueBasis.areaPotential)} a year; store capacity ${money(s.mid.capacityRevenue)} (base).` : ''}${result.revenueBasis.basis === 'store_capacity_benchmark' ? ' *No area demand data: revenue is the store-capacity benchmark.' : ''}</p>`;
   }
 
   function projectionHTML(result) {

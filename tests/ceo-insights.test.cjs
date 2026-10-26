@@ -43,6 +43,14 @@ test('potentialRevenue is the ranking metric whenever the map supplies it', asyn
   assert.equal(result.rankingMetric, 'potentialRevenue');
   assert.equal(card(result, 'top-markets').geographyName, 'Kerala');
   assert.equal(result.rankedCount, 1);
+  // Ranking uses the area figure; ROI and payback use the capped store revenue from the same analysis.
+  const best = card(result, 'best-return'), kerala = withPotential.find(f => f.name === 'Kerala');
+  const mid = analyzeLocation({ geography: kerala }).scenarios.mid;
+  assert.equal(card(result, 'top-markets').value.value, 9e11);
+  assert.equal(best.analysis.annualRevenue, mid.annualRevenue);
+  assert.ok(best.analysis.annualRevenue <= mid.capacityRevenue);
+  assert.equal(best.analysis.revenueConstraint, 'store_capacity_limited');
+  assert.equal(best.analysis.paybackMonths, mid.paybackMonths);
 });
 
 test('CEO card numbers equal the map feature and Analysis panel values for the same geography', async () => {

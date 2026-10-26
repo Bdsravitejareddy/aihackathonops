@@ -68,18 +68,30 @@ test('ROI, payback and break-even match a hand-checked flat example', () => {
 });
 
 test('scenarios pair downside revenue with high costs and carry a 5-year projection', () => {
-  const result = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 90000000, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
+  // Area potential ₹90 Cr × capture 5% / 10% / 15% = ₹4.5 / 9 / 13.5 Cr; capacity 8,652 sq ft × ₹7,888 / 8,520 / 9,595.
+  const result = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 900000000, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
   const { low, mid, high } = result.scenarios;
+  const cap = costs.assumptions.captureRate.value, density = costs.assumptions.revenuePerSqFtYear.value, area = costs.assumptions.areaSqFt.value.mid;
   assert.equal(result.revenueBasis.basis, 'potentialRevenue');
-  assert.equal(mid.annualRevenue, 90000000);
-  assert.equal(low.annualRevenue, 67500000);
-  assert.equal(high.annualRevenue, 112500000);
+  assert.equal(low.annualRevenue, Math.round(900000000 * cap.low));
+  assert.equal(low.revenueConstraint, 'demand_limited');
+  assert.equal(mid.annualRevenue, area * density.mid);
+  assert.equal(mid.demandRevenue, Math.round(900000000 * cap.mid));
+  assert.equal(mid.revenueConstraint, 'store_capacity_limited');
+  assert.equal(high.annualRevenue, area * density.high);
+  assert.deepEqual(result.revenueBasis.constraint, { low: 'demand_limited', mid: 'store_capacity_limited', high: 'store_capacity_limited' });
   assert.ok(low.investment >= mid.investment && mid.investment >= high.investment);
   assert.ok(low.roi5YearPercent <= mid.roi5YearPercent && mid.roi5YearPercent <= high.roi5YearPercent);
-  // An area-wide market figure is not used as one store's sales.
+  // A PIN with a large area potential never yields store revenue above the store's capacity.
   const areaWide = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 5e11, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
-  assert.equal(areaWide.revenueBasis.basis, 'store_capacity_benchmark');
-  assert.ok(areaWide.warnings.some(w => /too large for one store/.test(w)));
+  for (const s of Object.values(areaWide.scenarios)) { assert.ok(s.annualRevenue <= s.capacityRevenue); assert.equal(s.revenueConstraint, 'store_capacity_limited'); }
+  assert.ok(areaWide.warnings.some(w => /capped at store capacity/.test(w)));
+  // Small demand binds below capacity; the capture rate is editable.
+  const small = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 2e8, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } , overrides: { captureRate: 0.2 } });
+  assert.equal(small.scenarios.mid.annualRevenue, 4e7);
+  assert.equal(small.scenarios.mid.revenueConstraint, 'demand_limited');
+  assert.equal(small.assumptions.captureRate.evidenceClass, 'user_assumption');
+  assert.throws(() => analyzeLocation({ geography: pin, overrides: { captureRate: 1.2 } }), /fraction/);
   for (const s of [low, mid, high]) { assert.equal(s.projection.length, 5); assert.ok(s.paybackMonths === null || s.paybackMonths >= 1); }
 });
 

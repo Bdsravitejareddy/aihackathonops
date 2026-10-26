@@ -13,7 +13,8 @@
    "official_survey_estimate",
    "derived_estimate",
    "model_assumption"
-  ]
+  ],
+  "storeRevenue": "Store revenue = min(area × sales per sq ft, area potentialRevenue × captureRate). Without potentialRevenue: min(capacity, SOM × revenueScenarioFactor); without either: capacity × revenueScenarioFactor."
  },
  "assumptions": {
   "areaSqFt": {
@@ -81,6 +82,19 @@
    ],
    "method": "low: Pantaloons FY26 segment revenue Rs 45,600 mn / 5.781 mn sq ft = Rs 7,888; mid: V-Mart FY25 Rs 710/sq ft/month × 12 = Rs 8,520; high: Vishal Mega Mart H1 FY26 revenue Rs 61,218 mn × 2 / 12.76 mn sq ft = Rs 9,595 (includes general merchandise and FMCG).",
    "caveat": "Listed-retailer network averages, used only as a store-capacity fallback and a plausibility check; not a forecast of sales at a specific site."
+  },
+  "captureRate": {
+   "label": "Store capture of area revenue potential",
+   "unit": "fraction of area potentialRevenue",
+   "favorable": "high",
+   "evidenceClass": "model_assumption",
+   "value": {
+    "low": 0.05,
+    "mid": 0.1,
+    "high": 0.15
+   },
+   "rationale": "Share of the area's organised apparel revenue potential that one new store wins. low 5% ≈ one of ~20 comparable organised outlets serving the area; mid 10% ≈ one of ~10; high 15% ≈ an anchor store that also draws shoppers from neighbouring PINs (spend outside the area is not counted in potentialRevenue).",
+   "caveat": "No sourced store-level capture benchmark was found; model assumption. Replace with the brand's observed share in comparable catchments."
   },
   "grossMargin": {
    "label": "Gross margin",

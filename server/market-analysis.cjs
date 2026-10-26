@@ -11,7 +11,7 @@ const incomeCatalog = require('../data/india-state-per-capita-income.json');
 const MODEL_VERSION = 'store-cost-analysis-v1';
 const LEVELS = ['low', 'mid', 'high'];
 const CLASS_RANK = { Z: 0, Y: 1, X: 2 };
-const FRACTION_KEYS = new Set(['grossMargin', 'employerOnCostRate', 'marketingRate', 'royaltyRate', 'initialRampFraction']);
+const FRACTION_KEYS = new Set(['captureRate', 'grossMargin', 'employerOnCostRate', 'marketingRate', 'royaltyRate', 'initialRampFraction']);
 const RATE_KEYS = new Set(['costInflation', 'discountRate', 'revenueGrowth']);
 const EXTRA_OVERRIDES = new Set(['annualRevenue', 'revenueGrowth']);
 const PROJECTION_MONTHS = 60;
@@ -195,18 +195,25 @@ function estimateCostRange(assumptions) {
     evidenceClass: weakestClass(components.map(row => row.evidenceClass)) };
 }
 
+// Store revenue = min(store capacity, area demand). Area demand is potentialRevenue × capture rate (an
+// area-wide figure), else SOM × scenario factor; without either, the store-capacity benchmark is used.
 function revenueBase(geography, assumptions, override) {
-  const metrics = geography.metrics || {}, area = assumptions.areaSqFt.value.mid, capacity = area * assumptions.revenuePerSqFtYear.value.mid;
-  const storeCeiling = area * assumptions.revenuePerSqFtYear.value.high * 2.5, skipped = [];
-  if (override) return { value: override.mid ?? override.low ?? override.high, levels: override, basis: 'user_override', evidenceClass: 'user_assumption', label: 'User-entered annual revenue', capacity, skipped };
-  // Map metrics may describe the whole area's market; use one only when it is plausible for a single store.
-  for (const [key, label] of [['potentialRevenue', 'Potential revenue for this area (map model)'], ['som', 'Serviceable obtainable market (SOM)']]) {
-    const metric = metrics[key];
-    if (!finite(metric?.value) || metric.value <= 0) continue;
-    if (metric.value > storeCeiling) { skipped.push({ metric: key, value: metric.value }); continue; }
-    return { value: metric.value, basis: key, evidenceClass: metric.evidenceClass || 'derived_estimate', label, capacity, evidence: metric.evidence || [], skipped };
-  }
-  return { value: capacity, basis: 'store_capacity_benchmark', evidenceClass: 'derived_estimate', label: 'Store capacity at benchmark sales density (area × sales per sq ft)', capacity, skipped };
+  const metrics = geography.metrics || {}, capacity = assumptions.areaSqFt.value.mid * assumptions.revenuePerSqFtYear.value.mid;
+  if (override) return { value: override.mid ?? override.low ?? override.high, levels: override, basis: 'user_override', evidenceClass: 'user_assumption', label: 'User-entered annual revenue', capacity };
+  const potential = metrics.potentialRevenue, som = metrics.som;
+  if (finite(potential?.value) && potential.value > 0) return { value: potential.value, basis: 'potentialRevenue', evidenceClass: potential.evidenceClass || 'derived_estimate',
+    label: 'Area revenue potential × store capture rate, capped at store capacity', capacity, evidence: potential.evidence || [] };
+  if (finite(som?.value) && som.value > 0) return { value: som.value, basis: 'som', evidenceClass: som.evidenceClass || 'derived_estimate',
+    label: 'Serviceable obtainable market (SOM), capped at store capacity', capacity, evidence: som.evidence || [] };
+  return { value: capacity, basis: 'store_capacity_benchmark', evidenceClass: 'derived_estimate', label: 'Store capacity at benchmark sales density (area × sales per sq ft)', capacity };
+}
+
+function storeRevenue(base, assumptions, pick, scenario) {
+  const capacity = pick(assumptions.areaSqFt) * pick(assumptions.revenuePerSqFtYear);
+  if (base.basis === 'user_override') return { annualRevenue: base.levels[scenario] ?? base.value, demandRevenue: null, capacityRevenue: capacity, constraint: 'user_input' };
+  if (base.basis === 'store_capacity_benchmark') return { annualRevenue: base.value * pick(assumptions.revenueScenarioFactor), demandRevenue: null, capacityRevenue: capacity, constraint: 'no_demand_data' };
+  const demand = base.basis === 'potentialRevenue' ? base.value * pick(assumptions.captureRate) : base.value * pick(assumptions.revenueScenarioFactor);
+  return { annualRevenue: Math.min(demand, capacity), demandRevenue: demand, capacityRevenue: capacity, constraint: demand <= capacity ? 'demand_limited' : 'store_capacity_limited' };
 }
 
 function projectScenario({ investment, annualRevenue, fixedMonthly, contributionMargin, growth, inflation, discountRate, initialRamp, rampMonths }) {
@@ -241,7 +248,7 @@ function analyzeLocation({ geography, overrides } = {}) {
   for (const scenario of LEVELS) {
     const pick = item => scenarioLevel(item, scenario);
     const costs = costsAt(assumptions, pick);
-    const annualRevenue = base.basis === 'user_override' ? (base.levels[scenario] ?? base.value) : base.value * pick(assumptions.revenueScenarioFactor);
+    const revenue = storeRevenue(base, assumptions, pick, scenario), annualRevenue = revenue.annualRevenue;
     const contributionMargin = pick(assumptions.grossMargin) - pick(assumptions.royaltyRate) - pick(assumptions.marketingRate);
     const breakEvenRevenueAnnual = contributionMargin > 0 ? costs.fixedMonthly * 12 / contributionMargin : null;
     const projection = projectScenario({ investment: costs.investment, annualRevenue, fixedMonthly: costs.fixedMonthly, contributionMargin,
@@ -252,6 +259,7 @@ function analyzeLocation({ geography, overrides } = {}) {
       label: { low: 'Downside', mid: 'Base', high: 'Upside' }[scenario],
       pairing: { low: 'low revenue with high costs', mid: 'mid revenue with mid costs', high: 'high revenue with low costs' }[scenario],
       investment: Math.round(costs.investment), annualRevenue: Math.round(annualRevenue), monthlyFixedCosts: Math.round(costs.fixedMonthly),
+      revenueConstraint: revenue.constraint, demandRevenue: revenue.demandRevenue === null ? null : Math.round(revenue.demandRevenue), capacityRevenue: Math.round(revenue.capacityRevenue),
       contributionMargin: round(contributionMargin, 4), breakEvenRevenueAnnual: breakEvenRevenueAnnual === null ? null : Math.round(breakEvenRevenueAnnual),
       paybackMonths: projection.paybackMonths, paybackStatus: projection.paybackMonths === null ? 'not_within_5_years' : 'within_5_years',
       roi5YearPercent: round(projection.roi5YearPercent, 1), annualRoiPercent: costs.investment > 0 ? round(steady.operatingCashFlow / costs.investment * 100, 1) : null,
@@ -275,7 +283,9 @@ function analyzeLocation({ geography, overrides } = {}) {
   if (density < bench.low * 0.25) warnings.push(`Base revenue implies ₹${Math.round(density).toLocaleString('en-IN')} per sq ft per year, under a quarter of the lowest benchmark; the store may be oversized for this area.`);
   const categorySpend = geography.metrics?.apparelExpenditure?.value;
   if (finite(categorySpend) && categorySpend > 0 && scenarios.mid.annualRevenue > categorySpend * 0.1) warnings.push(`Base revenue would be ${round(scenarios.mid.annualRevenue / categorySpend * 100, 1)}% of the area's annual clothing and footwear spend; check capture.`);
-  for (const item of base.skipped) warnings.push(`${item.metric === 'potentialRevenue' ? 'Potential revenue' : 'SOM'} for this area (₹${Math.round(item.value).toLocaleString('en-IN')} a year) is too large for one store, so it is treated as the area's market rather than store sales.`);
+  const constraints = [...new Set(LEVELS.map(level => scenarios[level].revenueConstraint))];
+  if (constraints.includes('store_capacity_limited')) warnings.push(`Area demand exceeds what one ${Math.round(assumptions.areaSqFt.value.mid).toLocaleString('en-IN')} sq ft store can sell in ${LEVELS.filter(l => scenarios[l].revenueConstraint === 'store_capacity_limited').map(l => scenarios[l].label.toLowerCase()).join(', ')} case(s); revenue is capped at store capacity. A larger format or more stores may fit this area.`);
+  if (constraints.includes('demand_limited') && base.basis === 'potentialRevenue') warnings.push('Store revenue is limited by area demand (area potential × capture rate); the capture rate is a model assumption.');
   if (base.basis === 'store_capacity_benchmark') warnings.push('No area revenue potential is available, so revenue is the store capacity at benchmark sales density — a supply-side estimate, not demand evidence for this area.');
   warnings.push('Cash flows exclude tax, depreciation, financing and terminal value; the refundable deposit and inventory are not recovered within the 5-year horizon.');
   warnings.push(...incomeTrend.warnings);
@@ -287,7 +297,8 @@ function analyzeLocation({ geography, overrides } = {}) {
   for (const item of Object.values(assumptions)) for (const s of item.sources || []) add(s);
   return { modelVersion: MODEL_VERSION, geography: { id: geography.id || null, name: geography.name || null, level: geography.level || null, state: geography.state || null, city: geography.city || null },
     tier: { tierClass: tier.tierClass, tier: tier.tier, classesPresent: tier.classesPresent, levels: tier.levels, matchedCity: tier.matchedCity, basis: tier.basis },
-    revenueBasis: { basis: base.basis, label: base.label, annualValue: Math.round(base.value), evidenceClass: base.evidenceClass, storeCapacity: Math.round(base.capacity) },
+    revenueBasis: { basis: base.basis, label: base.label, annualValue: Math.round(base.value), areaPotential: base.basis === 'potentialRevenue' ? Math.round(base.value) : null, evidenceClass: base.evidenceClass, storeCapacity: Math.round(base.capacity),
+      constraint: Object.fromEntries(LEVELS.map(level => [level, scenarios[level].revenueConstraint])) },
     assumptions, costRange, scenarios, incomeTrend, warnings: [...new Set(warnings)], evidence };
 }
 

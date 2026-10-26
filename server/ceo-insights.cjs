@@ -63,16 +63,17 @@ async function buildCeoInsights({ features, loadGeography, stores = 5, topN = 5 
   });
   const best = byReturn[0];
   if (best) {
-    const mid = best.analysis.scenarios.mid, capacityOnly = analysed.every(a => a.analysis.revenueBasis.basis === 'store_capacity_benchmark');
+    const mid = best.analysis.scenarios.mid, capacityOnly = analysed.every(a => a.analysis.revenueBasis.basis === 'store_capacity_benchmark' || a.analysis.scenarios.mid.revenueConstraint === 'store_capacity_limited');
+    const limit = { demand_limited: 'limited by area demand', store_capacity_limited: 'limited by store size', no_demand_data: 'store-capacity benchmark (no demand data)' }[mid.revenueConstraint] || '';
     const badge = weakest(badgeOf(best.analysis.costRange.evidenceClass), badgeOf(best.analysis.revenueBasis.evidenceClass));
     cards.push({ id: 'best-return', title: 'Best return (base case)',
       headline: mid.paybackMonths === null ? `None of the top markets pays back within 5 years at base-case costs; ${best.item.name} comes closest.` : `${best.item.name} pays back fastest among the top markets.`,
       value: mid.paybackMonths === null ? { value: mid.roi5YearPercent, unit: '% ROI over 5 years', kind: 'percent' } : { value: mid.paybackMonths, unit: 'months to pay back', kind: 'months' },
-      detail: `Base case: ${mid.roi5YearPercent}% ROI over 5 years on ${tierText(best.analysis.tier)} costs.${capacityOnly ? ' Revenue is the same benchmark store for every area, so this ranks costs, not demand.' : ''}`,
+      detail: `Base case: ${mid.roi5YearPercent}% ROI over 5 years on ${tierText(best.analysis.tier)} costs; store revenue ${limit}.${capacityOnly ? ' Every top market fills one store to capacity, so this ranks costs, not demand.' : ''}`,
       action: 'Confirm rent and expected sales with a site visit before committing.',
       badge, evidenceClass: best.analysis.costRange.evidenceClass, geographyId: best.item.id, geographyName: best.item.name,
-      analysis: { paybackMonths: mid.paybackMonths, roi5YearPercent: mid.roi5YearPercent, investment: mid.investment, revenueBasis: best.analysis.revenueBasis.basis } });
-    if (capacityOnly) warnings.push('No area-specific store revenue is available for the top markets; return rankings reflect city-tier costs only.');
+      analysis: { paybackMonths: mid.paybackMonths, roi5YearPercent: mid.roi5YearPercent, investment: mid.investment, annualRevenue: mid.annualRevenue, revenueConstraint: mid.revenueConstraint, revenueBasis: best.analysis.revenueBasis.basis } });
+    if (capacityOnly) warnings.push('Store revenue in every top market is set by store capacity (no demand data, or demand above one store); return rankings reflect city-tier costs only.');
 
     const inv = best.analysis.costRange.investmentTotal;
     cards.push({ id: 'capital', title: `Capital for ${stores} store${stores > 1 ? 's' : ''}`,

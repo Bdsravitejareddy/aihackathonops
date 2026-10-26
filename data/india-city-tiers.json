@@ -24,7 +24,11 @@
    "printedName": "Hyderabad (UA)",
    "names": [
     "Hyderabad",
-    "Secunderabad"
+    "Secunderabad",
+    "Rangareddy",
+    "Ranga Reddy",
+    "Medchal Malkajgiri",
+    "Medchal-Malkajgiri"
    ],
    "state": "Andhra Pradesh/Telangana",
    "class": "X"
@@ -64,7 +68,8 @@
     "Bombay",
     "Mumbai Suburban",
     "Mumbai City",
-    "Thane"
+    "Thane",
+    "Greater Mumbai"
    ],
    "state": "Maharashtra",
    "class": "X"
@@ -829,5 +834,6 @@
    "state": "West Bengal",
    "class": "Y"
   }
- ]
+ ],
+ "matching": "Matched on city, postal city, district, India Post district and parent-district slug within the same state. District aliases (e.g. Rangareddy/Medchal for the Hyderabad UA, Thane for Greater Mumbai UA) are a model convention; PINs under 30% urban step down one class. All Delhi NCT districts lie in the Delhi UA."
 }

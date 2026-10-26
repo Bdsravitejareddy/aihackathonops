@@ -47,17 +47,34 @@ function resolveTier(geography = {}) {
       basis: `${level === 'state' ? state : 'India'} contains ${classes.map(cls => `${cls} (${tierLabel(cls)})`).join(', ')} areas; cost levels span the lowest to the highest class present.`,
       evidence, warnings: ['Costs for a whole state span several city tiers. Select a city, district or PIN for a narrower range.'] };
   }
-  const candidates = [geography.city, geography.postalCity, geography.district, level === 'pin' ? null : geography.name,
+  // Name hints, most specific first. Neon PIN rows may carry only parentId ('district:IN-KA-bangalore').
+  const parentSlug = typeof geography.parentId === 'string' && /^(district|city):/.test(geography.parentId) ? geography.parentId.split(':')[1].replace(/^IN-[A-Z]{2}-/, '') : null;
+  const hints = [geography.city, geography.postalCity, geography.district, geography.postalDistrict, level === 'pin' ? null : geography.name, parentSlug,
     ...(Array.isArray(geography.ancestors) ? geography.ancestors.map(item => typeof item === 'string' ? item : item?.name) : [])]
-    .filter(Boolean).map(name => normalizeName(String(name).split('·').at(-1)));
+    .filter(Boolean).map(name => normalizeName(String(name).split('·').at(-1))).filter(Boolean);
+  const candidates = [...new Set(hints)];
+  let match = null, matchedOn = null;
   for (const candidate of candidates) {
-    const match = tierCatalog.cities.find(city => inState(city) && city.names.some(name => normalizeName(name) === candidate));
-    if (match) {
-      const inherited = level === 'pin' || level === 'catchment';
-      return { tierClass: match.class, tier: tierLabel(match.class), classesPresent: [match.class], levels: { low: match.class, mid: match.class, high: match.class },
-        matchedCity: match.printedName, basis: `${inherited ? 'PIN inherits its city class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`, evidence,
-        warnings: match.note ? [match.note] : [] };
+    match = tierCatalog.cities.find(city => inState(city) && city.names.some(name => normalizeName(name) === candidate));
+    if (match) { matchedOn = candidate; break; }
+  }
+  // Delhi's census districts (North West, South, ...) all lie in the Delhi UA.
+  if (!match && stateKey === 'delhi') { match = tierCatalog.cities.find(city => city.printedName === 'Delhi (UA)'); matchedOn = 'NCT of Delhi'; }
+  if (match) {
+    const inherited = level === 'pin' || level === 'catchment', warnings = match.note ? [match.note] : [];
+    const urbanShare = geography.demographics?.urbanShare;
+    let cls = match.class, basis = `${inherited ? 'PIN inherits its district class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`;
+    // A largely rural PIN inside a metro district should not carry metro costs: step down one class.
+    if (inherited && finite(urbanShare) && urbanShare < 0.3 && cls !== 'Z') {
+      cls = cls === 'X' ? 'Y' : 'Z';
+      basis += ` Urban share ${Math.round(urbanShare * 100)}% (< 30%), so costs step down to class ${cls}.`;
+      warnings.push(`This PIN is mostly rural (${Math.round(urbanShare * 100)}% urban) within ${match.printedName}; costs use class ${cls} instead of ${match.class}.`);
     }
+    return { tierClass: cls, tier: tierLabel(cls), classesPresent: [cls], levels: { low: cls, mid: cls, high: cls }, matchedCity: match.printedName, matchedOn, basis, evidence, warnings };
+  }
+  if (!candidates.length && stateKey) {
+    const stateTier = resolveTier({ level: 'state', name: state });
+    return { ...stateTier, basis: `No city or district name is available; ${stateTier.basis}`, warnings: ['No city or district name is available for this area, so costs span the state\'s city tiers.'] };
   }
   return { tierClass: 'Z', tier: tierLabel('Z'), classesPresent: ['Z'], levels: { low: 'Z', mid: 'Z', high: 'Z' }, matchedCity: null,
     basis: `No X or Y class city matched ${candidates[0] ? `"${candidates[0]}"` : 'this area'}; the HRA order classifies all remaining cities/towns as Z.`, evidence,

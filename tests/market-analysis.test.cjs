@@ -200,3 +200,28 @@ test('analysis panel renders the range, income trend and editable assumptions in
   assert.match(dom.window.document.getElementById('panel').innerHTML, /1 assumption edited/);
   panel.destroy();
 });
+
+test('PIN and district rows from Neon resolve tiers from district names, India Post districts and the parent district', () => {
+  // Shaped like Neon rows: no city; PINs carry parentId and sometimes district / postalDistrict.
+  const neonPin = (pin, state, parentId, extra = {}) => ({ id: `pin:${pin}`, name: pin, level: 'pin', state, parentId, city: null, ...extra });
+  assert.equal(resolveTier(neonPin('560058', 'Karnataka', 'district:IN-KA-bangalore', { demographics: { urbanShare: 1 } })).tierClass, 'X');
+  assert.equal(resolveTier(neonPin('560058', 'Karnataka', null, { district: 'Bangalore', postalDistrict: 'BENGALURU URBAN' })).tierClass, 'X');
+  assert.equal(resolveTier(neonPin('400056', 'Maharashtra', 'district:IN-MH-mumbai-suburban', { demographics: { urbanShare: 1 } })).tierClass, 'X');
+  assert.equal(resolveTier(neonPin('400056', 'Maharashtra', null, { district: 'Mumbai Suburban' })).tierClass, 'X');
+  assert.equal(resolveTier(neonPin('570010', 'Karnataka', 'district:IN-KA-mysore', { demographics: { urbanShare: 0.32 } })).tierClass, 'Y');
+  assert.equal(resolveTier(neonPin('570010', 'Karnataka', null, { postalDistrict: 'MYSURU' })).tierClass, 'Y');
+  const rural = resolveTier(neonPin('841421', 'Bihar', 'district:IN-BR-saran', { district: 'Saran', postalDistrict: 'SARAN', demographics: { urbanShare: 0 } }));
+  assert.equal(rural.tierClass, 'Z');
+  assert.equal(resolveTier({ id: 'district:IN-KA-bangalore', name: 'Bangalore', level: 'district', state: 'Karnataka' }).tierClass, 'X');
+  assert.equal(resolveTier({ id: 'district:IN-TG-hyderabad', name: 'Hyderabad', level: 'district', state: 'Telangana' }).tierClass, 'X');
+  assert.equal(resolveTier({ id: 'district:IN-DL-north-west', name: 'North West', level: 'district', state: 'Delhi' }).tierClass, 'X');
+  // A mostly rural PIN in a metro district steps down one class instead of taking metro costs.
+  const fringe = resolveTier(neonPin('562157', 'Karnataka', 'district:IN-KA-bangalore', { demographics: { urbanShare: 0.12 } }));
+  assert.equal(fringe.tierClass, 'Y');
+  assert.ok(fringe.warnings.some(w => /mostly rural/.test(w)));
+  // With no city or district name at all, costs span the state's tier mix.
+  assert.equal(resolveTier({ id: 'pin:999999', name: '999999', level: 'pin', state: 'Karnataka' }).tierClass, 'mixed');
+  // A metro PIN gets metro rent in the full analysis.
+  const metro = analyzeLocation({ geography: neonPin('560058', 'Karnataka', 'district:IN-KA-bangalore', { metrics: {} }) });
+  assert.deepEqual(metro.assumptions.rentPerSqFtMonth.value, costs.assumptions.rentPerSqFtMonth.byTierClass.X);
+});

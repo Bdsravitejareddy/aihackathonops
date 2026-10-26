@@ -4,7 +4,7 @@
   const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
   const ZOOMS = [3.5, 6, 9, 12, 14];
   const METRICS = {
-    population: 'Population', populationDensity: 'Population density', households: 'Households',
+    potentialRevenue: 'Potential revenue · modeled', population: 'Population', populationDensity: 'Population density', households: 'Households',
     monthlyPerCapitaSpend: 'Monthly per-capita clothing & footwear spend', incomeProxy: 'Purchasing power / income proxy · modeled', apparelExpenditure: 'Annual clothing & footwear expenditure · estimated', tam: 'Annual TAM · modeled',
     sam: 'Annual SAM · modeled', som: 'Annual SOM · modeled', competitorCount: 'Competition · supply indicator', saturation: 'Competition / saturation',
     revenue: 'Store revenue · scenario', revenuePerKm2: 'Expected franchise revenue per km² · scenario',
@@ -134,49 +134,137 @@
   }
 
   // Map adapter: owns WebGL and popups; API loading and market assumptions live in mountPage.
+  // Globe + satellite + terrain view; PIN polygons for the viewport are loaded here at PIN_MIN_ZOOM.
+  const PIN_MIN_ZOOM = 8;
+  const EXTRUSION_HEIGHT = { state: 320000, district: 120000, city: 30000, pin: 3500, catchment: 1500 };
+  const COLUMN_ZOOM_SCALE = { area: [[3,1],[6,0.3],[8,0.03],[10,0]], pin: [[8,1],[12,0.45],[15,0.2]] };
+  const TERRARIUM_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+  const TERRARIUM_ATTRIBUTION = 'Terrain: Mapzen / AWS Terrain Tiles (SRTM, GMTED, ETOPO1)';
+  // Snap the viewport outward to a 0.05° grid so small pans reuse the cached PIN request.
+  function pinBbox(bounds) {
+    const [[w,s],[e,n]] = bounds, snap = 20, clamp = (v,min,max) => Math.min(max,Math.max(min,v));
+    const box = [clamp(Math.floor(w*snap)/snap,-180,180), clamp(Math.floor(s*snap)/snap,-85,85), clamp(Math.ceil(e*snap)/snap,-180,180), clamp(Math.ceil(n*snap)/snap,-85,85)];
+    return box[0] < box[2] && box[1] < box[3] ? box.map(v => Number(v.toFixed(2))) : null;
+  }
   function mount({ container, onSelect = () => {}, onViewport = () => {}, options = {} }) {
     const lib = options.maplibre || root.maplibregl;
     if (!lib) throw Error('Self-hosted MapLibre is unavailable. Reload to retry.');
     const basemap=options.basemap||root.FRANCHISEOS_BASEMAP_CONFIG||{};
     const tileUrl=typeof basemap.tileUrl==='string'&&/^https:\/\//i.test(basemap.tileUrl)&&/\{z\}.*\{x\}.*\{y\}/.test(basemap.tileUrl)?basemap.tileUrl:'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const attribution=typeof basemap.attribution==='string'&&basemap.attribution.trim()?basemap.attribution:'© OpenStreetMap contributors';
-    let features = [], metric = options.metric || 'apparelExpenditure', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, basemapMode='street';
-    const popupContexts=new Map();
-    const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17, pitch:0, bearing:0,
-      style: { version: 8, sources: { openStreetMap:{type:'raster',tiles:[tileUrl],tileSize:256,attribution} }, layers: [
-        { id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } },
-        { id:'street-basemap',type:'raster',source:'openStreetMap',paint:{'raster-opacity':0.92} }
-      ] },
+    const reducedMotion=!!root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const motion=duration=>reducedMotion?0:duration;
+    const fetcher=options.fetch||root.fetch?.bind(root);
+    const pinDebounce=Number.isFinite(options.pinDebounceMs)?options.pinDebounceMs:250;
+    let features = [], pinFeatures = [], metric = options.metric || 'potentialRevenue', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, basemapMode='satellite', extruded=options.extruded!==false, pinState='idle', pinKey=null, pinTimer=null, pinAbort=null, pinRevision=0;
+    const popupContexts=new Map(), pinCache=boundedCache(24);
+    const demSource=basemap.terrainSource&&typeof basemap.terrainSource==='object'?basemap.terrainSource:{type:'raster-dem',tiles:[TERRARIUM_URL],encoding:'terrarium',tileSize:256,maxzoom:15,attribution:TERRARIUM_ATTRIBUTION};
+    const map = new lib.Map({ container, center: [80,21], zoom: reducedMotion ? ZOOMS[0] : 1.6, minZoom: 1, maxZoom: 17, pitch: reducedMotion ? 30 : 0, bearing: 0, maxPitch: 75,
+      style: { version: 8, projection: { type: 'globe' },
+        sky: { 'sky-color': '#0b2a4a', 'horizon-color': '#9cc6ec', 'fog-color': '#cfe3f5', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.85, 'atmosphere-blend': ['interpolate',['linear'],['zoom'],0,1,7,1,11,0] },
+        terrain: { source: 'terrain-dem', exaggeration: 1.3 },
+        sources: {
+          satelliteImagery:{type:'raster',tiles:[basemap.satelliteTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:basemap.satelliteAttribution||'Sources: Esri, DigitalGlobe, GeoEye, i-cubed, USDA FSA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community'},
+          openStreetMap:{type:'raster',tiles:[tileUrl],tileSize:256,attribution},
+          terrainBasemap:{type:'raster',tiles:[basemap.terrainTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:basemap.terrainAttribution||'Sources: Esri, DeLorme, HERE, TomTom, Intermap, GEBCO, USGS, FAO, NPS, NRCAN, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, swisstopo, MapmyIndia, GIS User Community'},
+          // Separate DEM sources for terrain mesh and hillshade, as MapLibre recommends.
+          'terrain-dem': { ...demSource },
+          'hillshade-dem': { ...demSource }
+        },
+        layers: [
+          { id: 'background', type: 'background', paint: { 'background-color': '#0d1b26' } },
+          { id:'satellite-basemap',type:'raster',source:'satelliteImagery',paint:{'raster-opacity':1} },
+          { id:'street-basemap',type:'raster',source:'openStreetMap',layout:{visibility:'none'},paint:{'raster-opacity':0.92} },
+          { id:'terrain-basemap',type:'raster',source:'terrainBasemap',layout:{visibility:'none'},paint:{'raster-opacity':1} },
+          { id:'terrain-hillshade',type:'hillshade',source:'hillshade-dem',paint:{'hillshade-exaggeration':0.25,'hillshade-shadow-color':'#0b1620','hillshade-highlight-color':'#ffffff'} }
+        ] },
       attributionControl: true });
-    map.addControl(new lib.NavigationControl(), 'top-right');
-    const data = () => ({ type: 'FeatureCollection', features: features.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
+    map.addControl(new lib.NavigationControl({ visualizePitch: true }), 'top-right');
+    if (lib.GlobeControl) map.addControl(new lib.GlobeControl(), 'top-right');
+    if (lib.TerrainControl) map.addControl(new lib.TerrainControl({ source: 'terrain-dem', exaggeration: 1.3 }), 'top-right');
+    const doc = container.ownerDocument || root.document;
+    const extrusionButton = doc.createElement('button');
+    extrusionButton.type='button'; extrusionButton.className='expansion-map-extrusion-toggle'; extrusionButton.dataset.mapExtrusion='';
+    const syncExtrusionButton=()=>{ extrusionButton.textContent=extruded?'3D':'2D'; extrusionButton.setAttribute('aria-pressed',String(extruded)); extrusionButton.setAttribute('aria-label',extruded?'Show heatmap as flat 2D fill':'Show heatmap as 3D columns'); extrusionButton.title=extrusionButton.getAttribute('aria-label'); };
+    syncExtrusionButton();
+    extrusionButton.addEventListener('click',()=>setExtruded(!extruded));
+    const extrusionControl={ onAdd(){ const group=doc.createElement('div'); group.className='maplibregl-ctrl maplibregl-ctrl-group'; group.append(extrusionButton); return group; }, onRemove(){ extrusionButton.parentNode?.remove(); } };
+    map.addControl(extrusionControl, 'top-right');
+    const pinStatus = doc.createElement('div');
+    pinStatus.className='expansion-pin-status'; pinStatus.setAttribute('role','status'); pinStatus.setAttribute('aria-live','polite'); pinStatus.dataset.mapPinStatus=''; pinStatus.hidden=true;
+    container.append(pinStatus);
+    const setPinStatus=(state,text='')=>{ pinState=state; pinStatus.dataset.state=state; pinStatus.textContent=text; pinStatus.hidden=!text; };
+
+    const collection = list => ({ type: 'FeatureCollection', features: list.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
       properties: { id: String(f.id), name: f.name, level: f.level,
         ...Object.fromEntries(Object.entries(f.metrics||{}).filter(([,value])=>metricValue(value)!==null).map(([key,value])=>['v_'+key,metricValue(value)])) } })) });
-    const highlight = () => { if (ready && !destroyed) map.setFilter('market-selected', ['==', ['get','id'], selected === null ? '' : String(selected)]); };
-    const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(data()); highlight(); } };
+    const hasMetric = (list,key) => list.some(f => metricValue(f.metrics?.[key]) !== null);
+    // potentialRevenue is the default heatmap; until the API supplies it, fall back to category expenditure.
+    const activeMetric = () => metric==='potentialRevenue' && !hasMetric(features,metric) && !hasMetric(pinFeatures,metric) ? 'apparelExpenditure' : metric;
+    const pinsVisible = () => pinFeatures.length > 0 && map.getZoom() >= PIN_MIN_ZOOM;
+    const layerSets = { state: { fill:'market-fill', extrusion:'market-extrusion', outline:'market-outline', points:'market-points', selected:'market-selected' },
+      pin: { fill:'market-pin-fill', extrusion:'market-pin-extrusion', outline:'market-pin-outline', selected:'market-pin-selected' } };
+    const interactiveLayers = () => ['market-extrusion','market-fill','market-points','market-pin-extrusion','market-pin-fill'].filter(id => map.getLayer(id));
+    const setVisibility = (id, visible) => { if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',visible?'visible':'none'); };
+    const applyVisibility = () => {
+      if (!ready || destroyed) return;
+      const pins = pinsVisible();
+      setVisibility('market-fill', !extruded); setVisibility('market-extrusion', extruded);
+      setVisibility('market-pin-fill', pins && !extruded); setVisibility('market-pin-extrusion', pins && extruded);
+      setVisibility('market-pin-outline', pins); setVisibility('market-pin-selected', pins);
+      // PINs take over the heatmap; parent areas stay as faint context underneath.
+      if (map.getLayer('market-fill')) map.setPaintProperty('market-fill','fill-opacity',pins?0.18:0.78);
+      if (map.getLayer('market-extrusion')) map.setPaintProperty('market-extrusion','fill-extrusion-opacity',pins?0.15:0.82);
+    };
+    const highlight = () => {
+      if (!ready || destroyed) return;
+      const filter=['==', ['get','id'], selected === null ? '' : String(selected)];
+      map.setFilter('market-selected', filter); if (map.getLayer('market-pin-selected')) map.setFilter('market-pin-selected', filter);
+    };
+    const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(collection(features)); highlight(); } };
+    const updatePins = () => { if (ready && !destroyed) { map.getSource('market-pins')?.setData(collection(pinFeatures)); highlight(); applyVisibility(); } };
+    // Builds colour and column-height expressions from one MarketColorScale so both always agree.
+    function ramp(values, scope, nationalDomain, maxHeight, zoomScale) {
+      const colorLib=root.MarketColorScale, key=activeMetric();
+      const scale=colorLib.createColorScale({mode:colorMode,scope,values,domain:scope==='national'?nationalDomain:undefined,nationalDomain,colors:colorLib.DEFAULT_COLORS});
+      const stops=colorLib.legendLabels(scale,scale.colors.length,{unit:''}).map((item,index)=>({value:item.value,color:scale.colors[index]}));
+      const increasing=stops.filter((stop,index)=>index===0||stop.value>stops[index-1].value);
+      let input=['get','v_'+key];
+      if(colorMode==='log')input=['log10',['max',Math.max(Number.MIN_VALUE,scale.domain[0]),input]];
+      const positioned=colorMode==='log'?increasing.map(stop=>({value:Math.log10(Math.max(scale.domain[0],stop.value)),color:stop.color})):increasing;
+      const unique=positioned.filter((stop,index)=>index===0||stop.value>positioned[index-1].value);
+      const guard=['all',['has','v_'+key],...(colorMode==='log'?[['>', ['get','v_'+key],0]]:[])];
+      const color=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,stop.color])]:unique[0]?.color||MISSING,MISSING];
+      const floor=maxHeight*0.03, last=Math.max(1,unique.length-1);
+      const byValue=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap((stop,index)=>[stop.value,floor+(maxHeight-floor)*index/last])]:floor,0];
+      // Columns shrink as the camera nears the ground so parent areas never wall off the view.
+      const height=['interpolate',['linear'],['zoom'],...zoomScale.flatMap(([zoom,factor])=>[zoom,['*',factor,byValue]])];
+      return { color, height, metadata: scale.metadata };
+    }
+    const flat = (layers, color, height) => {
+      if (map.getLayer(layers.fill)) map.setPaintProperty(layers.fill,'fill-color',color);
+      if (map.getLayer(layers.extrusion)) { map.setPaintProperty(layers.extrusion,'fill-extrusion-color',color); map.setPaintProperty(layers.extrusion,'fill-extrusion-height',height); }
+      if (layers.points && map.getLayer(layers.points)) map.setPaintProperty(layers.points,'circle-color',color);
+    };
     const paint = () => {
       if (!ready || destroyed) return;
-      const colorLib=root.MarketColorScale;
-      const values=features.map(f=>metricValue(f.metrics?.[metric])).filter(numeric);
-      const nationalDomain=Array.isArray(legend?.domain)?legend.domain:(legend?.thresholds?.length?[legend.thresholds[0],legend.thresholds.at(-1)]:colorLib?.DEFAULT_NATIONAL_DOMAIN);
-      if(!colorLib||!nationalDomain){scaleMeta=null;map.setPaintProperty('market-fill','fill-color',MISSING);map.setPaintProperty('market-points','circle-color',MISSING);return;}
+      const colorLib=root.MarketColorScale, key=activeMetric();
+      const values=features.map(f=>metricValue(f.metrics?.[key])).filter(numeric);
+      const legendMatches=!legend?.metric||legend.metric===key;
+      const extent=values.length?[Math.min(...values),Math.max(...values)]:null;
+      const nationalDomain=!legendMatches?(extent&&extent[0]<extent[1]?extent:colorLib?.DEFAULT_NATIONAL_DOMAIN):Array.isArray(legend?.domain)?legend.domain:(legend?.thresholds?.length?[legend.thresholds[0],legend.thresholds.at(-1)]:colorLib?.DEFAULT_NATIONAL_DOMAIN);
+      const level=features.find(f=>f.level)?.level||'state';
+      if(!colorLib||!nationalDomain){scaleMeta=null;flat(layerSets.state,MISSING,0);flat(layerSets.pin,MISSING,0);return;}
       try {
-        const scale=colorLib.createColorScale({mode:colorMode,scope:scaleScope,values,domain:scaleScope==='national'?nationalDomain:undefined,nationalDomain,colors:colorLib.DEFAULT_COLORS});
-        scaleMeta=scale.metadata;
-        const stops=colorLib.legendLabels(scale,scale.colors.length,{unit:''}).map((item,index)=>({value:item.value,color:scale.colors[index]}));
-        const increasing=stops.filter((stop,index)=>index===0||stop.value>stops[index-1].value);
-        let input=['get','v_'+metric];
-        if(colorMode==='log')input=['log10',['max',Math.max(Number.MIN_VALUE,scale.domain[0]),input]];
-        const positioned=colorMode==='log'?increasing.map(stop=>({value:Math.log10(Math.max(scale.domain[0],stop.value)),color:stop.color})):increasing;
-        const unique=positioned.filter((stop,index)=>index===0||stop.value>positioned[index-1].value);
-        const interpolated=unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,stop.color])]:unique[0]?.color||MISSING;
-        const expression=['case',['all',['has','v_'+metric],...(colorMode==='log'?[['>', ['get','v_'+metric],0]]:[])],interpolated,MISSING];
-        map.setPaintProperty('market-fill','fill-color',expression);
-        map.setPaintProperty('market-points','circle-color',expression);
-      } catch {
-        scaleMeta=null; map.setPaintProperty('market-fill','fill-color',MISSING); map.setPaintProperty('market-points','circle-color',MISSING);
-      }
+        const states=ramp(values,scaleScope,nationalDomain,EXTRUSION_HEIGHT[level]||EXTRUSION_HEIGHT.state,COLUMN_ZOOM_SCALE.area);
+        scaleMeta=states.metadata; flat(layerSets.state,states.color,states.height);
+      } catch { scaleMeta=null; flat(layerSets.state,MISSING,0); }
+      // PIN values are orders of magnitude below state totals, so they rescale to the PINs in view.
+      const pinValues=pinFeatures.map(f=>metricValue(f.metrics?.[key])).filter(numeric);
+      try { const pins=ramp(pinValues,'local',undefined,EXTRUSION_HEIGHT.pin,COLUMN_ZOOM_SCALE.pin); flat(layerSets.pin,pins.color,pins.height); }
+      catch { flat(layerSets.pin,MISSING,0); }
     };
+    const findGeo = id => features.find(f=>String(f.id)===String(id)) || pinFeatures.find(f=>String(f.id)===String(id));
     const popupLevel=level=>({state:'State',district:'District',city:'City',pin:'PIN code',catchment:'Catchment',national:'National'})[level]||'Geography';
     const popupValue=item=>metricValue(item)===null?'Not estimated':display(item);
     function popupHtml(geo) {
@@ -211,51 +299,101 @@
       const kpi=(title,value,sub='',prominent=false)=>`<div class="expansion-popup-kpi${prominent?' is-prominent':''}"><span>${escape(title)}</span><strong>${escape(value)}</strong>${sub?`<small>${escape(sub)}</small>`:''}</div>`;
       const status=modelled?'Modelled estimate':classifications.length?'Source-backed estimate':'Evidence unavailable';
       const investmentSub=validScope?[investmentLabel,...componentSummary].join(' · '):'Store-format cost evidence unavailable';
-      return `<div class="expansion-popup" data-popup-geography="${escape(geo.id)}"><header><strong>${escape(selectedGeo.name||geo.name)}</strong><small>${escape(popupLevel(selectedGeo.level||geo.level))} · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header><div class="expansion-popup-grid">${kpi('Annual TAM',popupValue(tam),'Apparel category market',true)}${kpi('Annual SOM',popupValue(som),'Territory capture estimate',true)}${kpi(catchment.label,popupValue(catchment.metric),metricValue(customerValue)!==null?'Estimated unique customers · not footfall':'People in selected geography')}${kpi('Ideal investment',investmentDisplay,investmentSub)}${kpi(growth.label,growthDisplay,growth.metric?'Modelled forecast · horizon shown':'No supported growth forecast')}${kpi('Current map layer',popupValue(metrics[metric]),label(metric))}</div><div class="expansion-popup-status"><span>${status}</span><small>${escape(shortConfidence)}</small></div><button type="button" class="button small primary" data-map-popup-detail="${escape(geo.id)}">View detailed analysis</button></div>`;
+      const layerKey=activeMetric();
+      return `<div class="expansion-popup" data-popup-geography="${escape(geo.id)}"><header><strong>${escape(selectedGeo.name||geo.name)}</strong><small>${escape(popupLevel(selectedGeo.level||geo.level))} · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header><div class="expansion-popup-grid">${kpi('Annual TAM',popupValue(tam),'Apparel category market',true)}${kpi('Annual SOM',popupValue(som),'Territory capture estimate',true)}${kpi(catchment.label,popupValue(catchment.metric),metricValue(customerValue)!==null?'Estimated unique customers · not footfall':'People in selected geography')}${kpi('Ideal investment',investmentDisplay,investmentSub)}${kpi(growth.label,growthDisplay,growth.metric?'Modelled forecast · horizon shown':'No supported growth forecast')}${kpi('Current map layer',popupValue(metrics[layerKey]),label(layerKey))}</div><div class="expansion-popup-status"><span>${status}</span><small>${escape(shortConfidence)}</small></div><button type="button" class="button small primary" data-map-popup-detail="${escape(geo.id)}">View detailed analysis</button></div>`;
     }
     function refreshPopup() {
       if(!lastPopup)return;
-      const geo=features.find(item=>String(item.id)===String(lastPopup.id));if(!geo)return;
+      const geo=findGeo(lastPopup.id);if(!geo)return;
       popup?.remove();popup=new lib.Popup({closeButton:true,maxWidth:'380px'}).setLngLat(lastPopup.lngLat).setHTML(popupHtml(geo)).addTo(map);
     }
     function showPopup(event) {
-      const id=event.features?.[0]?.properties?.id??event.features?.[0]?.id,geo=features.find(f=>String(f.id)===String(id));
+      const id=event.features?.[0]?.properties?.id??event.features?.[0]?.id,geo=findGeo(id);
       if(!geo)return;lastPopup={id:String(id),lngLat:event.lngLat};refreshPopup();
     }
+    function addGeographyLayers(source, layers, before) {
+      map.addLayer({ id: layers.fill, type: 'fill', source, layout:{visibility:'none'}, paint: { 'fill-color': MISSING, 'fill-opacity': 0.78 } }, before);
+      map.addLayer({ id: layers.extrusion, type: 'fill-extrusion', source, layout:{visibility:'none'}, filter: ['!=',['geometry-type'],'Point'],
+        paint: { 'fill-extrusion-color': MISSING, 'fill-extrusion-height': 0, 'fill-extrusion-base': 0, 'fill-extrusion-opacity': 0.82, 'fill-extrusion-vertical-gradient': true } }, before);
+      map.addLayer({ id: layers.outline, type: 'line', source, paint: { 'line-color': '#ffffff', 'line-width': ['interpolate',['linear'],['zoom'],3,0.6,10,1.4], 'line-opacity': 0.7 } }, before);
+    }
+    // Viewport PIN loading: only PINs intersecting the (snapped) view are requested and rendered.
+    function requestPins() {
+      clearTimeout(pinTimer); pinTimer=null;
+      if (!ready || destroyed) return;
+      if (map.getZoom() < PIN_MIN_ZOOM) { pinAbort?.abort(); pinRevision++; pinKey=null; setPinStatus('idle'); applyVisibility(); return; }
+      pinTimer=setTimeout(loadPins, pinDebounce);
+    }
+    async function fetchPins(bbox, key) {
+      const query=new URLSearchParams({ level:'pin', bbox:bbox.join(','), metric:key, year:String(popupYear) });
+      const response=await fetcher('/api/market/map/levels?'+query, { signal: pinAbort.signal });
+      const result=await response.json().catch(()=>({}));
+      if (!response.ok) { const error=Error(result.error||`Market map API returned ${response.status}`); error.status=response.status; throw error; }
+      return result;
+    }
+    async function loadPins() {
+      pinTimer=null;
+      if (!ready || destroyed || !fetcher || map.getZoom() < PIN_MIN_ZOOM) return;
+      const bbox=pinBbox(map.getBounds().toArray()); if (!bbox) return;
+      const key=metric==='potentialRevenue'?'potentialRevenue':activeMetric();
+      const cacheKey=JSON.stringify([bbox,key,popupYear]);
+      if (cacheKey===pinKey) return;
+      pinAbort?.abort(); pinAbort=new AbortController(); const revision=++pinRevision;
+      const accept=data=>{
+        const valid=data?.level==='pin'&&Array.isArray(data.features)&&data.features.every(f=>f.level==='pin');
+        pinFeatures=valid?data.features.filter(f=>f.geometry):[];
+        pinKey=cacheKey; updatePins(); paint(); refreshPopup();
+        if (pinFeatures.length) setPinStatus('loaded',`${pinFeatures.length.toLocaleString('en-IN')} postcode (PIN) areas in view · colours rescaled to this view`);
+        else setPinStatus('unavailable','Postcode (PIN) data unavailable for this view · showing state boundaries. No PIN values are estimated.');
+      };
+      const cached=pinCache.get(cacheKey);
+      if (cached) { accept(cached); return; }
+      setPinStatus('loading','Loading postcode (PIN) potential for this view…');
+      try {
+        let data;
+        try { data=await fetchPins(bbox,key); }
+        catch (error) { if (error.status===400&&key!=='apparelExpenditure') data=await fetchPins(bbox,'apparelExpenditure'); else throw error; }
+        if (destroyed || revision!==pinRevision) return;
+        pinCache.set(cacheKey,data); accept(data);
+      } catch (error) {
+        if (destroyed || revision!==pinRevision || error.name==='AbortError') return;
+        pinFeatures=[]; pinKey=null; updatePins();
+        setPinStatus('unavailable',`Postcode (PIN) data unavailable: ${error.message} · showing state boundaries.`);
+      }
+    }
+    function setExtruded(value) { extruded=!!value; syncExtrusionButton(); applyVisibility(); }
     map.on('load', () => {
       if (destroyed) return;
-      map.addSource('market-geographies', { type: 'geojson', data: data() });
-      map.addLayer({ id: 'market-fill', type: 'fill', source: 'market-geographies', paint: { 'fill-color': ['get','color'], 'fill-opacity': 0.82 } });
-      map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': 1 } });
-      map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': ['get','color'], 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
-      map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#143f35', 'line-width': 3 }, filter: ['==',['get','id'],''] });
+      map.addSource('market-geographies', { type: 'geojson', data: collection(features) });
+      map.addSource('market-pins', { type: 'geojson', data: collection(pinFeatures), tolerance: 0.6 });
+      addGeographyLayers('market-geographies', layerSets.state);
+      addGeographyLayers('market-pins', layerSets.pin);
+      map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': MISSING, 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
+      map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffd166', 'line-width': 3 }, filter: ['==',['get','id'],''] });
+      map.addLayer({ id: 'market-pin-selected', type: 'line', source: 'market-pins', layout:{visibility:'none'}, paint: { 'line-color': '#ffd166', 'line-width': 3 }, filter: ['==',['get','id'],''] });
       ready = true;
-      map.addSource('satellite-imagery',{type:'raster',tiles:[basemap.satelliteTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:basemap.satelliteAttribution||'Sources: Esri, DigitalGlobe, GeoEye, i-cubed, USDA FSA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community'});
-      map.addLayer({id:'satellite-basemap',type:'raster',source:'satellite-imagery',layout:{visibility:'none'},paint:{'raster-opacity':1}},'market-fill');
-      map.addSource('terrain-basemap-source',{type:'raster',tiles:[basemap.terrainTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:basemap.terrainAttribution||'Sources: Esri, DeLorme, HERE, TomTom, Intermap, GEBCO, USGS, FAO, NPS, NRCAN, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, swisstopo, MapmyIndia, GIS User Community'});
-      map.addLayer({id:'terrain-basemap',type:'raster',source:'terrain-basemap-source',layout:{visibility:'none'},paint:{'raster-opacity':1}},'market-fill');
-      if(basemap.terrainSource&&typeof basemap.terrainSource==='object'){
-        map.addSource('terrain-dem',basemap.terrainSource);
-        map.addLayer({id:'terrain-hillshade',type:'hillshade',source:'terrain-dem',layout:{visibility:'none'},paint:{'hillshade-exaggeration':0.45}},'market-fill');
-      }
-      update(); paint();
+      update(); paint(); applyVisibility();
+      // Fly in from the globe to India unless the view already moved; reduced motion starts there instead.
+      if (!reducedMotion && map.getZoom() < 2) map.flyTo({ center: [79,22], zoom: ZOOMS[0], pitch: 35, bearing: -6, duration: 2600, essential: false });
+      requestPins();
     });
     map.on('click', event => {
-      const hit=event.features?.[0]||map.queryRenderedFeatures?.(event.point,{layers:['market-fill','market-points']})?.[0];
+      const hit=event.features?.[0]||map.queryRenderedFeatures?.(event.point,{layers:interactiveLayers()})?.[0];
       const id=hit?.properties?.id??hit?.id;
       if(id!==undefined){selected=id;highlight();showPopup({...event,features:[hit]});onSelect(String(id));}
     });
-    for (const layer of ['market-fill','market-points']) {
+    for (const layer of ['market-fill','market-extrusion','market-points','market-pin-fill','market-pin-extrusion']) {
       map.on('mouseenter', layer, event => { map.getCanvas().style.cursor = 'pointer'; showPopup(event); });
       map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
     }
-    map.on('moveend', () => { if (!destroyed) onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
+    map.on('moveend', () => { if (destroyed) return; requestPins(); onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
     return {
-      setMetric(value) { metric = value; paint(); refreshPopup(); },
+      setMetric(value) { metric = value; paint(); refreshPopup(); requestPins(); },
+      getMetric() { return activeMetric(); },
       setColorMode(value){if(!['linear','log','percentile'].includes(value))return; colorMode=value; paint(); refreshPopup();},
       setScaleScope(value){if(!['national','local'].includes(value))return; scaleScope=value; paint(); refreshPopup();},
-      setYear(value) { if(Number.isInteger(Number(value)))popupYear=Number(value);refreshPopup(); }, setScenario() { refreshPopup(); },
+      setYear(value) { if(Number.isInteger(Number(value)))popupYear=Number(value);refreshPopup();requestPins(); }, setScenario() { refreshPopup(); },
       setSegment(value){if(typeof value==='string'&&value.trim())popupSegment=value.trim();refreshPopup();},
       setLegend(value) { legend = normalizeLegend(value); paint(); refreshPopup(); },
       refreshDisplay() { paint(); refreshPopup(); },
@@ -263,14 +401,16 @@
       setBasemap(value){
         if(!['street','satellite','terrain'].includes(value))return;
         basemapMode=value;
-        if(map.getLayer('street-basemap'))map.setLayoutProperty('street-basemap','visibility',value==='street'?'visible':'none');
-        if(map.getLayer('satellite-basemap'))map.setLayoutProperty('satellite-basemap','visibility',value==='satellite'?'visible':'none');
-        if(map.getLayer('terrain-basemap'))map.setLayoutProperty('terrain-basemap','visibility',value==='terrain'?'visible':'none');
-        if(map.getLayer('terrain-hillshade'))map.setLayoutProperty('terrain-hillshade','visibility',value==='terrain'?'visible':'none');
-        if(value==='terrain'&&basemap.terrainSource&&typeof map.setTerrain==='function')map.setTerrain({source:'terrain-dem',exaggeration:1.1});
-        else if(typeof map.setTerrain==='function')map.setTerrain(null);
+        setVisibility('street-basemap',value==='street');
+        setVisibility('satellite-basemap',value==='satellite');
+        setVisibility('terrain-basemap',value==='terrain');
+        if(map.getLayer('terrain-hillshade'))map.setPaintProperty('terrain-hillshade','hillshade-exaggeration',value==='terrain'?0.55:value==='satellite'?0.25:0.15);
       },
-      setTilt(active){map.setPitch(active?58:0);},
+      getBasemap(){return basemapMode;},
+      setTerrain(active){ if(typeof map.setTerrain==='function')map.setTerrain(active?{source:'terrain-dem',exaggeration:1.3}:null); },
+      setExtruded, isExtruded(){return extruded;},
+      getPinState(){return pinState;},
+      setTilt(active){const pitch=active?58:0; if(typeof map.easeTo==='function')map.easeTo({pitch,duration:motion(500)}); else map.setPitch(pitch);},
       resize(){map.resize?.();},
       getScaleMetadata(){return scaleMeta;},
       setFeatures(value,meta) {
@@ -281,11 +421,11 @@
       },
       selectGeography(id) { selected = id; highlight(); },
       focusGeography(geo, zoom) {
-        if (geo?.geometry?.type==='Point') { map.flyTo({center:geo.geometry.coordinates,zoom:Math.max(zoom,ZOOMS[2]),duration:600}); return; }
-        const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: 600 });
+        if (geo?.geometry?.type==='Point') { map.flyTo({center:geo.geometry.coordinates,zoom:Math.max(zoom,ZOOMS[2]),duration:motion(600)}); return; }
+        const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: motion(600) });
       },
-      reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: 0 }); },
-      destroy() { destroyed = true; popup?.remove();popupContexts.clear();lastPopup=null; map.remove(); }
+      reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: motion(800) }); },
+      destroy() { destroyed = true; clearTimeout(pinTimer); pinAbort?.abort(); pinStatus.remove(); popup?.remove();popupContexts.clear();lastPopup=null; map.remove(); }
     };
   }
 
@@ -313,7 +453,7 @@
           <label>Metric<select class="input" name="metric">${[['apparelExpenditure','Annual clothing & footwear expenditure'],['tam','TAM'],['sam','SAM'],['som','SOM'],['population','Population'],['populationDensity','Population density'],['monthlyPerCapitaSpend','Per-person spend'],['incomeProxy','Purchasing power'],['competitorCount','Competitor supply'],['saturation','Market saturation'],['revenue','Store revenue scenario'],['revenuePerKm2','Revenue per km²'],['growthPotential3Year','3-year growth'],['growthPotential5Year','5-year growth']].map(([key,title])=>`<option value="${key}" ${key==='apparelExpenditure'?'selected':''}>${title}</option>`).join('')}</select></label>
           <label>Scale<select class="input" data-map-color-mode aria-label="Colour scaling"><option value="linear">Linear</option><option value="log">Logarithmic</option><option value="percentile">Percentile</option></select></label>
           <label>Extent<select class="input" data-map-scale-scope aria-label="Scale geography"><option value="national">Fixed national</option><option value="local">Local rescale</option></select></label>
-          <label>Basemap<select class="input" data-map-basemap><option value="street">Street</option><option value="satellite">Satellite imagery</option><option value="terrain">Terrain</option></select></label>
+          <label>Basemap<select class="input" data-map-basemap><option value="satellite" selected>Satellite imagery</option><option value="street">Street</option><option value="terrain">Terrain</option></select></label>
           <button class="button small" type="button" data-map-tilt aria-pressed="false">3D tilt</button><button class="button small" type="button" data-map-national>India</button>
           <label class="map-year">Year<input class="input" name="year" type="number" min="2011" max="2100" value="${year}"></label>
         </div>

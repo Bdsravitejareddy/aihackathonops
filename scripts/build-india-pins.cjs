@@ -44,7 +44,8 @@ const median = values => { const s = [...values].sort((a, b) => a - b), m = s.le
 // Cleans office coordinates: swapped lat/long are repaired, points outside India or far from the declared state are dropped.
 function cleanOffices(offices, grid, stateZones, states) {
   const codeByKey = new Map(states.map((f, i) => [stateKey(f.properties.name), i]));
-  codeByKey.set('dadraandnagarhavelianddamananddiu', codeByKey.get(stateKey('Dadra and Nagar Haveli and Daman and Diu')));
+  const dnhdd = codeByKey.get(stateKey('Dadra and Nagar Haveli and Daman and Diu'));
+  if (dnhdd !== undefined) codeByKey.set('dadraandnagarhavelianddamananddiu', dnhdd);
   const zoneAt = (lon, lat, radius = 0) => {
     const col = Math.floor((lon - grid.west) / grid.dx), row = Math.floor((grid.north - lat) / grid.dy), found = new Set();
     for (let dr = -radius; dr <= radius; dr++) for (let dc = -radius; dc <= radius; dc++) {
@@ -59,7 +60,8 @@ function cleanOffices(offices, grid, stateZones, states) {
     const pin = String(office.pincode || '').trim();
     if (!/^[1-9]\d{5}$/.test(pin)) { counts.invalidPin++; continue; }
     const declared = codeByKey.has(stateKey(office.statename)) ? codeByKey.get(stateKey(office.statename)) : null;
-    const lat = Number(office.latitude), lon = Number(office.longitude), record = { pin, declared, delivery: office.delivery === 'Delivery', district: office.district, office: office.officename, lon: null, lat: null };
+    const coordinate = value => { const text = String(value ?? '').trim(); return text && text.toUpperCase() !== 'NA' ? Number(text) : NaN; };
+    const lat = coordinate(office.latitude), lon = coordinate(office.longitude), record = { pin, declared, delivery: office.delivery === 'Delivery', district: office.district, office: office.officename, lon: null, lat: null };
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) { counts.missingCoordinates++; cleaned.push(record); continue; }
     let point = null;
     for (const [x, y, swapped] of [[lon, lat, false], [lat, lon, true]]) {

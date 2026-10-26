@@ -125,6 +125,7 @@ function mountTerritoryScreening(){
    marketContext:screeningContextFor(screeningSelectedLocation),applicants:[],tieBreakFields:[{field:'launch',direction:'asc'}],
    onLocationChange:location=>{screeningSelectedLocation=location;loadScreeningApplicants(location);},
    onRunScenario:payload=>marketRequest('/api/market/forecast',{method:'POST',body:JSON.stringify(payload)}),
+   storeAnalysis:window.MarketAnalysisPanel?container=>window.MarketAnalysisPanel.create({container,fetch:sectorFetch}):null,
    onOpenApplicant:applicant=>{if(applicant.key)detail(applicant.key);},
    onFilterChange:()=>{}});
  if(screeningSelectedLocation)loadScreeningApplicants(screeningSelectedLocation);

@@ -185,3 +185,14 @@ test('illustrative financial scenario sends editable assumptions to the determin
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/assumes 30,000 passing pedestrians\/month/);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/cash flow excludes taxes, debt service, depreciation, lease accounting and terminal value/i);
 });
+
+test('with the shared store analysis, the Simulator shows it instead of the illustrative calculator and reloads it per PIN', t => {
+  const loads = [];
+  const h = harness({ location: { id: 'pin:560001', pin: '560001' }, storeAnalysis: container => { container.dataset.mounted = 'yes'; return { load: id => loads.push(id) }; } });
+  t.after(() => h.dom.window.close());
+  assert.equal(h.root.querySelector('[data-financial-scenario]'), null);
+  assert.equal(h.root.querySelector('[data-store-analysis]').dataset.mounted, 'yes');
+  assert.match(h.root.textContent, /same model as Expansion Intelligence/);
+  h.controller.updateLocation({ id: 'pin:577002', pin: '577002' });
+  assert.deepEqual(loads, ['pin:560001', 'pin:577002']);
+});

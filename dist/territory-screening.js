@@ -101,7 +101,7 @@
     }
     return idOf(a).localeCompare(idOf(b),undefined,{numeric:true,sensitivity:'base'});
   });
-  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, onRunScenario = async () => { throw new Error('Forecast API is not connected'); }, tieBreakFields = []} = {}) {
+  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, onRunScenario = async () => { throw new Error('Forecast API is not connected'); }, tieBreakFields = [], storeAnalysis = null} = {}) {
     if (!root) throw new Error('Territory Screening root is required');
     const doc = root.ownerDocument, win = doc.defaultView;
     let selected = location, market = marketContext, records = list(applicants), workspaceTerritories=list(territories), filter = 'all', scenarioResult = null, scenarioBusy = false;
@@ -124,8 +124,16 @@
       <section class="ts-applicants"><div class="ts-applicants-heading"><div><p class="ts-eyebrow">PARTNER PIPELINE</p><h2>Applicants for this territory</h2><p class="ts-subtitle">Rank is a screening order only. Confirmed funds, premises and due diligence remain separate checks.</p></div><div class="ts-filters" role="group" aria-label="Applicant filter"><button type="button" data-filter="all" aria-pressed="true">All Ranked</button><button type="button" data-filter="actionable" aria-pressed="false">Actionable</button></div></div><div class="ts-applicant-list" data-applicants></div></section>`;
     root.replaceChildren(shell);
     const q = selector => shell.querySelector(selector);
-    function renderFinancial(){const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax','monthlyFixedCosts'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
-    q('[data-financial-scenario]').addEventListener('submit',async event=>{
+    // With storeAnalysis (the Expansion Intelligence Analysis panel), the Simulator uses the same store model as the
+    // map instead of the illustrative calculator, and reloads it for each PIN.
+    let analysis = null;
+    if (typeof storeAnalysis === 'function') {
+      q('.ts-financial').innerHTML = '<div class="ts-financial-head"><div><p class="ts-eyebrow">STORE ECONOMICS</p><h2 id="ts-financial-title">One store at this PIN</h2><p>The same model as Expansion Intelligence: the brand’s 400 sq ft format, the 3 km catchment and city-tier costs. Use Edit assumptions to simulate changes.</p></div></div><div data-store-analysis><p class="ts-scenario-empty">Select a PIN code to see store costs, sales, break-even and payback.</p></div>';
+      analysis = storeAnalysis(q('[data-store-analysis]'));
+    }
+    const loadAnalysis = () => { const pin = selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; if (analysis && pin) analysis.load(`pin:${pin}`); };
+    function renderFinancial(){if(!q('[data-financial-results]'))return;const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax','monthlyFixedCosts'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
+    q('[data-financial-scenario]')?.addEventListener('submit',async event=>{
       event.preventDefault();if(scenarioBusy)return;
       const form=event.currentTarget, number=name=>{const value=form.elements[name]?.value;return value===''||value===undefined?NaN:Number(value);};
       const names=['budgetMin','initialInvestment','budgetMax','workingCapital','areaSqFt','monthlyFixedCosts','grossMargin','royaltyRate','aov','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate'];
@@ -230,7 +238,7 @@
         const caution=doc.createElement('small');caution.className='ts-caution';caution.textContent='This ranking is not an approval; recommended status is not final approval.';row.append(caution);target.append(row);
       });
     }
-    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin){market=selected?.marketContext || null;scenarioResult=null;} q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();renderFinancial();if(notify)onLocationChange(selected); }
+    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin){market=selected?.marketContext || null;scenarioResult=null;} q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();renderFinancial();if(previousPin!==pin)loadAnalysis();if(notify)onLocationChange(selected); }
     q('[data-pin-form]').addEventListener('submit',event=>{event.preventDefault();const pin=q('[name="pin"]').value.trim();if(!/^\d{6}$/.test(pin)){q('[data-pin-message]').textContent='Enter a valid six-digit PIN code.';return;}q('[data-pin-message]').textContent='PIN selected. Geographic and market evidence will appear only when supplied.';const detail={id:`pin:${pin}`,name:pin,level:'pin',pin};updateLocation(detail,true);win?.dispatchEvent(new win.CustomEvent('franchiseos:location-selected',{detail}));});
     q('[data-cascade-state]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value;const cities=[...new Set(workspaceTerritories.filter(row=>row.state===state).map(row=>row.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));fillSelect(q('[data-cascade-city]'),'Select city',cities);fillSelect(q('[data-cascade-pin]'),'Select PIN',[]);q('[data-cascade-city]').disabled=!cities.length;q('[data-cascade-pin]').disabled=true;});
     q('[data-cascade-city]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value,city=q('[data-cascade-city]').value;const pins=[...new Set(workspaceTerritories.filter(row=>row.state===state&&row.city===city).flatMap(row=>list(row.pins).map(String)).filter(pin=>/^\d{6}$/.test(pin)))].sort();fillSelect(q('[data-cascade-pin]'),'Select PIN',pins);q('[data-cascade-pin]').disabled=!pins.length;});
@@ -238,8 +246,8 @@
     shell.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter; shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));onFilterChange(filter);renderApplicants();}));
     const sharedLocation=event=>{const detail=event.detail;if(detail && typeof detail==='object')updateLocation(detail);};
     win?.addEventListener('franchiseos:location-selected',sharedLocation);
-    updateLocation(location);renderMarket();renderApplicants();
-    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, refreshDisplay(){renderMarket();renderFinancial();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
+    updateLocation(location);renderMarket();renderApplicants();loadAnalysis();
+    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, refreshDisplay(){renderMarket();renderFinancial();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);analysis?.destroy?.();shell.remove();} };
   }
   return {mount,sortApplicants};
 });

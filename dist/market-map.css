@@ -85,11 +85,11 @@ body.expansion-fullscreen{overflow:hidden;background:#10191a}body.expansion-full
   background-size:140% 100%!important;animation:mx-shimmer 9s ease-in-out infinite alternate}
 .expansion-legend-labels{color:var(--mx-text);font-size:10px;font-variant-numeric:tabular-nums}
 .expansion-legend>small{color:var(--mx-text-2);font-size:10px;line-height:1.45;margin-top:4px}
-.expansion-status{border-radius:999px;padding:8px 14px 8px 30px;font-size:11px;left:20px;top:192px;bottom:auto;max-width:min(420px,calc(100% - 460px))}
+.expansion-status{border-radius:999px;padding:8px 14px 8px 30px;font-size:11px;left:20px;top:calc(var(--mx-tools-bottom,152px) + 46px);bottom:auto;max-width:min(420px,calc(100% - 460px))}
 .expansion-status::before{content:'';position:absolute;left:13px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:var(--lq-lime);box-shadow:0 0 0 0 rgba(207,224,67,.6);animation:mx-pulse 2.4s var(--lq-ease) infinite}
 .expansion-status .text-button{color:var(--lq-lime)}
 .expansion-status:empty{display:none}
-.expansion-breadcrumbs{border-radius:999px;padding:7px 14px;font-size:11px;font-weight:500;letter-spacing:-.005em;top:160px;left:20px}
+.expansion-breadcrumbs{border-radius:999px;padding:7px 14px;font-size:11px;font-weight:500;letter-spacing:-.005em;top:calc(var(--mx-tools-bottom,152px) + 8px);left:20px}
 .expansion-pin-status{border-radius:999px;font-size:11px;padding:7px 14px}
 .expansion-pin-status[data-state=unavailable]{background:rgba(92,58,14,.7);color:#ffe7c2}
 .expansion-map-caption{border-radius:14px;color:var(--mx-text-2);padding:6px 10px}
@@ -203,10 +203,10 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
   /* The sheet covers the lower half, so the legend and launcher sit just above it. */
   .expansion-legend{border-radius:20px;padding:10px 14px;left:10px;bottom:calc(52dvh + 14px);width:min(330px,calc(100% - 76px))}
   .expansion-map-shell:has(.expansion-side.is-collapsed) .expansion-legend{bottom:10px}
-  .expansion-status{left:10px;top:150px;max-width:calc(100% - 70px)}
-  .expansion-breadcrumbs{left:10px;top:110px}
+  .expansion-status{left:10px;max-width:calc(100% - 70px)}
+  .expansion-breadcrumbs{left:10px}
   .expansion-side{max-height:52dvh}
-  body.expansion-fullscreen .bot-launcher{left:10px;right:auto;bottom:calc(52dvh + 124px)}
+  body.expansion-fullscreen .bot-launcher{left:10px;right:auto;bottom:calc(52dvh + 172px)}
   body.expansion-fullscreen:has(.expansion-side.is-collapsed) .bot-launcher{left:auto;right:12px;bottom:12px}
 }
 @media(max-width:560px){
@@ -226,9 +226,8 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
   .expansion-legend{bottom:calc(54dvh + 12px);padding:9px 12px}
   .expansion-legend>strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .expansion-gradient{margin:6px 0 4px}
-  .expansion-status{top:174px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;padding:7px 12px 7px 28px}
-  .expansion-breadcrumbs{top:134px}
-  body.expansion-fullscreen .bot-launcher{bottom:calc(54dvh + 92px)}
+  .expansion-status{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;padding:7px 12px 7px 28px}
+  body.expansion-fullscreen .bot-launcher{bottom:calc(54dvh + 124px)}
   /* One scrolling row of pill controls instead of three wrapped rows */
   .expansion-topbar>.button{flex:none}
   .expansion-topbar>.expansion-search{width:auto;flex:1 1 0;min-width:0}

@@ -536,6 +536,7 @@
       </div>
       <div class="expansion-map-shell">
         <div class="expansion-map-tools" aria-label="Map controls">
+          <label>Sector<select class="input" name="sector" data-map-sector aria-label="Sector"></select></label>
           <label>Metric<select class="input" name="metric">${[['potentialRevenue','Potential revenue (organised store demand)'],['apparelExpenditure','Annual clothing & footwear expenditure'],['tam','TAM'],['sam','SAM'],['som','SOM'],['population','Population'],['populationDensity','Population density'],['monthlyPerCapitaSpend','Per-person spend'],['incomeProxy','Purchasing power'],['competitorCount','Competitor supply'],['saturation','Market saturation'],['revenue','Store revenue scenario'],['revenuePerKm2','Revenue per km²'],['growthPotential3Year','3-year growth'],['growthPotential5Year','5-year growth']].map(([key,title])=>`<option value="${key}" ${key==='apparelExpenditure'?'selected':''}>${title}</option>`).join('')}</select></label>
           <label>Scale<select class="input" data-map-color-mode aria-label="Colour scaling"><option value="linear">Linear</option><option value="log">Logarithmic</option><option value="percentile">Percentile</option></select></label>
           <label>Extent<select class="input" data-map-scale-scope aria-label="Scale geography"><option value="national">Fixed national</option><option value="local">Local rescale</option></select></label>
@@ -581,6 +582,21 @@
     const analysisPanel = root.MarketAnalysisPanel?.create({ container: container.querySelector('[data-map-analysis]'), fetch: options.fetch || root.fetch?.bind(root) });
     const $ = selector => container.querySelector(selector);
     const sectorId = () => options.sector || root.FranchiseSector?.active || 'apparel';
+    // Sector picker lives in the map toolbar because the page's own sector bar is hidden in full screen.
+    const sectorSelect=$('[name="sector"]');
+    const fillSectors=items=>{
+      if(!sectorSelect)return;
+      const rows=Array.isArray(items)&&items.length?items:[{id:sectorId(),name:'Apparel & fashion'}];
+      sectorSelect.innerHTML=rows.map(item=>`<option value="${escape(item.id)}"${String(item.id)===sectorId()?' selected':''}>${escape(item.name)}</option>`).join('');
+    };
+    fillSectors(options.sectors);
+    Promise.resolve(options.loadSectors?.()).then(items=>{ if(!destroyed&&items)fillSectors(items); }).catch(()=>{});
+    sectorSelect?.addEventListener('change',()=>options.onSectorChange?.(sectorSelect.value));
+    // Breadcrumb and status chips sit just below the toolbar, however many rows it wraps to.
+    const toolsBox=$('.expansion-map-tools'), screenBox=$('.expansion-screen');
+    const placeChips=()=>{ if(toolsBox&&screenBox)screenBox.style.setProperty('--mx-tools-bottom',`${toolsBox.offsetTop+toolsBox.offsetHeight}px`); };
+    const toolsObserver=typeof root.ResizeObserver==='function'?new root.ResizeObserver(placeChips):null;
+    if(toolsBox)toolsObserver?.observe(toolsBox); placeChips();
     const status = text => { $('[data-map-status]').textContent = text; };
     const clearResults = () => { comparisonResult=null; scenarioResult=null; $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
     const childIndex = () => path.length ? Math.min(LEVELS.indexOf(path.at(-1).level) + 1, LEVELS.length-1) : 0;
@@ -994,7 +1010,7 @@
     return { setMetric, setYear, setScenario, selectGeography, resize(){map?.resize();},
       refreshDisplay,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; analysisPanel?.destroy(); contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; toolsObserver?.disconnect(); analysisPanel?.destroy(); contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

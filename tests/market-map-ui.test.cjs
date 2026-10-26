@@ -11,13 +11,13 @@ const polygon = { type: 'Polygon', coordinates: [[[75,20],[77,20],[77,22],[75,22
 // Deliberately synthetic test geographies; never loaded by production code.
 const feature = (id, value, level = 'state', parentId = null) => ({
   id, name: `Test area ${id}`, level, parentId, geometry: polygon,
-  metrics: { population: { value, unit: 'people', evidenceClass: 'derived_estimate', referenceYear: 2011 }, apparelExpenditure: { value, unit:'INR/year', evidenceClass:'derived_estimate' } },
+  metrics: { population: { value, unit: 'people', evidenceClass: 'derived_estimate', referenceYear: 2011 }, apparelExpenditure: { value, unit:'INR/year', evidenceClass:'derived_estimate' }, potentialRevenue: { value, unit:'INR/year', evidenceClass:'derived_estimate' } },
   confidence: 'low', evidence: [{ title: 'Test source', publisher: 'Fixture publisher', referenceYear: 2011,
     evidenceClass: 'derived_estimate', allocationMethod: 'areal_interpolation', uncertainty: 'high', url: 'https://example.org/source' }]
 });
 const levels = (features = [feature('a', 120), feature('b', null)], level = 'state') => ({
   level, sourceVersion: 'fixture-v1', features,
-  legend: { metric: 'apparelExpenditure', year: 2026, scope: 'national', thresholds: [100,200], colors: ['#d9eee1','#6ba688','#185a44'], unit: 'INR/year' }
+  legend: { metric: 'potentialRevenue', year: 2026, scope: 'national', thresholds: [100,200], colors: ['#d9eee1','#6ba688','#185a44'], unit: 'INR/year' }
 });
 function mapDouble() {
   class Map {
@@ -80,7 +80,7 @@ test('national loading requests state aggregates and never requests PINs without
   const url = new URL(h.requests[0].url, 'http://localhost');
   assert.equal(url.pathname, '/api/market/map/levels');
   assert.ok(Number(url.searchParams.get('zoom')) < 6);
-  assert.equal(url.searchParams.get('metric'),'apparelExpenditure');
+  assert.equal(url.searchParams.get('metric'),'potentialRevenue');
   assert.equal(url.searchParams.get('parentId'), null);
   h.map.zoom = 13; h.map.fire('moveend'); await tick();
   assert.ok(h.requests.every(r => Number(new URL(r.url,'http://localhost').searchParams.get('zoom')) < 6));
@@ -149,7 +149,7 @@ test('fixed national legend survives local extrema; null stays gray while zero i
 test('changing INR display units refreshes map labels without fetching geography again', async t => {
   const h = setup(url => url.includes('/geographies/') ? feature('a',120) : {
     ...levels([feature('a',120)]),
-    legend: { metric:'apparelExpenditure', year:2026, scope:'national', thresholds:[10000000,100000000], colors:['#d9eee1','#6ba688','#185a44'], unit:'INR/year' }
+    legend: { metric:'potentialRevenue', year:2026, scope:'national', thresholds:[10000000,100000000], colors:['#d9eee1','#6ba688','#185a44'], unit:'INR/year' }
   });
   t.after(() => { h.controller.destroy(); h.dom.window.close(); });
   await tick();
@@ -470,7 +470,7 @@ test('repeat metric navigation reuses loaded boundaries without another geometry
   const h=setup(() => levels([feature('a',120)]));
   t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
   h.change('[name="metric"]','population'); await tick();
-  h.change('[name="metric"]','apparelExpenditure'); await tick();
+  h.change('[name="metric"]','potentialRevenue'); await tick();
   assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,2,'return to a loaded metric is served from memory');
   assert.equal(h.map.getSource('market-geographies').data.features.length,1);
 });
@@ -574,7 +574,8 @@ test('reduced motion starts on India without the globe fly-in', t => {
 
 test('potential revenue renders as 3D columns with colour and height from one scale, falling back to expenditure', t => {
   const h = mountAdapter(); t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setFeatures([feature('a', 100), feature('b', 300)]);
+  const expenditureOnly = (id, value) => { const item = feature(id, value); delete item.metrics.potentialRevenue; return item; };
+  h.adapter.setFeatures([expenditureOnly('a', 100), expenditureOnly('b', 300)]);
   assert.equal(h.adapter.getMetric(), 'apparelExpenditure', 'falls back until the API supplies potentialRevenue');
   const extrusion = h.map.layers['market-extrusion'];
   assert.equal(extrusion.type, 'fill-extrusion');
@@ -600,7 +601,7 @@ test('the 3D/2D heatmap control is a keyboard-reachable toggle button', t => {
 });
 
 test('zooming past the PIN threshold loads only viewport PIN polygons and zooming out hides them', async t => {
-  const h = mountAdapter({ responder: url => url.includes('level=pin') ? levels([pinFeature('560001', 5e8), pinFeature('560002', 9e8)], 'pin') : levels() });
+  const h = mountAdapter({ responder: url => url.includes('level=pin') ? { ...levels([pinFeature('560001', 5e8), pinFeature('560002', 9e8)], 'pin'), legend: undefined } : levels() });
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
   await h.moveTo(5);
   assert.equal(h.requests.length, 0, 'state view never requests PINs');
@@ -641,4 +642,44 @@ test('an unsupported potentialRevenue metric retries the PIN request with expend
   await h.moveTo(10);
   assert.equal(h.requests.length, 2); assert.match(h.requests[1], /metric=apparelExpenditure/);
   assert.equal(h.adapter.getPinState(), 'loaded');
+});
+
+const pinLegend = { metric: 'potentialRevenue', level: 'pin', year: 2026, scope: 'national', thresholds: [2.5e7, 4.5e7, 7e7, 1.2e8], colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'], unit: 'INR/year' };
+
+test('PINs colour and size against the PIN legend from their response, never state thresholds', async t => {
+  const h = mountAdapter({ responder: () => ({ ...levels([pinFeature('560058', 6e7), pinFeature('560059', 9e7)], 'pin'), legend: pinLegend }) });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  h.adapter.setLegend({ ...levels().legend, thresholds: [2.5e9, 9e10] });
+  h.adapter.setFeatures([feature('state-a', 3e10)]);
+  await h.moveTo(10);
+  const color = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-color']);
+  const height = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-height']);
+  assert.ok(color.includes('25000000') && color.includes('120000000'), 'PIN colour domain comes from the PIN legend');
+  assert.ok(height.includes('25000000') && height.includes('120000000'), 'PIN column heights use the same PIN legend');
+  assert.ok(!color.includes('2500000000') && !color.includes('90000000000'), 'state thresholds never colour PINs');
+  assert.deepEqual([...h.adapter.getScaleMetadata().domain], [2.5e7, 1.2e8]); assert.equal(h.adapter.getScaleMetadata().level, 'pin');
+  await h.moveTo(5);
+  assert.deepEqual([...h.adapter.getScaleMetadata().domain], [2.5e9, 9e10], 'zooming out restores the state scale');
+});
+
+test('page legend switches to the PIN range at PIN zoom and back to the state range when zooming out', async t => {
+  const h = setup(url => url.includes('/geographies/') ? feature('a',120) : url.includes('level=pin') ? { ...levels([pinFeature('560058', 6e7)], 'pin'), legend: pinLegend } : levels());
+  t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
+  const legendText = () => h.host.querySelector('[data-map-legend]').textContent;
+  assert.match(legendText(), /100/); assert.match(legendText(), /state-level/);
+  h.map.zoom = 10; h.map.fire('moveend'); await new Promise(resolve => setTimeout(resolve, 300)); await tick();
+  assert.ok(h.requests.some(r => r.url.includes('level=pin')));
+  assert.match(legendText(), /PIN-level/); assert.match(legendText(), /2,50,00,000/); assert.match(legendText(), /12,00,00,000/);
+  h.map.zoom = 4; h.map.fire('moveend'); await tick();
+  assert.match(legendText(), /state-level/); assert.match(legendText(), /100/); assert.doesNotMatch(legendText(), /2,50,00,000/);
+});
+
+test('PIN popup shows potential revenue', async t => {
+  const h = mountAdapter({ responder: () => ({ ...levels([pinFeature('560058', 6e7)], 'pin'), legend: pinLegend }) });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await h.moveTo(10);
+  h.map.fire('mouseenter', { features: [{ properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } }, 'market-pin-extrusion');
+  const popup = h.container.querySelector('.expansion-popup');
+  assert.match(popup.textContent, /PIN code/); assert.match(popup.textContent, /Potential revenue/);
+  assert.match(popup.textContent, /6,00,00,000|60M|6 Cr/);
 });

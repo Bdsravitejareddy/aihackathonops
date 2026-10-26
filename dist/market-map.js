@@ -5,7 +5,7 @@
   const ZOOMS = [3.5, 6, 9, 12, 14];
   const METRICS = {
     potentialRevenue: 'Potential revenue · organised physical-store demand · estimated',
-    potentialRevenue: 'Potential revenue · modeled', population: 'Population', populationDensity: 'Population density', households: 'Households',
+    population: 'Population', populationDensity: 'Population density', households: 'Households',
     monthlyPerCapitaSpend: 'Monthly per-capita clothing & footwear spend', incomeProxy: 'Purchasing power / income proxy · modeled', apparelExpenditure: 'Annual clothing & footwear expenditure · estimated', tam: 'Annual TAM · modeled',
     sam: 'Annual SAM · modeled', som: 'Annual SOM · modeled', competitorCount: 'Competition · supply indicator', saturation: 'Competition / saturation',
     revenue: 'Store revenue · scenario', revenuePerKm2: 'Expected franchise revenue per km² · scenario',
@@ -157,7 +157,7 @@
     const motion=duration=>reducedMotion?0:duration;
     const fetcher=options.fetch||root.fetch?.bind(root);
     const pinDebounce=Number.isFinite(options.pinDebounceMs)?options.pinDebounceMs:250;
-    let features = [], pinFeatures = [], metric = options.metric || 'potentialRevenue', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, basemapMode='satellite', extruded=options.extruded!==false, pinState='idle', pinKey=null, pinTimer=null, pinAbort=null, pinRevision=0;
+    let features = [], pinFeatures = [], metric = options.metric || 'potentialRevenue', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, pinMeta=null, pinLegend=null, shownLevel=null, basemapMode='satellite', extruded=options.extruded!==false, pinState='idle', pinKey=null, pinTimer=null, pinAbort=null, pinRevision=0;
     const popupContexts=new Map(), pinCache=boundedCache(24);
     const demSource=basemap.terrainSource&&typeof basemap.terrainSource==='object'?basemap.terrainSource:{type:'raster-dem',tiles:[TERRARIUM_URL],encoding:'terrarium',tileSize:256,maxzoom:15,attribution:TERRARIUM_ATTRIBUTION};
     const map = new lib.Map({ container, center: [80,21], zoom: reducedMotion ? ZOOMS[0] : 1.6, minZoom: 1, maxZoom: 17, pitch: reducedMotion ? 30 : 0, bearing: 0, maxPitch: 75,
@@ -216,6 +216,9 @@
       // PINs take over the heatmap; parent areas stay as faint context underneath.
       if (map.getLayer('market-fill')) map.setPaintProperty('market-fill','fill-opacity',pins?0.18:0.78);
       if (map.getLayer('market-extrusion')) map.setPaintProperty('market-extrusion','fill-extrusion-opacity',pins?0.15:0.82);
+      // The page legend follows whichever layer carries the heatmap.
+      const level = pins ? 'pin' : 'area';
+      if (level !== shownLevel) { shownLevel = level; options.onScaleChange?.(); }
     };
     const highlight = () => {
       if (!ready || destroyed) return;
@@ -236,7 +239,8 @@
       const unique=positioned.filter((stop,index)=>index===0||stop.value>positioned[index-1].value);
       const guard=['all',['has','v_'+key],...(colorMode==='log'?[['>', ['get','v_'+key],0]]:[])];
       const color=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,stop.color])]:unique[0]?.color||MISSING,MISSING];
-      const floor=maxHeight*0.03, last=Math.max(1,unique.length-1);
+      // PIN columns keep a taller floor so terrain relief does not poke through low columns.
+      const floor=maxHeight*(maxHeight<=EXTRUSION_HEIGHT.pin?0.15:0.03), last=Math.max(1,unique.length-1);
       const byValue=['case',guard,unique.length>=2?['interpolate',['linear'],input,...unique.flatMap((stop,index)=>[stop.value,floor+(maxHeight-floor)*index/last])]:floor,0];
       // Columns shrink as the camera nears the ground so parent areas never wall off the view.
       const height=['interpolate',['linear'],['zoom'],...zoomScale.flatMap(([zoom,factor])=>[zoom,['*',factor,byValue]])];
@@ -251,19 +255,23 @@
       if (!ready || destroyed) return;
       const colorLib=root.MarketColorScale, key=activeMetric();
       const values=features.map(f=>metricValue(f.metrics?.[key])).filter(numeric);
-      const legendMatches=!legend?.metric||legend.metric===key;
+      const legendMatches=(!legend?.metric||legend.metric===key)&&legend?.level!=='pin';
       const extent=values.length?[Math.min(...values),Math.max(...values)]:null;
       const nationalDomain=!legendMatches?(extent&&extent[0]<extent[1]?extent:colorLib?.DEFAULT_NATIONAL_DOMAIN):Array.isArray(legend?.domain)?legend.domain:(legend?.thresholds?.length?[legend.thresholds[0],legend.thresholds.at(-1)]:colorLib?.DEFAULT_NATIONAL_DOMAIN);
       const level=features.find(f=>f.level)?.level||'state';
       if(!colorLib||!nationalDomain){scaleMeta=null;flat(layerSets.state,MISSING,0);flat(layerSets.pin,MISSING,0);return;}
       try {
         const states=ramp(values,scaleScope,nationalDomain,EXTRUSION_HEIGHT[level]||EXTRUSION_HEIGHT.state,COLUMN_ZOOM_SCALE.area);
-        scaleMeta=states.metadata; flat(layerSets.state,states.color,states.height);
+        scaleMeta={...states.metadata,level:legendMatches&&legend?.level||level,unit:legendMatches?legend?.unit:undefined}; flat(layerSets.state,states.color,states.height);
       } catch { scaleMeta=null; flat(layerSets.state,MISSING,0); }
-      // PIN values are orders of magnitude below state totals, so they rescale to the PINs in view.
+      // PINs are ~1/1000 of a state, so they never use state thresholds: the PIN response's own
+      // legend sets their colours and heights, else they rescale to the PINs in view.
       const pinValues=pinFeatures.map(f=>metricValue(f.metrics?.[key])).filter(numeric);
-      try { const pins=ramp(pinValues,'local',undefined,EXTRUSION_HEIGHT.pin,COLUMN_ZOOM_SCALE.pin); flat(layerSets.pin,pins.color,pins.height); }
-      catch { flat(layerSets.pin,MISSING,0); }
+      const pinScale=pinLegend&&(!pinLegend.metric||pinLegend.metric===key)?pinLegend:null;
+      try {
+        const pins=ramp(pinValues,pinScale?'national':'local',pinScale?[pinScale.thresholds[0],pinScale.thresholds.at(-1)]:undefined,EXTRUSION_HEIGHT.pin,COLUMN_ZOOM_SCALE.pin);
+        pinMeta={...pins.metadata,level:'pin',unit:pinScale?.unit}; flat(layerSets.pin,pins.color,pins.height);
+      } catch { pinMeta=null; flat(layerSets.pin,MISSING,0); }
     };
     const findGeo = id => features.find(f=>String(f.id)===String(id)) || pinFeatures.find(f=>String(f.id)===String(id));
     const popupLevel=level=>({state:'State',district:'District',city:'City',pin:'PIN code',catchment:'Catchment',national:'National'})[level]||'Geography';
@@ -301,7 +309,7 @@
       const status=modelled?'Modelled estimate':classifications.length?'Source-backed estimate':'Evidence unavailable';
       const investmentSub=validScope?[investmentLabel,...componentSummary].join(' · '):'Store-format cost evidence unavailable';
       const layerKey=activeMetric();
-      return `<div class="expansion-popup" data-popup-geography="${escape(geo.id)}"><header><strong>${escape(selectedGeo.name||geo.name)}</strong><small>${escape(popupLevel(selectedGeo.level||geo.level))} · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header><div class="expansion-popup-grid">${kpi('Annual TAM',popupValue(tam),'Apparel category market',true)}${kpi('Annual SOM',popupValue(som),'Territory capture estimate',true)}${kpi(catchment.label,popupValue(catchment.metric),metricValue(customerValue)!==null?'Estimated unique customers · not footfall':'People in selected geography')}${kpi('Ideal investment',investmentDisplay,investmentSub)}${kpi(growth.label,growthDisplay,growth.metric?'Modelled forecast · horizon shown':'No supported growth forecast')}${kpi('Current map layer',popupValue(metrics[layerKey]),label(layerKey))}</div><div class="expansion-popup-status"><span>${status}</span><small>${escape(shortConfidence)}</small></div><button type="button" class="button small primary" data-map-popup-detail="${escape(geo.id)}">View detailed analysis</button></div>`;
+      return `<div class="expansion-popup" data-popup-geography="${escape(geo.id)}"><header><strong>${escape(selectedGeo.name||geo.name)}</strong><small>${escape(popupLevel(selectedGeo.level||geo.level))} · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header><div class="expansion-popup-grid">${kpi('Annual TAM',popupValue(tam),'Apparel category market',true)}${kpi('Annual SOM',popupValue(som),'Territory capture estimate',true)}${kpi(catchment.label,popupValue(catchment.metric),metricValue(customerValue)!==null?'Estimated unique customers · not footfall':'People in selected geography')}${kpi('Ideal investment',investmentDisplay,investmentSub)}${kpi(growth.label,growthDisplay,growth.metric?'Modelled forecast · horizon shown':'No supported growth forecast')}${layerKey==='potentialRevenue'?kpi('Potential revenue',popupValue(metrics.potentialRevenue),label(layerKey),true):kpi('Current map layer',popupValue(metrics[layerKey]),label(layerKey))}</div><div class="expansion-popup-status"><span>${status}</span><small>${escape(shortConfidence)}</small></div><button type="button" class="button small primary" data-map-popup-detail="${escape(geo.id)}">View detailed analysis</button></div>`;
     }
     function refreshPopup() {
       if(!lastPopup)return;
@@ -343,8 +351,10 @@
       const accept=data=>{
         const valid=data?.level==='pin'&&Array.isArray(data.features)&&data.features.every(f=>f.level==='pin');
         pinFeatures=valid?data.features.filter(f=>f.geometry):[];
-        pinKey=cacheKey; updatePins(); paint(); refreshPopup();
-        if (pinFeatures.length) setPinStatus('loaded',`${pinFeatures.length.toLocaleString('en-IN')} postcode (PIN) areas in view · colours rescaled to this view`);
+        const responseLegend=normalizeLegend(data?.legend);
+        pinLegend=valid&&responseLegend&&(!responseLegend.level||responseLegend.level==='pin')?responseLegend:null;
+        pinKey=cacheKey; paint(); updatePins(); refreshPopup(); options.onScaleChange?.();
+        if (pinFeatures.length) setPinStatus('loaded',`${pinFeatures.length.toLocaleString('en-IN')} postcode (PIN) areas in view · ${pinLegend?'PIN-level scale':'colours rescaled to this view'}`);
         else setPinStatus('unavailable','Postcode (PIN) data unavailable for this view · showing state boundaries. No PIN values are estimated.');
       };
       const cached=pinCache.get(cacheKey);
@@ -413,7 +423,7 @@
       getPinState(){return pinState;},
       setTilt(active){const pitch=active?58:0; if(typeof map.easeTo==='function')map.easeTo({pitch,duration:motion(500)}); else map.setPitch(pitch);},
       resize(){map.resize?.();},
-      getScaleMetadata(){return scaleMeta;},
+      getScaleMetadata(){return pinsVisible()&&pinMeta?pinMeta:scaleMeta;},
       setFeatures(value,meta) {
         features = Array.isArray(value) ? value : [];
         const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>[f.id,Object.entries(f.metrics||{}).map(([key,item])=>[key,metricValue(item)])])]) : null;
@@ -541,12 +551,13 @@
     }
     function renderLegend() {
       const scale=root.MarketColorScale, mode=$('[data-map-color-mode]')?.value||'linear',scope=$('[data-map-scale-scope]')?.value||'national';
-      const domain=map?.getScaleMetadata?.()?.domain||(currentLegend?.thresholds?.length?[currentLegend.thresholds[0],currentLegend.thresholds.at(-1)]:null);
+      const scaleMeta=map?.getScaleMetadata?.(), scaleLevel=scaleMeta?.level==='pin'?'PIN':scaleMeta?.level;
+      const domain=scaleMeta?.domain||(currentLegend?.thresholds?.length?[currentLegend.thresholds[0],currentLegend.thresholds.at(-1)]:null);
       const gradient=scale?.DEFAULT_COLORS?.map((color,index)=>`${color} ${Math.round(index/(scale.DEFAULT_COLORS.length-1)*100)}%`).join(',')||'#440154,#3b528b,#21918c,#5ec962,#fde725';
       const fmt=value=>/^(?:INR|₹)/i.test(String(currentLegend?.unit||''))&&root.FranchiseDisplay?root.FranchiseDisplay.money(value,currentLegend.unit):`${Number(value).toLocaleString('en-IN',{maximumFractionDigits:2})}${currentLegend?.unit?' '+currentLegend.unit:''}`;
       let ends=domain?`${fmt(domain[0])} <span>to</span> ${fmt(domain[1])}`:'No comparable metric range available';
       if(mode==='percentile')ends='Lower relative rank <span>to</span> higher relative rank among loaded areas';
-      const labelText=mode==='percentile'?'Percentile rank within loaded geography level':`${scope==='national'?'Fixed national':'Local rescale'} · ${mode==='log'?'logarithmic':'linear'} scale`;
+      const labelText=mode==='percentile'?'Percentile rank within loaded geography level':`${scope==='national'||scaleMeta?.scope==='national'?'Fixed national':'Local rescale'} · ${scaleLevel?scaleLevel+'-level ':''}${mode==='log'?'logarithmic':'linear'} scale`;
       $('[data-map-legend]').innerHTML=`<strong>${escape(label(metric))} · ${escape(labelText)}</strong><div class="expansion-gradient" style="background:linear-gradient(90deg,${gradient})" aria-hidden="true"></div><div class="expansion-legend-labels"><span>${ends.split('<span>to</span>')[0]}</span><span>${ends.split('<span>to</span>')[1]||''}</span></div><small>${escape(currentLegend?.unit||'Unit unavailable')} · ${escape(year)} view · Grey means no evidence. Colours show modelled values where marked.</small>`;
     }
     function metricNote(metric, fallback) {
@@ -639,7 +650,7 @@
         levelCache.clear(); detailCache.clear(); void clearGeometry();
       }
       sourceVersion = data.sourceVersion; latestSourceVersion=sourceVersion; level = data.level;
-      const key = metric + ':' + year, legend = normalizeLegend(data.legend);
+      const key = metric + ':' + year + ':' + data.level, legend = normalizeLegend(data.legend);
       if (!legends.has(key) && legend && (!legend.metric || legend.metric === metric) && (!legend.year || Number(legend.year) === Number(year))) legends.set(key, legend);
       currentLegend = legends.get(key) || null; map?.setLegend(currentLegend);
       features = data.features;
@@ -729,7 +740,7 @@
     function invalidate() {
       contextRevision++; detailRevision++; compareRevision++; scenarioRevision++;
       for (const controller of aborters.values()) controller.abort();
-      selectedDetail = null; currentLegend = legends.get(metric + ':' + year) || null;
+      selectedDetail = null; currentLegend = legends.get(metric + ':' + year + ':' + level) || null;
       appliedScenario = scenario; map?.setScenario(scenario); map?.setMetric(metric); map?.setYear(year); map?.setLegend(currentLegend);
       renderLegend(); clearResults(); $('[data-map-apply]').disabled = false;
       if (selected !== null) selectGeography(selected);
@@ -781,7 +792,7 @@
         while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
         if (changed) { selected = null; invalidate(); }
         loadLevels(); options.onViewport?.(view);
-      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onScaleChange(){ if(!destroyed)renderLegend(); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
     container.addEventListener('click', onClick);
     function onClick(event) {

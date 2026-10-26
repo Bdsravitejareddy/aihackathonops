@@ -11,7 +11,7 @@ const { missingEvidence } = require('./market-evidence.cjs');
 const priorityById = new Map(priorityPlaces.map(place => [place.id, place]));
 const placeRow = place => ({ external_id:place.id, kind:place.level, name:place.name, parent_external_id:place.parentId,
   geometry:place.geometry, area_km2:null, properties:{ sourceCode:place.sourceCode, state:place.state, city:place.city,
-    pin:place.pin, ancestors:place.ancestors, aliases:place.aliases, evidence:place.evidence, warnings:place.warnings,
+    pin:place.pin, ancestors:place.ancestors, aliases:place.aliases, evidence:place.evidence, warnings:place.warnings, customerMarketInputs:place.customerMarketInputs||null,
     confidence:'location verified; economic data unavailable' } });
 const normalizeSearch = value => String(value || '').normalize('NFKD').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
 function editDistanceAtMostTwo(a,b) {
@@ -107,6 +107,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     city: p.city || (row.kind === 'city' ? row.name : null),
     pin: p.pin || (row.kind === 'pin' ? row.name : null),
     ancestors: p.ancestors || null,
+    customerMarketInputs: p.customerMarketInputs || null,
     geometry: row.geometry || null,
     metrics,
     demographics: p.demographics || null,
@@ -130,6 +131,14 @@ function createMarketMapStore(pool) {
     return value;
   };
   return {
+    async getCustomerMarketEstimate({geographyId,retailCategory,analysisYear,modelVersion,sourceVersion}) {
+      const result=await pool.query(`SELECT result,computed_at FROM market_opportunity_estimates WHERE geography_external_id=$1 AND retail_category=$2 AND analysis_year=$3 AND model_version=$4 AND source_version=$5`,[geographyId,retailCategory,analysisYear,modelVersion,sourceVersion]);
+      return result.rows[0]?{...result.rows[0].result,cached:true,computedAt:result.rows[0].computed_at}:null;
+    },
+    async saveCustomerMarketEstimate({geographyId,retailCategory,analysisYear,modelVersion,sourceVersion,result}) {
+      const saved=await pool.query(`INSERT INTO market_opportunity_estimates (geography_external_id,retail_category,analysis_year,model_version,source_version,result) VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT (geography_external_id,retail_category,analysis_year,model_version,source_version) DO UPDATE SET result=EXCLUDED.result,computed_at=now() RETURNING computed_at`,[geographyId,retailCategory,analysisYear,modelVersion,sourceVersion,JSON.stringify(result)]);
+      return saved.rows[0]?.computed_at||null;
+    },
     async seedMapCatalog(geographies = [], relationships = []) {
       if (!Array.isArray(geographies) || !Array.isArray(relationships)) throw new TypeError('Map catalog rows must be arrays');
       const client = await pool.connect();

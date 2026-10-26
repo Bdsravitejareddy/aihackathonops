@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const MISSING = '#b9c1c5';
+  const MISSING = root.MarketColorScale?.MISSING_COLOR || '#b9c1c5';
   const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
   const ZOOMS = [3.5, 6, 9, 12, 14];
   const METRICS = {
@@ -121,11 +121,6 @@
     if (!colors.every(c => /^#[0-9a-f]{6}$/i.test(c))) return null;
     return { ...legend, thresholds: [...thresholds], colors: [...colors] };
   }
-  function colorFor(value, legend) {
-    if (value === null || !legend) return MISSING;
-    let i = 0; while (i < legend.thresholds.length && value >= legend.thresholds[i]) i++;
-    return legend.colors[i];
-  }
   function boundsFor(geometry) {
     const points = [];
     function walk(coords) {
@@ -145,8 +140,8 @@
     const basemap=options.basemap||root.FRANCHISEOS_BASEMAP_CONFIG||{};
     const tileUrl=typeof basemap.tileUrl==='string'&&/^https:\/\//i.test(basemap.tileUrl)&&/\{z\}.*\{x\}.*\{y\}/.test(basemap.tileUrl)?basemap.tileUrl:'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const attribution=typeof basemap.attribution==='string'&&basemap.attribution.trim()?basemap.attribution:'© OpenStreetMap contributors';
-    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup, dataSignature=null;
-    const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17,
+    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, dataSignature=null, scaleMeta=null, basemapMode='street';
+    const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17, pitch:0, bearing:0,
       style: { version: 8, sources: { openStreetMap:{type:'raster',tiles:[tileUrl],tileSize:256,attribution} }, layers: [
         { id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } },
         { id:'street-basemap',type:'raster',source:'openStreetMap',paint:{'raster-opacity':0.92} }
@@ -154,21 +149,39 @@
       attributionControl: true });
     map.addControl(new lib.NavigationControl(), 'top-right');
     const data = () => ({ type: 'FeatureCollection', features: features.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
-      properties: { id: String(f.id), name: f.name, level: f.level, color: colorFor(metricValue(f.metrics?.[metric]), legend),
+      properties: { id: String(f.id), name: f.name, level: f.level,
         ...Object.fromEntries(Object.entries(f.metrics||{}).filter(([,value])=>metricValue(value)!==null).map(([key,value])=>['v_'+key,metricValue(value)])) } })) });
     const highlight = () => { if (ready && !destroyed) map.setFilter('market-selected', ['==', ['get','id'], selected === null ? '' : String(selected)]); };
     const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(data()); highlight(); } };
     const paint = () => {
       if (!ready || destroyed) return;
-      const expression=legend ? ['case',['has','v_'+metric],['step',['get','v_'+metric],legend.colors[0],...legend.thresholds.flatMap((threshold,index)=>[threshold,legend.colors[index+1]])],MISSING] : MISSING;
-      map.setPaintProperty('market-fill','fill-color',expression);
-      map.setPaintProperty('market-points','circle-color',expression);
+      const colorLib=root.MarketColorScale;
+      const values=features.map(f=>metricValue(f.metrics?.[metric])).filter(numeric);
+      const nationalDomain=Array.isArray(legend?.domain)?legend.domain:(legend?.thresholds?.length?[legend.thresholds[0],legend.thresholds.at(-1)]:colorLib?.DEFAULT_NATIONAL_DOMAIN);
+      if(!colorLib||!nationalDomain){scaleMeta=null;map.setPaintProperty('market-fill','fill-color',MISSING);map.setPaintProperty('market-points','circle-color',MISSING);return;}
+      try {
+        const scale=colorLib.createColorScale({mode:colorMode,scope:scaleScope,values,domain:scaleScope==='national'?nationalDomain:undefined,nationalDomain,colors:colorLib.DEFAULT_COLORS});
+        scaleMeta=scale.metadata;
+        const stops=colorLib.legendLabels(scale,scale.colors.length,{unit:''}).map((item,index)=>({value:item.value,color:scale.colors[index]}));
+        const increasing=stops.filter((stop,index)=>index===0||stop.value>stops[index-1].value);
+        let input=['get','v_'+metric];
+        if(colorMode==='log')input=['log10',['max',Math.max(Number.MIN_VALUE,scale.domain[0]),input]];
+        const positioned=colorMode==='log'?increasing.map(stop=>({value:Math.log10(Math.max(scale.domain[0],stop.value)),color:stop.color})):increasing;
+        const unique=positioned.filter((stop,index)=>index===0||stop.value>positioned[index-1].value);
+        const interpolated=unique.length>=2?['interpolate',['linear'],input,...unique.flatMap(stop=>[stop.value,stop.color])]:unique[0]?.color||MISSING;
+        const expression=['case',['all',['has','v_'+metric],...(colorMode==='log'?[['>', ['get','v_'+metric],0]]:[])],interpolated,MISSING];
+        map.setPaintProperty('market-fill','fill-color',expression);
+        map.setPaintProperty('market-points','circle-color',expression);
+      } catch {
+        scaleMeta=null; map.setPaintProperty('market-fill','fill-color',MISSING); map.setPaintProperty('market-points','circle-color',MISSING);
+      }
     };
     function showPopup(event) {
       const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id, geo = features.find(f => String(f.id) === String(id));
       if (!geo) return;
-      popup?.remove(); popup = new lib.Popup({ closeButton: true, maxWidth: '310px' }).setLngLat(event.lngLat)
-        .setHTML(`<div class="expansion-popup"><strong>${escape(geo.name)}</strong><p>${escape(label(metric))}: ${escape(display(geo.metrics?.[metric]))}</p><small>Confidence: ${escape(geo.confidence || 'unavailable')}</small>${evidenceHTML(geo.evidence)}</div>`).addTo(map);
+      const item=geo.metrics?.[metric], evidence=list(item?.evidence||geo.evidence), url=safeUrl(evidence[0]?.url||evidence[0]?.sourceUrl);
+      popup?.remove(); popup = new lib.Popup({ closeButton: true, maxWidth: '270px' }).setLngLat(event.lngLat)
+        .setHTML(`<div class="expansion-popup"><strong>${escape(geo.name)}</strong><p>${escape(label(metric))}: <b>${escape(display(item))}</b></p><small>${escape(item?.evidenceClass||'Evidence classification unavailable')} · Confidence: ${escape(geo.confidence||'unavailable')}</small>${url?`<p><a href="${escape(url)}" target="_blank" rel="noopener noreferrer">View source ↗</a></p>`:''}</div>`).addTo(map);
     }
     map.on('load', () => {
       if (destroyed) return;
@@ -177,7 +190,16 @@
       map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': 1 } });
       map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': ['get','color'], 'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
       map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#143f35', 'line-width': 3 }, filter: ['==',['get','id'],''] });
-      ready = true; update(); paint();
+      ready = true;
+      map.addSource('satellite-imagery',{type:'raster',tiles:[basemap.satelliteTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:basemap.satelliteAttribution||'Sources: Esri, DigitalGlobe, GeoEye, i-cubed, USDA FSA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community'});
+      map.addLayer({id:'satellite-basemap',type:'raster',source:'satellite-imagery',layout:{visibility:'none'},paint:{'raster-opacity':1}},'market-fill');
+      map.addSource('terrain-basemap-source',{type:'raster',tiles:[basemap.terrainTileUrl||'https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:basemap.terrainAttribution||'Sources: Esri, DeLorme, HERE, TomTom, Intermap, GEBCO, USGS, FAO, NPS, NRCAN, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, swisstopo, MapmyIndia, GIS User Community'});
+      map.addLayer({id:'terrain-basemap',type:'raster',source:'terrain-basemap-source',layout:{visibility:'none'},paint:{'raster-opacity':1}},'market-fill');
+      if(basemap.terrainSource&&typeof basemap.terrainSource==='object'){
+        map.addSource('terrain-dem',basemap.terrainSource);
+        map.addLayer({id:'terrain-hillshade',type:'hillshade',source:'terrain-dem',layout:{visibility:'none'},paint:{'hillshade-exaggeration':0.45}},'market-fill');
+      }
+      update(); paint();
     });
     for (const layer of ['market-fill','market-points']) {
       map.on('click', layer, event => { const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id; if (id !== undefined) { selected = id; highlight(); showPopup(event); onSelect(String(id)); } });
@@ -188,9 +210,24 @@
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
     return {
       setMetric(value) { metric = value; popup?.remove(); paint(); },
+      setColorMode(value){if(!['linear','log','percentile'].includes(value))return; colorMode=value; popup?.remove(); paint();},
+      setScaleScope(value){if(!['national','local'].includes(value))return; scaleScope=value; popup?.remove(); paint();},
       setYear() { popup?.remove(); }, setScenario() { popup?.remove(); },
       setLegend(value) { legend = normalizeLegend(value); paint(); },
       refreshDisplay() { popup?.remove(); paint(); },
+      setBasemap(value){
+        if(!['street','satellite','terrain'].includes(value))return;
+        basemapMode=value;
+        if(map.getLayer('street-basemap'))map.setLayoutProperty('street-basemap','visibility',value==='street'?'visible':'none');
+        if(map.getLayer('satellite-basemap'))map.setLayoutProperty('satellite-basemap','visibility',value==='satellite'?'visible':'none');
+        if(map.getLayer('terrain-basemap'))map.setLayoutProperty('terrain-basemap','visibility',value==='terrain'?'visible':'none');
+        if(map.getLayer('terrain-hillshade'))map.setLayoutProperty('terrain-hillshade','visibility',value==='terrain'?'visible':'none');
+        if(value==='terrain'&&basemap.terrainSource&&typeof map.setTerrain==='function')map.setTerrain({source:'terrain-dem',exaggeration:1.1});
+        else if(typeof map.setTerrain==='function')map.setTerrain(null);
+      },
+      setTilt(active){map.setPitch(active?58:0);},
+      resize(){map.resize?.();},
+      getScaleMetadata(){return scaleMeta;},
       setFeatures(value,meta) {
         features = Array.isArray(value) ? value : []; popup?.remove();
         const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>[f.id,Object.entries(f.metrics||{}).map(([key,item])=>[key,metricValue(item)])])]) : null;
@@ -207,60 +244,62 @@
     };
   }
 
+  function scenarioFormHTML() {
+    return `<form data-map-scenario-form><div class="market-grid">
+      <label>Horizon<select class="input" name="horizonYears"><option value="0">Baseline</option><option value="3">3 years</option><option value="5">5 years</option></select></label>
+      <label>Scenario<select class="input" name="scenario"><option value="base">Base</option><option value="conservative">Conservative</option><option value="optimistic">Optimistic</option></select></label>
+      <label>Income elasticity<select class="input" name="elasticity">${[0.5,0.75,1,1.25].map(v => `<option value="${v}" ${v===1?'selected':''}>${v.toFixed(2)}</option>`).join('')}</select></label>
+      <label>Apparel segment<select class="input" name="apparelSegment"><option value="value-fashion">Value fashion</option><option value="mass-market-family-apparel" selected>Mass-market family apparel</option><option value="mid-market-casualwear">Mid-market casualwear</option><option value="premium-fashion">Premium fashion</option><option value="ethnic-occasion-wear">Ethnic and occasion wear</option><option value="childrens-apparel">Children's apparel</option><option value="footwear-accessories">Footwear and accessories</option></select></label>
+      ${[['targetDemographics','Target demographics','text'],['captureRate','Market capture · fraction','number'],['aov','Average order value · ₹','number'],['areaSqFt','Store area · sq ft','number'],['investment','Initial investment · ₹','number'],['workingCapital','Working capital · ₹','number'],['monthlyFixedCosts','Monthly fixed costs · ₹','number'],['grossMargin','Gross margin · fraction','number'],['royaltyRate','Royalty · fraction','number'],['conversionRate','Purchase conversion · fraction','number'],['monthlyPassingPedestrianTraffic','Passing visits/month · assumption','number'],['entryRate','Store entry rate · fraction','number'],['salesRampMonths','Ramp-up · months','number'],['initialRampFraction','Initial run-rate · fraction','number'],['annualNominalGrowth','Nominal growth · fraction','number'],['annualInflation','Inflation · fraction','number'],['discountRate','Discount rate · fraction','number'],['travelTimeMinutes','Travel time · requires routing source','number']].map(([name,label,type])=>`<label>${label}<input class="input" type="${type}" name="${name}" ${type==='number'?'step="any" min="0"':''} placeholder="Not sourced"></label>`).join('')}
+    </div><p class="hint">These are editable scenario assumptions. PIN population is never treated as passing footfall. Travel-time boundaries require a routing source.</p>
+    <div class="market-actions"><button class="button primary" data-map-apply>Calculate financial scenario</button><span class="hint" data-map-scenario-status>Optional · no inputs required for the market snapshot</span></div></form>
+    <div data-map-forecast class="expansion-forecast" aria-live="polite"></div>`;
+  }
   function pageHTML(year) {
-    return `<div class="page-heading"><div><div class="eyebrow">INDIA · APPAREL & FASHION</div><h1>Expansion Intelligence</h1><p>Explore market evidence, test assumptions and compare places.</p></div><span class="tag green">Separate from applicant eligibility</span></div>
-      <div class="expansion-layout"><section class="expansion-workspace" aria-label="Expansion map">
-        <div class="expansion-toolbar panel"><label>Map layer<select class="input" name="metric">${Object.entries(METRICS).map(([key,title]) => `<option value="${key}">${title}</option>`).join('')}</select></label>
-          <label>Analysis year<input class="input" name="year" type="number" min="2011" max="2100" step="1" value="${year}"></label>
-          <button class="button small" type="button" data-map-national>India · reset</button></div>
-        <section class="panel expansion-place-search"><form data-map-global-form><label>Find a place across India<input class="input" data-map-global-query type="search" minlength="2" maxlength="100" required placeholder="State, district, city or PIN"></label><button class="button small" type="submit">Search India ↗</button></form><div data-map-global-results aria-live="polite"></div></section>
-        <div class="expansion-map-frame panel"><div class="expansion-map" data-map-canvas aria-label="India market map. Use the area list for keyboard selection."></div>
-          <div class="expansion-map-caption">Boundaries: geoBoundaries simplified ADM1 · CC BY 2.5 India · underlying source: DataMeet India / Election Commission of India. Values: Census 2011 and MoSPI HCES 2023-24. Annual expenditure is a market estimate, not store sales.</div></div>
-        <div class="expansion-legend panel" data-map-legend aria-label="Fixed national scale"></div>
-        <div class="expansion-status" role="status" aria-live="polite" data-map-status>Loading sourced state aggregates…</div>
-        <div class="expansion-breadcrumbs" data-map-path></div>
-        <div class="panel expansion-area-list"><label>Search loaded areas<input class="input" type="search" data-map-search placeholder="Name or source ID"></label><p class="hint">Select a state, then drill into districts, cities, PINs and available catchments. Search covers the loaded level only.</p><div data-map-results class="expansion-results"></div></div>
-        <details class="panel expansion-assumptions" open><summary>Scenario assumptions</summary>
-          <p class="hint">Every editable input is a user assumption. Blank inputs stay missing. Market totals are modeled spend, and store revenue is a scenario projection.</p>
-          <form data-map-scenario-form><div class="market-grid">
-            <label>Horizon · assumption<select class="input" name="horizonYears"><option value="0">Baseline</option><option value="3">3 years</option><option value="5">5 years</option></select></label>
-            <label>Scenario case · assumption<select class="input" name="scenario"><option value="base">Base</option><option value="conservative">Conservative</option><option value="optimistic">Optimistic</option></select></label>
-            <label>Elasticity · assumption<select class="input" name="elasticity">${[0.5,0.75,1,1.25].map(v => `<option value="${v}" ${v===1?'selected':''}>${v.toFixed(2)}</option>`).join('')}</select></label>
-            <label>Apparel segment · assumption<select class="input" name="apparelSegment"><option value="value-fashion">Value fashion</option><option value="mass-market-family-apparel" selected>Mass-market family apparel</option><option value="mid-market-casualwear">Mid-market casualwear</option><option value="premium-fashion">Premium fashion</option><option value="ethnic-occasion-wear">Ethnic and occasion wear</option><option value="childrens-apparel">Children's apparel</option><option value="footwear-accessories">Footwear and accessories</option></select></label>
-            <label>Target demographics · assumption<input class="input" name="targetDemographics" placeholder="Describe audience; no unsupported splits"></label>
-            <label>Capture rate · fraction, assumption<input class="input" type="number" name="captureRate" min="0" max="1" step="any" placeholder="0–1"></label>
-            <label>AOV · ₹/transaction, assumption<input class="input" type="number" name="aov" min="0.01" step="any" placeholder="Missing"></label>
-            <label>Store size · sq ft, assumption<input class="input" type="number" name="areaSqFt" min="0.01" step="any" placeholder="Missing"></label>
-            <label>Investment · ₹, assumption<input class="input" type="number" name="investment" min="0" step="any" placeholder="Missing"></label>
-            <label>Working capital · ₹, assumption<input class="input" type="number" name="workingCapital" min="0" step="any" placeholder="Missing"></label>
-            <label>Monthly fixed costs · ₹, assumption<input class="input" type="number" name="monthlyFixedCosts" min="0" step="any" placeholder="Missing"></label>
-            <label>Gross margin · 0–1, assumption<input class="input" type="number" name="grossMargin" min="0" max="1" step="any" placeholder="Missing"></label>
-            <label>Royalty rate · 0–1, assumption<input class="input" type="number" name="royaltyRate" min="0" max="1" step="any" placeholder="Missing"></label>
-            <label>Store conversion · 0–1, assumption<input class="input" type="number" name="conversionRate" min="0" max="1" step="any" placeholder="Missing"></label>
-            <label>Passing pedestrian traffic · people/month, assumption<input class="input" type="number" name="monthlyPassingPedestrianTraffic" min="0" step="any" placeholder="Missing"></label>
-            <label>Entry rate · 0–1, assumption<input class="input" type="number" name="entryRate" min="0" max="1" step="any" placeholder="Missing"></label>
-            <label>Sales ramp · months, assumption<input class="input" type="number" name="salesRampMonths" min="1" max="120" step="1" value="6"></label>
-            <label>Opening month run-rate · 0–1, assumption<input class="input" type="number" name="initialRampFraction" min="0" max="1" step="any" value="0.4"></label>
-            <label>Annual nominal growth · fraction, assumption<input class="input" type="number" name="annualNominalGrowth" min="-0.99" step="any" placeholder="Missing"></label>
-            <label>Annual inflation · fraction, assumption<input class="input" type="number" name="annualInflation" min="-0.99" step="any" placeholder="Missing"></label>
-            <label>Discount rate · fraction, assumption<input class="input" type="number" name="discountRate" min="-0.99" step="any" placeholder="Missing"></label>
-            <label>Travel time · minutes, assumption<input class="input" type="number" name="travelTimeMinutes" min="1" max="120" step="1" placeholder="Requires routing source"></label>
-          </div><p class="hint">Travel-time input is an assumption, not a computed drive-time catchment. A routing source is required to draw travel-time boundaries. Radius bands, if supplied, are distance proxies.</p>
-          <div class="market-actions"><button class="button primary" data-map-apply>Apply scenario</button><span class="hint" data-map-scenario-status>Default elasticity 1.00 · other inputs missing</span></div></form>
-          <div data-map-forecast class="expansion-forecast" aria-live="polite"></div></details>
-      </section><aside class="expansion-side" aria-label="Geography details and comparison">
-        <section class="panel expansion-detail"><div data-map-detail aria-live="polite"><h2>Select an area</h2><p class="hint">Inspect the evidence before drawing an investment conclusion. Missing metrics stay unavailable.</p></div>
-          <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add to comparison</button></div></section>
-        <section class="panel expansion-compare"><h2>Compare places</h2><p class="hint">Select 2–4 areas. Overlap and missing evidence must be reviewed.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></section>
-        <section class="panel expansion-research"><h2>Market research</h2><p class="hint">Gemini search-grounded context supplements sourced statistics and does not change calculations.</p><div data-map-research aria-live="polite"><p>Select a location to load research.</p></div><button class="button small" type="button" data-map-refresh-research disabled>Refresh research</button>
-          <form data-map-ask-form><label>Ask Market Intelligence<textarea class="input" name="question" rows="3" maxlength="2000" required placeholder="What evidence supports this opportunity? What additional evidence is needed?"></textarea></label><button class="button small" type="submit" data-map-ask disabled>Ask</button></form><div data-map-answer aria-live="polite"></div></section>
-      </aside></div>`;
+    return `<div class="expansion-screen">
+      <div class="expansion-topbar">
+        <button class="button small" type="button" data-map-exit>‹ Workspace</button>
+        <button class="button small" type="button" data-map-currency-toggle aria-label="Change currency display units">${root.FranchiseDisplay?.toggleLabel?.()||'₹ Millions'}</button>
+        <form data-map-global-form class="expansion-search"><label class="sr-only" for="map-place-query">Search states, cities or PIN</label><input id="map-place-query" class="input" data-map-global-query type="search" minlength="2" maxlength="100" required placeholder="Search state, district, city, locality or PIN"><button class="button small" type="submit">Search</button><div data-map-global-results aria-live="polite"></div></form>
+        <button class="button small" type="button" data-map-sidebar-toggle aria-expanded="true" aria-label="Collapse market insights">Hide insights</button>
+      </div>
+      <div class="expansion-map-shell">
+        <div class="expansion-map-tools" aria-label="Map controls">
+          <label>Metric<select class="input" name="metric">${[['apparelExpenditure','Annual clothing & footwear expenditure'],['tam','TAM'],['sam','SAM'],['som','SOM'],['population','Population'],['populationDensity','Population density'],['monthlyPerCapitaSpend','Per-person spend'],['incomeProxy','Purchasing power'],['competitorCount','Competitor supply'],['saturation','Market saturation'],['revenue','Store revenue scenario'],['revenuePerKm2','Revenue per km²'],['growthPotential3Year','3-year growth'],['growthPotential5Year','5-year growth']].map(([key,title])=>`<option value="${key}" ${key==='apparelExpenditure'?'selected':''}>${title}</option>`).join('')}</select></label>
+          <label>Scale<select class="input" data-map-color-mode aria-label="Colour scaling"><option value="linear">Linear</option><option value="log">Logarithmic</option><option value="percentile">Percentile</option></select></label>
+          <label>Extent<select class="input" data-map-scale-scope aria-label="Scale geography"><option value="national">Fixed national</option><option value="local">Local rescale</option></select></label>
+          <label>Basemap<select class="input" data-map-basemap><option value="street">Street</option><option value="satellite">Satellite imagery</option><option value="terrain">Terrain</option></select></label>
+          <button class="button small" type="button" data-map-tilt aria-pressed="false">3D tilt</button><button class="button small" type="button" data-map-national>India</button>
+          <label class="map-year">Year<input class="input" name="year" type="number" min="2011" max="2100" value="${year}"></label>
+        </div>
+        <div class="expansion-map-frame"><div class="expansion-map" data-map-canvas aria-label="Interactive India market map"></div>
+          <div class="expansion-map-caption">Boundaries: geoBoundaries simplified ADM1 · CC BY 2.5 India. Market expenditure combines Census 2011 with MoSPI HCES 2023–24 where crosswalks are supported; it is not observed store revenue.</div>
+          <div class="expansion-legend" data-map-legend aria-label="Continuous national scale"></div>
+          <div class="expansion-status" role="status" aria-live="polite" data-map-status>Loading cached India market metrics…</div>
+          <div class="expansion-breadcrumbs" data-map-path>India</div>
+        </div>
+        <aside class="expansion-side" aria-label="Selected geography market intelligence">
+          <div class="expansion-side-head"><div><div class="eyebrow">MARKET INTELLIGENCE</div><h1 data-map-place-title>India</h1><p data-map-place-path>National overview · Apparel & fashion</p></div><button type="button" class="button small" data-map-sidebar-close aria-label="Hide insights">×</button></div>
+          <div class="expansion-action-row"><button class="button primary small" type="button" data-map-open-market>Open Market Intelligence</button><button class="button small" type="button" data-map-screen-pin disabled>Screen PIN</button></div>
+          <div class="expansion-market-overview" data-map-overview aria-live="polite">
+            ${[['tam','Annual category-spend TAM'],['sam','Serviceable market · SAM'],['som','Capturable market · SOM'],['customers','Relevant customers'],['population','Population'],['spending','Annual spend / person'],['competition','Competitor intensity'],['opportunity','Market opportunity']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span>${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
+          </div>
+          <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
+          <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add comparison</button></div>
+          <details class="expansion-drawer"><summary>How this estimate was calculated</summary><div data-map-detail aria-live="polite"><p class="hint">Select a state or city.</p></div></details>
+          <details class="expansion-drawer"><summary>Compare locations <span data-map-compare-count></span></summary><p class="hint">Compare 2–4 places. Overlapping catchments can double-count residents.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></details>
+          <details class="expansion-drawer"><summary>Grounded local research</summary><div data-map-research aria-live="polite"><p>Select a location to load public research.</p></div><button class="button small" type="button" data-map-refresh-research disabled>Refresh research</button><form data-map-ask-form><label>Ask Market Intelligence<textarea class="input" name="question" rows="2" maxlength="2000" required placeholder="What evidence supports this estimate?"></textarea></label><button class="button small" type="submit" data-map-ask disabled>Ask</button></form><div data-map-answer aria-live="polite"></div></details>
+          <details class="expansion-drawer"><summary>Advanced financial scenario</summary><p class="hint">Optional store-level forecast inputs. This does not alter verified market observations.</p>${scenarioFormHTML()}</details>
+          <details class="expansion-drawer"><summary>Search areas at this level</summary><label>Filter loaded places<input class="input" type="search" data-map-search placeholder="Name or source ID"></label><div data-map-results class="expansion-results"></div></details>
+        </aside>
+      </div>
+    </div>`;
   }
 
   function mountPage({ container, workspaceId, options = {} }) {
     let year = options.year || new Date().getFullYear(), metric = 'apparelExpenditure', scenario = 'base', appliedScenario = 'base';
     let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
-    let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [];
+    let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [], selectedEstimate=null;
     let level = 'state', sourceVersion=latestSourceVersion, currentLegend, map, geometryGroup=null, loadedRequestKey=null;
     const legends = new Map(), compared = new Map(), aborters = new Map();
     let selectedRecord=null, comparisonResult=null, scenarioResult=null;
@@ -313,11 +352,70 @@
       } catch (error) { if (error.name !== 'AbortError') $('[data-map-answer]').innerHTML = `<p class="hint">${escape(error.message)} Check the research configuration and selected location.</p>`; }
     }
     function renderLegend() {
-      $('[data-map-legend]').innerHTML = `<strong>Fixed national scale · ${escape(label(metric))} · ${escape(year)}</strong><div class="expansion-legend-items">${currentLegend ? currentLegend.colors.map((color,i) => {
-        const formatThreshold=value=>/^(?:INR|₹)/i.test(String(currentLegend.unit||''))&&root.FranchiseDisplay?root.FranchiseDisplay.money(value,currentLegend.unit):value.toLocaleString('en-IN');
-        const low = i ? formatThreshold(currentLegend.thresholds[i-1]) : null, high = currentLegend.thresholds[i]===undefined?undefined:formatThreshold(currentLegend.thresholds[i]);
-        return `<span><i style="background:${color}"></i>${escape(low === null ? '< ' + high : high === undefined ? '≥ ' + low : low + ' – < ' + high)}</span>`;
-      }).join('') : '<span>National thresholds unavailable; values remain gray.</span>'}<span><i style="background:${MISSING}"></i>Missing / unavailable</span></div><small>${escape(currentLegend?.unit || '')} · Vintage is shown in evidence, not implied by the analysis year.</small>`;
+      const scale=root.MarketColorScale, mode=$('[data-map-color-mode]')?.value||'linear',scope=$('[data-map-scale-scope]')?.value||'national';
+      const domain=map?.getScaleMetadata?.()?.domain||(currentLegend?.thresholds?.length?[currentLegend.thresholds[0],currentLegend.thresholds.at(-1)]:null);
+      const gradient=scale?.DEFAULT_COLORS?.map((color,index)=>`${color} ${Math.round(index/(scale.DEFAULT_COLORS.length-1)*100)}%`).join(',')||'#440154,#3b528b,#21918c,#5ec962,#fde725';
+      const fmt=value=>/^(?:INR|₹)/i.test(String(currentLegend?.unit||''))&&root.FranchiseDisplay?root.FranchiseDisplay.money(value,currentLegend.unit):`${Number(value).toLocaleString('en-IN',{maximumFractionDigits:2})}${currentLegend?.unit?' '+currentLegend.unit:''}`;
+      let ends=domain?`${fmt(domain[0])} <span>to</span> ${fmt(domain[1])}`:'No comparable metric range available';
+      if(mode==='percentile')ends='Lower relative rank <span>to</span> higher relative rank among loaded areas';
+      const labelText=mode==='percentile'?'Percentile rank within loaded geography level':`${scope==='national'?'Fixed national':'Local rescale'} · ${mode==='log'?'logarithmic':'linear'} scale`;
+      $('[data-map-legend]').innerHTML=`<strong>${escape(label(metric))} · ${escape(labelText)}</strong><div class="expansion-gradient" style="background:linear-gradient(90deg,${gradient})" aria-hidden="true"></div><div class="expansion-legend-labels"><span>${ends.split('<span>to</span>')[0]}</span><span>${ends.split('<span>to</span>')[1]||''}</span></div><small>${escape(currentLegend?.unit||'Unit unavailable')} · ${escape(year)} view · Grey means no evidence. Colours show modelled values where marked.</small>`;
+    }
+    function metricNote(metric, fallback) {
+      if(!metric||metricValue(metric)===null)return metric?.missing?.nextAction||fallback;
+      const source=list(metric.evidence)[0]||{};
+      return [metric.evidenceClass||'classification unavailable',metric.referenceYear||metric.referencePeriod||source.referenceYear||source.referencePeriod||source.vintage].filter(Boolean).join(' · ');
+    }
+    function renderOverview(raw=null,estimate=null) {
+      const geo=raw?.geography||raw||{}, metrics=raw?.metrics||geo.metrics||{};
+      $('[data-map-place-title]').textContent=geo.name||'India';
+      const geographyLevel=geo.level||'national';
+      const hierarchy=[...path.map(item=>item.name),geo.name||'India'].filter((item,index,array)=>index===0||item!==array[index-1]);
+      const sourceYears=[...new Set(list(raw?.evidence||geo.evidence).map(item=>item.referenceYear||item.referencePeriod||item.vintage).filter(Boolean))].join(', ');
+      $('[data-map-place-path]').textContent=`${hierarchy.join(' · ')} · ${geographyLevel} · ${sourceYears?`evidence ${sourceYears} · `:''}${estimate?.confidence||geo.confidence||'awaiting selected area'}`;
+      const categoryTAM=estimate?.metrics?.categoryExpenditureTAM||metrics.apparelExpenditure||metrics.tam;
+      const model=estimate?.customerModel, customerTam=estimate?.metrics?.customerTAM;
+      const data={
+        tam:{metric:categoryTAM,note:categoryTAM?.value===null?'Needs compatible population and clothing/footwear spend evidence':metricNote(categoryTAM,'No compatible market expenditure estimate at this level.')},
+        sam:{metric:model?.metrics?.sam?.annualRevenue!==undefined?{value:model.metrics.sam.annualRevenue,unit:'INR/year',evidenceClass:'derived_estimate'}:metrics.sam,note:model?.complete?'Customer-based serviceable share applied':model?.missingInputs?.includes('serviceablePercentage')?'No supported serviceable share is available; category TAM is not store-accessible demand.':metricNote(metrics.sam,'Requires sourced serviceability evidence.')},
+        som:{metric:model?.metrics?.som?.annualRevenue!==undefined?{value:model.metrics.som.annualRevenue,unit:'INR/year',evidenceClass:'derived_estimate'}:metrics.som,note:model?.complete?'Customer-based capture share applied':model?.missingInputs?.includes('capturePercentage')?'No comparable capture benchmark is available; regional SOM is not one-store sales.':metricNote(metrics.som,'Requires a sourced capture benchmark.')},
+        customers:{metric:estimate?.metrics?.potentialCustomers||null,note:model?.complete?'Population × supported apparel participation rate':'Not estimated: no verified category participation rate or unique-customer evidence.'},
+        population:{metric:metrics.population,note:metricNote(metrics.population,'Population is unavailable at this exact geography; no parent population was substituted.')},
+        spending:{metric:metrics.monthlyPerCapitaSpend,note:metricNote(metrics.monthlyPerCapitaSpend,'No matching clothing and footwear benchmark at this geography.')},
+        competition:{metric:metrics.competitorCount||metrics.saturation,note:metricNote(metrics.competitorCount||metrics.saturation,'Competitor coverage is not integrated for this geography.')},
+        opportunity:{metric:metrics.viability,note:metricNote(metrics.viability,'Not scored: comparable demand, competition and feasibility evidence is incomplete.')}
+      };
+      for(const [key,item] of Object.entries(data)){
+        const card=$(`[data-market-metric="${key}"]`);if(!card)continue;
+        const metric=item.metric;card.querySelector('[data-value]').textContent=key==='customers'&&metric?.value!==null&&metric?.value!==undefined?`${root.FranchiseDisplay?.count(metric.value)||metric.value} people`:display(metric);
+        card.querySelector('[data-note]').textContent=item.note;
+      }
+      const pop=metrics.population,spend=metrics.monthlyPerCapitaSpend,dam=categoryTAM;
+      let narrative;
+      if(!geo.name&&!features.length)narrative='India market aggregates are loading. Values will appear only where population and expenditure can be matched to the same defensible geography.';
+      else if(metricValue(dam)===null)narrative=`${geo.name||'This selection'} has no defensible category market-size estimate at this level. ${data.tam.note}`;
+      else {
+        const amount=display(dam),populationText=metricValue(pop)!==null?` The sourced population figure is ${display(pop)}.`:'';
+        const spendText=metricValue(spend)!==null?` Regional per-person apparel spend is ${display(spend)}.`:'';
+        narrative=`${geo.name||'Covered state areas'} have an estimated annual clothing and footwear expenditure base of ${amount}.${populationText}${spendText} This is category market spend, not unique customer demand or one store's revenue. Customer-based SAM/SOM stay unestimated until participation, segment spend and realistic capture evidence are available.`;
+      }
+      $('[data-map-narrative]').textContent=narrative;
+      const pinButton=$('[data-map-screen-pin]');if(pinButton)pinButton.disabled=!(geographyLevel==='pin'&&geo.pin);
+    }
+    function renderNationalOverview(){
+      const unique=new Map(features.map(item=>[String(item.id),item])),rows=[...unique.values()];
+      const aggregate=key=>{
+        const available=rows.map(item=>item.metrics?.[key]).filter(item=>metricValue(item)!==null);
+        if(!available.length)return null;
+        const value=available.reduce((sum,item)=>sum+metricValue(item),0);
+        if(!Number.isFinite(value))return null;
+        return {value,unit:available[0].unit,evidenceClass:'derived_estimate',referenceYear:available.map(item=>item.referenceYear||item.referencePeriod).filter(Boolean).sort().join(', '),warnings:[`Sum across ${available.length} of ${rows.length} distinct state/UT features; uncovered geographies are excluded and shown as a coverage gap.`]};
+      };
+      const coverage=`Covered state/UT areas: ${rows.filter(item=>metricValue(item.metrics?.apparelExpenditure)!==null).length}/${rows.length}`;
+      const national={name:'India · covered state aggregates',level:'national',confidence:'partial; state coverage and vintages vary',sourceVersion,metrics:{apparelExpenditure:aggregate('apparelExpenditure'),tam:aggregate('tam'),population:aggregate('population'),sam:null,som:null,monthlyPerCapitaSpend:null,incomeProxy:null,competitorCount:null,saturation:null,viability:null}};
+      renderOverview(national,null);
+      const tam=$('[data-market-metric="tam"] [data-note]');if(tam&&tam.textContent)tam.textContent+=` · ${coverage}`;
+      $('[data-map-place-path]').textContent=`India · ${coverage} · ${sourceVersion||'source version unavailable'}`;
     }
     function renderAreas() {
       const term = $('[data-map-search]').value.trim().toLowerCase();
@@ -325,6 +423,7 @@
       $('[data-map-path]').textContent = ['India', ...path.map(f => f.name)].join(' › ');
     }
     function renderCompared() {
+      const count=$('[data-map-compare-count]');if(count)count.textContent=compared.size?`· ${compared.size}/4`:'';
       $('[data-map-compare-list]').innerHTML = [...compared.values()].map(f => `<div class="expansion-compare-item"><span>${escape(f.name)}</span><button class="text-button" type="button" data-map-remove="${escape(f.id)}" aria-label="Remove ${escape(f.name)}">Remove</button></div>`).join('');
       $('[data-map-compare]').disabled = compared.size < 2;
     }
@@ -358,6 +457,7 @@
       features = data.features;
       if (features.some(feature=>feature.geometry)) map?.setFeatures(features,{sourceVersion:data.sourceVersion,group:geometryGroup});
       renderLegend(); renderAreas(); updateSelectionActions();
+      if(!path.length&&!selected)renderNationalOverview();
       status(features.length ? `${features.length} ${level} areas · source ${sourceVersion || 'version unavailable'}. Missing values are gray.` : `No sourced ${level} features available for this selection. Missing evidence is not zero.`);
     }
     async function loadLevels() {
@@ -399,7 +499,7 @@
       }
     }
     async function selectGeography(id) {
-      selected = String(id); selectedDetail = null; selectedRecord=null; const revision = ++detailRevision, context = contextRevision;
+      selected = String(id); selectedDetail = null; selectedRecord=null; selectedEstimate=null; const revision = ++detailRevision, context = contextRevision;
       map?.selectGeography(selected); renderAreas();
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
@@ -416,15 +516,21 @@
         const loaded = features.find(f => String(f.id) === selected);
         selectedDetail = { ...loaded, ...selectedDetail, id: selected };
         $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
+        renderOverview(selectedDetail,null);
         updateSelectionActions();
         root.dispatchEvent(new root.CustomEvent('franchiseos:location-selected',{detail:{
           id:selectedDetail.id,name:selectedDetail.name,level:selectedDetail.level,
           state:selectedDetail.state || (selectedDetail.level==='state'?selectedDetail.name:null),
           city:selectedDetail.city || (selectedDetail.level==='city'?selectedDetail.name:null),
           pin:selectedDetail.pin || (selectedDetail.level==='pin'?selectedDetail.name:null),
-          sourceVersion:result.sourceVersion || sourceVersion || null,
+          sourceVersion:result.sourceVersion || sourceVersion || null,source:'expansion',
           metrics:selectedDetail.metrics || {},evidence:result.evidence || selectedDetail.evidence || []
         }}));
+        try{
+          const estimate=await request('estimate',`/api/market/map/geographies/${encodeURIComponent(id)}/market-estimate?year=${year}`);
+          if(destroyed||revision!==detailRevision||context!==contextRevision||selected!==String(id))return;
+          selectedEstimate=estimate;renderOverview(selectedDetail,selectedEstimate);
+        }catch(error){if(error.name!=='AbortError'&&!destroyed&&revision===detailRevision){selectedEstimate={confidence:'estimate cache unavailable',explanation:`Customer estimate service unavailable: ${error.message}`};renderOverview(selectedDetail,selectedEstimate);}}
         loadResearch(selected);
       } catch (error) {
         if (!destroyed && revision === detailRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-detail]').innerHTML = `<p>${escape(error.message)}</p><button class="text-button" type="button" data-map-retry-detail>Retry detail</button>`;
@@ -490,6 +596,11 @@
     function onClick(event) {
       const button = event.target.closest('button'); if (!button) return;
       const d = button.dataset;
+      if('mapExit'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'overview',label:'Workspace overview',execute:false,permission:'read'}}));return;}
+      if('mapOpenMarket'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'market',sectionId:'market-form',label:'Market Intelligence',execute:false,permission:'read'}}));return;}
+      if('mapScreenPin'in d&&selectedDetail?.level==='pin'){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'screening',sectionId:'territory-screening-root',label:'Territory Screening',execute:false,permission:'read'}}));return;}
+      if('mapSidebarToggle'in d||'mapSidebarClose'in d){const side=$('.expansion-side'),hide=!side.classList.contains('is-collapsed');side.classList.toggle('is-collapsed',hide);const toggle=$('[data-map-sidebar-toggle]');if(toggle){toggle.textContent=hide?'Show insights':'Hide insights';toggle.setAttribute('aria-expanded',String(!hide));toggle.setAttribute('aria-label',hide?'Show market insights':'Collapse market insights');}setTimeout(()=>map?.resize(),180);return;}
+      if('mapTilt'in d){const active=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(active));button.textContent=active?'2D view':'3D tilt';map?.setTilt(active);return;}
       if ('mapGlobalResult' in d) {
         const geo = searchResults.find(f => String(f.id) === d.mapGlobalResult); if (!geo) return;
         const index = LEVELS.indexOf(geo.level);
@@ -544,6 +655,9 @@
       const { name, value } = event.target;
       if (name === 'metric') setMetric(value);
       else if (name === 'year') setYear(Number(value));
+      else if(event.target.matches('[data-map-color-mode]')){map?.setColorMode(value);renderLegend();}
+      else if(event.target.matches('[data-map-scale-scope]')){map?.setScaleScope(value);renderLegend();}
+      else if(event.target.matches('[data-map-basemap]'))map?.setBasemap(value);
       else if (event.target.closest('[data-map-scenario-form]')) {
         scenarioRevision++; aborters.get('scenario')?.abort(); $('[data-map-apply]').disabled = false;
         $('[data-map-scenario-status]').textContent = 'Inputs edited · apply scenario to recalculate';
@@ -554,13 +668,17 @@
     renderLegend(); renderCompared(); loadLevels();
     function refreshDisplay(){
       renderLegend(); renderAreas(); renderCompared(); renderComparison(); renderForecast(); map?.refreshDisplay();
+      if(selectedDetail)renderOverview(selectedDetail,selectedEstimate);
+      else if(!path.length&&!selected)renderNationalOverview();
       if(selectedDetail&&selectedRecord)$('[data-map-detail]').innerHTML=geographyHTML({...selectedRecord,geography:selectedDetail});
     }
     root.addEventListener?.('franchiseos:currency-display-changed',refreshDisplay);
-    return { setMetric, setYear, setScenario, selectGeography,
+    const onExpansionResize=()=>setTimeout(()=>map?.resize(),0);
+    root.addEventListener?.('franchiseos:expansion-resize',onExpansionResize);
+    return { setMetric, setYear, setScenario, selectGeography, resize(){map?.resize();},
       refreshDisplay,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

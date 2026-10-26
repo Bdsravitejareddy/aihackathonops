@@ -6,6 +6,7 @@ const { validateWorkspacePayload } = require('./validation.cjs');
 const { validatePin, calculateMarketAssessment } = require('./market-engine.cjs');
 const { projectStoreEconomics, scoreMarketViability } = require('./market-forecast.cjs');
 const { createMarketLocationData } = require('./market-location-data.cjs');
+const { calculateCustomerMarket } = require('./customer-market-model.cjs');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -85,6 +86,42 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
           return { scope: 'national', metric, year, unit, thresholds, colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'] };
         };
         const segmentOf = value => typeof value === 'string' && value.trim().length <= 100 ? value.trim() : 'mass-market-family-apparel';
+        const marketEstimateMatch=url.pathname.match(/^\/api\/market\/map\/geographies\/([^/]+)\/market-estimate$/);
+        if(req.method==='GET'&&marketEstimateMatch){
+          const geographyId=decodeURIComponent(marketEstimateMatch[1]);
+          const analysisYear=Number(url.searchParams.get('year')||new Date().getFullYear());
+          if(!Number.isInteger(analysisYear)||analysisYear<2011||analysisYear>2100)return reply(res,400,{error:'Analysis year must be between 2011 and 2100'});
+          const retailCategory='apparel-fashion',modelVersion='customer-market-tam-v1',sourceVersion=marketMapStore.sourceVersion||'india-geography-1.1.2';
+          try{
+            const cached=await marketMapStore.getCustomerMarketEstimate?.({geographyId,retailCategory,analysisYear,modelVersion,sourceVersion});
+            if(cached)return replyPublic(req,res,cached,`${sourceVersion}:${modelVersion}`,900);
+          }catch{/* A missing estimate table should not block deterministic market detail. */}
+          const pinPlace=/^pin:\d{6}$/.test(geographyId)?marketLocationData?.resolvePin(geographyId.slice(4)):null;
+          const geography=pinPlace||await marketMapStore.getMapGeography(geographyId,'tam');
+          if(!geography)return reply(res,404,{error:'Geography not found'});
+          const properties=geography.customerMarketInputs||{},population=geography.metrics?.population;
+          const input={relevantPopulation:typeof population?.value==='number'?population.value:null,
+            customerPenetration:properties.customerPenetration??null,
+            baselineAnnualSpend:properties.baselineAnnualSpend??null,
+            incomeSegments:properties.incomeSegments??null,
+            serviceablePercentage:properties.serviceablePercentage??null,
+            capturePercentage:properties.capturePercentage??null,
+            evidence:properties.evidence||{status:'estimated',sourceCount:(geography.evidence||[]).length},
+            provenance:{geographyId:geography.id,level:geography.level,analysisYear,sourceVersion,sources:geography.evidence||[]}};
+          let customerModel;
+          try{customerModel=calculateCustomerMarket(input);}catch(error){return reply(res,422,{error:'Stored customer-market evidence is invalid.',detail:error.message});}
+          const categoryTAM=geography.metrics?.apparelExpenditure?.value??geography.metrics?.tam?.value??null;
+          const result={geography:{id:geography.id,name:geography.name,level:geography.level},retailCategory,analysisYear,modelVersion,sourceVersion,
+            metrics:{categoryExpenditureTAM:{value:categoryTAM,unit:'INR/year',evidenceClass:geography.metrics?.apparelExpenditure?.evidenceClass||'unavailable',evidence:geography.metrics?.apparelExpenditure?.evidence||[],method:'Population × monthly HCES clothing/footwear MPCE × 12; market expenditure, not customer purchases or store sales.'},
+              relevantPopulation:population||{value:null,unit:'people',evidenceClass:'unavailable'},potentialCustomers:{value:customerModel.metrics.tam?.customers??null,unit:'people',evidenceClass:customerModel.complete?'derived_estimate':'unavailable'},
+              customerTAM:{value:customerModel.metrics.tam?.annualRevenue??null,unit:'INR/year',evidenceClass:customerModel.complete?'derived_estimate':'unavailable'},
+              customerSAM:{value:customerModel.metrics.sam?.annualRevenue??null,unit:'INR/year',evidenceClass:customerModel.complete?'derived_estimate':'unavailable'},
+              customerSOM:{value:customerModel.metrics.som?.annualRevenue??null,unit:'INR/year',evidenceClass:customerModel.complete?'derived_estimate':'unavailable'}},
+            customerModel,confidence:customerModel.complete?'method-dependent':'insufficient customer participation and spend evidence',evidence:geography.evidence||[],cached:false,
+            explanation:customerModel.complete?'Customer-based estimate uses stored, versioned market assumptions and source evidence.':'The available category-expenditure benchmark can estimate aggregate market spend, but does not identify unique fashion customers, their annual spend distribution, brand-serviceable share or store capture. Customer TAM/SAM/SOM remain unestimated until those inputs have defensible sources.'};
+          try{await marketMapStore.saveCustomerMarketEstimate?.({geographyId,retailCategory,analysisYear,modelVersion,sourceVersion,result});result.persisted=true;}catch{result.persisted=false;}
+          return replyPublic(req,res,result,`${sourceVersion}:${modelVersion}`,900);
+        }
         const buildResearchContext = async (geographyId, payload) => {
           const scenario = payload.assumptions && typeof payload.assumptions === 'object' && !Array.isArray(payload.assumptions) ? payload.assumptions : {};
           const pinGeography = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;

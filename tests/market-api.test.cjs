@@ -82,6 +82,18 @@ test('public map levels expose versioned ETags and geometry-free metric refreshe
   assert.notEqual(changed.headers.etag,first.headers.etag);
 });
 
+test('market estimate separates observed aggregate apparel spend from unsupported unique-customer TAM and caches by source version',async()=>{
+  const cache=new Map();let reads=0;
+  const geography={id:'state:KA',name:'Karnataka',level:'state',metrics:{population:{value:1000,unit:'people',evidenceClass:'official_observed',referenceYear:2011},apparelExpenditure:{value:1200000,unit:'INR/year',evidenceClass:'derived_estimate',evidence:[{sourceId:'HCES',referencePeriod:'2023-24',url:'https://mospi.gov.in/'}]},tam:{value:1200000,unit:'INR/year',evidenceClass:'derived_estimate'}},evidence:[{sourceId:'HCES',referencePeriod:'2023-24'}]};
+  const map={sourceVersion:'sources-v1',async getMapGeography(){reads++;return geography;},async getCustomerMarketEstimate(input){const row=cache.get(JSON.stringify({geographyId:input.geographyId,retailCategory:input.retailCategory,analysisYear:input.analysisYear,modelVersion:input.modelVersion,sourceVersion:input.sourceVersion}));return row?{...row,cached:true}:null;},async saveCustomerMarketEstimate(input){cache.set(JSON.stringify({geographyId:input.geographyId,retailCategory:input.retailCategory,analysisYear:input.analysisYear,modelVersion:input.modelVersion,sourceVersion:input.sourceVersion}),input.result);return new Date().toISOString();}};
+  const {call}=harness({marketMapStore:map});
+  const first=await call('GET','/api/market/map/geographies/state%3AKA/market-estimate?year=2026');
+  assert.equal(first.status,200);assert.equal(first.json().metrics.categoryExpenditureTAM.value,1200000);assert.equal(first.json().metrics.customerTAM.value,null);assert.equal(first.json().metrics.potentialCustomers.value,null);assert.equal(first.json().customerModel.complete,false);assert.match(first.json().explanation,/does not identify unique fashion customers/i);
+  const second=await call('GET','/api/market/map/geographies/state%3AKA/market-estimate?year=2026');
+  assert.equal(second.json().cached,true);assert.equal(reads,1);
+  map.sourceVersion='sources-v2';const refreshed=await call('GET','/api/market/map/geographies/state%3AKA/market-estimate?year=2026');assert.equal(refreshed.json().sourceVersion,'sources-v2');assert.equal(reads,2);
+});
+
 test('workspace PIN screening validates input and remains private', async () => {
   const {call}=harness();
   const found=await call('GET',`/api/screening/applications?workspaceId=${workspaceId}&pin=560001`);

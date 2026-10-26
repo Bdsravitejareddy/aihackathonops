@@ -93,6 +93,21 @@ CREATE TABLE IF NOT EXISTS market_observations (
 CREATE INDEX IF NOT EXISTS market_observations_geography_metric_idx
   ON market_observations (geography_id, metric, reference_period);
 
+-- Deterministic market estimates are versioned independently from observed source rows.
+CREATE TABLE IF NOT EXISTS market_opportunity_estimates (
+  geography_external_id text NOT NULL,
+  retail_category text NOT NULL,
+  analysis_year integer NOT NULL CHECK (analysis_year BETWEEN 1900 AND 2200),
+  model_version text NOT NULL,
+  source_version text NOT NULL,
+  result jsonb NOT NULL,
+  computed_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (geography_external_id, retail_category, analysis_year, model_version, source_version)
+);
+
+CREATE INDEX IF NOT EXISTS market_opportunity_estimates_computed_idx
+  ON market_opportunity_estimates (computed_at DESC);
+
 CREATE TABLE IF NOT EXISTS market_assessments (
   id uuid PRIMARY KEY,
   workspace_id uuid NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,

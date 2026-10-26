@@ -130,3 +130,11 @@ test('Karnataka priority district polygons and city points follow state to distr
   assert.ok(child.some(row=>row.id===city.id));
   assert.ok(districts.every(row=>row.metrics.population.value===null));
 });
+
+test('customer estimate cache persists provenance results under geography, category, year, model and source versions',async()=>{
+  const calls=[];const pool={async query(sql,params){calls.push({sql,params});return sql.trim().startsWith('SELECT')?{rows:[{result:{metrics:{customerTAM:{value:null}},modelVersion:'m1'},computed_at:'2026-10-26T00:00:00Z'}]}:{rows:[{computed_at:'2026-10-26T00:00:01Z'}]};}};
+  const store=createMarketMapStore(pool),key={geographyId:'state:IN-KA',retailCategory:'apparel-fashion',analysisYear:2026,modelVersion:'customer-market-tam-v1',sourceVersion:'source-v3'};
+  const result=await store.getCustomerMarketEstimate(key);assert.equal(result.modelVersion,'m1');assert.equal(result.cached,true);assert.match(calls[0].sql,/source_version=\$5/);assert.deepEqual(calls[0].params,['state:IN-KA','apparel-fashion',2026,'customer-market-tam-v1','source-v3']);
+  await store.saveCustomerMarketEstimate({...key,result:{metrics:{customerTAM:{value:null}},provenance:{sourceVersion:'source-v3'}}});
+  assert.match(calls[1].sql,/ON CONFLICT/);assert.deepEqual(calls[1].params.slice(0,5),calls[0].params);assert.match(calls[1].params[5],/provenance/);
+});

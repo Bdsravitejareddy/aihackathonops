@@ -27,9 +27,14 @@ function mapDouble() {
     addSource(id, source) { this.sources[id] = { ...source, setData(data) { this.data = data; this.setDataCount=(this.setDataCount||0)+1; } }; }
     getSource(id) { return this.sources[id]; }
     addLayer(layer) { this.layers[layer.id] = layer; }
+    getLayer(id) { return this.layers[id]; }
     setFilter(id, filter) { this.layers[id].filter = filter; }
     setPaintProperty(id,key,value) { this.layers[id].paint[key]=value; }
+    setLayoutProperty(id,key,value) { this.layers[id].layout ||= {}; this.layers[id].layout[key]=value; }
+    setTerrain(value) { this.terrain=value; } resize() { this.resizeCount=(this.resizeCount||0)+1; }
     addControl() {} getZoom() { return this.zoom; }
+    setPitch(value) { this.pitch = value; } getPitch() { return this.pitch || 0; }
+    setLayoutProperty() {} setStyle(style) { this.options.style = style; }
     getBounds() { return { toArray: () => [[70,10],[90,30]] }; }
     getCanvas() { return { style: {} }; }
     fitBounds(bounds, options) { this.zoom = options.zoom || options.maxZoom; this.bounds = bounds; }
@@ -56,12 +61,13 @@ function setup(responder = url => url.includes('/geographies/') ? feature('a',12
     return { ok: true, status: 200, json: async () => data };
   };
   assert.ok(fs.existsSync(path.join(root, 'dist/market-map.js')), 'Expansion map module must exist');
+  window.eval(read('dist/market-color-scale.js'));
   window.eval(read('dist/market-map.js'));
   const host = window.document.getElementById('host');
   const controller = window.MarketMap.mountPage({ container: host, workspaceId: 'test-workspace' });
   const map = window.maplibregl.Map.instances[0];
   map.fire('load');
-  return { dom, window, host, controller, map, requests, click: selector => host.querySelector(selector).click(), change(selector, value) {
+  return { dom, window, host, controller, map, maplibregl:window.maplibregl, requests, click: selector => host.querySelector(selector).click(), change(selector, value) {
     const el = host.querySelector(selector); el.value = value; el.dispatchEvent(new window.Event('change', { bubbles: true }));
   } };
 }
@@ -80,6 +86,40 @@ test('national loading requests state aggregates and never requests PINs without
   assert.match(h.map.options.style.sources.openStreetMap.attribution,/OpenStreetMap contributors/);
 });
 
+test('Expansion Intelligence opens as a map-first full screen with an always-visible evidence summary', async t => {
+  const dom = new JSDOM(read('dist/index.html'), { url:'http://localhost/#overview', runScripts:'outside-only' });
+  t.after(()=>dom.window.close()); const w=dom.window; w.maplibregl=mapDouble();
+  w.fetch=async url=>({ok:!String(url).startsWith('/api/workspaces'),status:String(url).startsWith('/api/workspaces')?404:200,json:async()=>String(url)==='demo.json'?JSON.parse(read('dist/demo.json')):levels()});
+  for (const file of ['engine.js','bot.js','persistence.js','display-format.js','market-color-scale.js','market-map.js','market-intelligence.js','territory-screening.js','app.js','expansion-shell.js']) w.eval(read('dist/'+file));
+  await tick(); await tick(); w.document.querySelector('[data-tab="expansion"]').click(); await tick();
+  assert.ok(w.document.body.classList.contains('expansion-fullscreen'));
+  assert.ok(w.document.querySelector('[data-map-overview]'));
+  for (const key of ['tam','sam','som','customers','spending','competition','opportunity']) assert.ok(w.document.querySelector(`[data-market-metric="${key}"]`));
+  assert.ok(w.document.querySelector('[data-map-basemap]'));
+  assert.ok(w.document.querySelector('[data-map-color-mode]'));
+  assert.equal(w.document.querySelector('[data-map-scenario-form]')?.closest('details')?.open,false);
+  w.document.querySelector('[data-tab="applications"]').click(); await tick();
+  assert.ok(!w.document.body.classList.contains('expansion-fullscreen'));
+});
+
+test('continuous metric scale and 3D tilt controls update the persistent map without refetching geometry', async t => {
+  const h=setup(); t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
+  const count=h.requests.length, map=h.map;
+  h.change('[data-map-color-mode]','log'); h.change('[data-map-scale-scope]','local'); h.click('[data-map-tilt]');
+  assert.equal(map.pitch,58); assert.equal(h.requests.length,count); assert.equal(h.maplibregl.Map.instances.length,1);
+  assert.equal(require('../dist/market-color-scale.js').MISSING_COLOR,'#b9c1c5');
+});
+
+test('automated estimate keeps unsupported unique-customer demand visibly unavailable', async t => {
+  const f=feature('a',120); f.metrics.apparelExpenditure={value:1200000,unit:'INR/year',evidenceClass:'derived_estimate',referenceYear:2011};
+  f.metrics.tam={value:1200000,unit:'INR/year',evidenceClass:'derived_estimate'}; f.metrics.sam={value:null,unit:'INR/year',evidenceClass:'unavailable',missing:{cause:'source_unavailable',nextAction:'Add a category participation benchmark.'}};
+  const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f]));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick(); h.click('[data-map-result]'); await tick();
+  assert.match(h.host.querySelector('[data-market-metric="tam"]').textContent,/12,00,000|₹/);
+  assert.match(h.host.querySelector('[data-market-metric="customers"]').textContent,/not estimated|unavailable/i);
+  assert.match(h.host.querySelector('[data-market-metric="sam"]').textContent,/not available|unavailable/i);
+});
+
 test('panning and zooming the loaded state layer reuses its geometry request', async t => {
   const h=setup(); t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
   for (const zoom of [4,4.5,5,3.8,4.2]) { h.map.zoom=zoom; h.map.fire('moveend'); await tick(); }
@@ -90,16 +130,18 @@ test('panning and zooming the loaded state layer reuses its geometry request', a
 test('fixed national legend survives local extrema; null stays gray while zero is a measured value', async t => {
   const h = setup(); t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
   const data = h.map.getSource('market-geographies').data;
-  assert.equal(data.features.find(f => f.id === 'a').properties.color, '#6ba688');
-  assert.equal(data.features.find(f => f.id === 'b').properties.color, '#b9c1c5');
+  assert.equal(data.features.find(f => f.id === 'a').properties.v_apparelExpenditure,120);
+  assert.equal(data.features.find(f => f.id === 'b').properties.v_apparelExpenditure,undefined);
+  assert.equal(h.map.layers['market-fill'].paint['fill-color'][0],'case');
+  assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
   const legend = h.host.querySelector('[data-map-legend]').textContent;
   h.controller.setFeatures([feature('zero',0),feature('large',900),feature('missing',undefined)]);
   assert.equal(h.host.querySelector('[data-map-legend]').textContent, legend);
   const changed = h.map.getSource('market-geographies').data.features;
-  assert.equal(changed[0].properties.color, '#d9eee1');
-  assert.equal(changed[1].properties.color, '#185a44');
-  assert.equal(changed[2].properties.color, '#b9c1c5');
-  assert.match(legend, /100/); assert.match(legend, /200/); assert.match(legend, /national/i);
+  assert.equal(changed[0].properties.v_apparelExpenditure,0);
+  assert.equal(changed[1].properties.v_apparelExpenditure,900);
+  assert.equal(changed[2].properties.v_apparelExpenditure,undefined);
+  assert.match(legend, /100/); assert.match(legend, /200/); assert.match(legend, /national/i);assert.match(legend,/linear/i);
 });
 
 test('changing INR display units refreshes map labels without fetching geography again', async t => {
@@ -196,7 +238,7 @@ test('scenario controls post explicit assumptions, keep blanks missing and synch
   assert.equal(req.body.assumptions.evidenceClass,'user_assumption');
   assert.match(h.host.textContent,/routing|route source/i);
   assert.match(h.host.querySelector('[data-map-forecast]').textContent,/Hypothetical test forecast/);
-  assert.equal(h.map.getSource('market-geographies').data.features[0].properties.color,'#185a44');
+  assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
 });
 
 test('late map and detail responses cannot overwrite a new year or selected geography', async t => {
@@ -237,7 +279,7 @@ test('Expansion Intelligence navigation preserves classic applicant flow and loa
   t.after(()=>dom.window.close()); const w=dom.window;
   w.maplibregl=mapDouble();
   w.fetch=async url=>({ok:!String(url).startsWith('/api/workspaces'),status:String(url).startsWith('/api/workspaces')?404:200,json:async()=>String(url)==='demo.json'?JSON.parse(read('dist/demo.json')):levels()});
-  for (const file of ['engine.js','bot.js','persistence.js','market-map.js','app.js']) {
+  for (const file of ['engine.js','bot.js','persistence.js','display-format.js','market-color-scale.js','market-map.js','market-intelligence.js','territory-screening.js','app.js','expansion-shell.js']) {
     assert.ok(fs.existsSync(path.join(root,'dist',file)),`${file} exists`); w.eval(read('dist/'+file));
   }
   await tick(); await tick();
@@ -268,7 +310,7 @@ test('additional investment layers request their own metric and show missing evi
     assert.ok(option,`Layer ${key} must be selectable`); assert.match(option.textContent,title);
     h.change('[name="metric"]',key); await tick();
     assert.equal(new URL(h.requests.at(-1).url,'http://localhost').searchParams.get('metric'),key);
-    assert.equal(h.map.getSource('market-geographies').data.features[0].properties.color,'#b9c1c5');
+    assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
   }
   h.controller.selectGeography('a'); await tick();
   const detail = h.host.querySelector('[data-map-detail]');
@@ -382,7 +424,8 @@ test('selected geography dispatches the shared sourced location contract', async
   const events=[]; h.window.addEventListener('franchiseos:location-selected',event=>events.push(event.detail));
   h.controller.selectGeography('a'); await tick();
   assert.equal(events.length,1);
-  assert.deepEqual(Object.keys(events[0]).sort(),['city','evidence','id','level','metrics','name','pin','sourceVersion','state'].sort());
+  assert.deepEqual(Object.keys(events[0]).sort(),['city','evidence','id','level','metrics','name','pin','source','sourceVersion','state'].sort());
+  assert.equal(events[0].source,'expansion');
   assert.equal(events[0].id,'a'); assert.equal(events[0].level,'state');
   assert.equal(events[0].metrics.apparelExpenditure.value,120);
 });

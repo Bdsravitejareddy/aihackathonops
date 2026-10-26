@@ -102,3 +102,36 @@ test('whenSynced waits for an in-flight workspace write before dependent reads',
   await Promise.all([saving, ready]);
   assert.equal(synchronized, true);
 });
+
+test('a save rejected by a stale revision adopts the server revision and retries, so the import is kept', async () => {
+  const storage = memoryStorage();
+  const puts = [];
+  let serverRevision = 7;
+  const persistence = createPersistence({ storage, fetchImpl: async (url, options = {}) => {
+    if (options.method === 'PUT') {
+      const body = JSON.parse(options.body); puts.push(body.revision);
+      if (body.revision !== serverRevision) return { ok: false, status: 409, json: async () => ({}) };
+      serverRevision++; return { ok: true, status: 200, json: async () => ({ revision: serverRevision }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ state: { apps: [] }, revision: serverRevision }) };
+  } });
+  const imported = { apps: [{ id: 'APP-001' }], territories: [], settings: {} };
+  await persistence.save(imported);   // first load never ran, so revision is still 0
+  assert.deepEqual(puts, [0, 7]);
+  assert.equal(persistence.mode, 'shared');
+  assert.equal(storage.getItem('franchise-os-unsynced'), '');
+});
+
+test('on reload, unconfirmed local changes are kept and pushed instead of being replaced by the server copy', async () => {
+  const imported = { apps: [{ id: 'APP-001' }, { id: 'APP-002' }], territories: [], settings: {} };
+  const storage = memoryStorage({ 'franchise-os-v1': JSON.stringify(imported), 'franchise-os-unsynced': '1' });
+  const puts = [];
+  const persistence = createPersistence({ storage, fetchImpl: async (url, options = {}) => {
+    if (options.method === 'PUT') { puts.push(JSON.parse(options.body)); return { ok: true, status: 200, json: async () => ({ revision: 4 }) }; }
+    return { ok: true, status: 200, json: async () => ({ state: { apps: [{ id: 'old' }] }, revision: 3 }) };
+  } });
+  assert.deepEqual(await persistence.load(), imported);
+  await persistence.whenSynced();
+  assert.deepEqual(puts.map(p => [p.revision, p.state.apps.length]), [[3, 2]]);
+  assert.equal(storage.getItem('franchise-os-unsynced'), '');
+});

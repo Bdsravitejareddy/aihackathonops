@@ -120,7 +120,8 @@
         const result = await response.json().catch(() => ({}));
         if (current !== revision) return;
         if (!response.ok) throw Error(result.error || `Analysis API returned ${response.status}`);
-        last = result; container.innerHTML = resultHTML(result, overrides);
+        const entering = !last; last = result; container.innerHTML = resultHTML(result, overrides);
+        if (entering) enter();
         if (editOpen) container.querySelector('[data-analysis-edit]').open = true;
       } catch (error) {
         if (error.name === 'AbortError' || current !== revision) return;
@@ -128,6 +129,13 @@
         if (status && last) status.textContent = error.message;
         else container.innerHTML = `<p class="hint">${escape(error.message)} Store analysis is optional; market evidence remains available.</p>`;
       }
+    }
+    // Liquid glass motion: a new area's result blurs into focus and its income growth counts up.
+    function enter() {
+      if (root.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      container.classList.remove('is-entering'); void container.offsetWidth; container.classList.add('is-entering');
+      const growth = container.querySelector('.analysis-income-head strong');
+      if (growth) root.LiquidMotion?.countUp?.(growth);
     }
     function onSubmit(event) {
       if (!event.target.matches('[data-analysis-form]')) return;

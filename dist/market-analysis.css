@@ -33,3 +33,57 @@
 .analysis-range{table-layout:fixed}.analysis-range th:first-child{width:36%}
 .analysis-range th,.analysis-range td{font-size:10px;letter-spacing:0;text-transform:none;overflow-wrap:anywhere}
 .analysis-projection th:first-child{width:24%}.analysis-projection th,.analysis-projection td{font-size:9px}
+
+/* ==== Liquid glass: Analysis section in the map side panel ===================================
+   Light glass card, serif labels, big light numerals; the base column reads as a lavender pill.
+   Reuses the --lq-* tokens from liquid.css. */
+.expansion-side .analysis-section{position:relative;isolation:isolate;margin:16px 0;padding:18px 16px 14px;border-radius:var(--lq-radius-s);
+  background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.5));border:1px solid rgba(255,255,255,.95);box-shadow:0 1px 0 #fff inset,0 14px 30px -20px rgba(76,56,150,.5)}
+#main .expansion-side .analysis-title,.expansion-side .analysis-title{font-family:var(--lq-sans);font-weight:400;font-size:24px;letter-spacing:-.035em;color:var(--lq-ink);margin:0 0 12px;flex-wrap:wrap;gap:4px 8px}
+.expansion-side .analysis-title span{font-family:var(--lq-serif);font-size:15px;text-transform:none;letter-spacing:0;color:var(--lq-ink-2)}
+.expansion-side .analysis-tier{background:var(--lq-lime);color:var(--lq-lime-ink);font-weight:600;padding:5px 12px;font-size:11px}
+.expansion-side .analysis-chip{border-radius:999px;padding:1px 8px;font-weight:500}
+.expansion-side .analysis-chip--derived_estimate{background:#e9e4fd;color:#3f2f9c}
+.expansion-side .analysis-chip--user_assumption{background:#f1e3fb;color:#5b2f86}
+.expansion-side .analysis-range{border-collapse:separate;border-spacing:0}
+.expansion-side .analysis-range th,.expansion-side .analysis-range td{border-bottom:1px solid rgba(91,70,201,.1);padding:7px 4px;color:var(--lq-ink)}
+.expansion-side .analysis-range thead th{font-family:var(--lq-serif);font-size:13px;font-weight:400;color:var(--lq-ink-2);border-bottom:0}
+.expansion-side .analysis-range tbody th{color:var(--lq-ink);font-weight:500}
+.expansion-side .analysis-range tbody th small{color:var(--lq-ink-2)}
+.expansion-side .analysis-range td{font-weight:300;font-size:11px;letter-spacing:-.01em}
+.expansion-side .analysis-range td.is-base{background:rgba(155,135,236,.16);font-weight:500;color:#2c2170}
+.expansion-side .analysis-range tbody tr:first-child td.is-base{border-radius:12px 12px 0 0}
+.expansion-side .analysis-range tbody tr:last-child td.is-base{border-radius:0 0 12px 12px;border-bottom-color:transparent}
+.expansion-side .analysis-range td.is-negative{color:#a3243a}
+.expansion-side .analysis-range tr.is-total th,.expansion-side .analysis-range tr.is-total td{border-top:1px solid rgba(91,70,201,.3);font-weight:500}
+.expansion-side .analysis-range tbody tr{transition:background .25s}
+.expansion-side .analysis-range tbody tr:hover{background:rgba(255,255,255,.6)}
+.expansion-side .analysis-h{font-weight:500;font-size:14px;letter-spacing:-.015em;color:var(--lq-ink);margin:16px 0 6px}
+.expansion-side .analysis-income-head{flex-wrap:wrap;gap:4px 10px}
+.expansion-side .analysis-income-head strong{white-space:nowrap;font:300 32px/1 var(--lq-sans);letter-spacing:-.045em;color:var(--lq-ink);font-variant-numeric:tabular-nums}
+.expansion-side .analysis-income-head span{font-size:11px;color:var(--lq-ink-2)}
+.expansion-side .analysis-spark{height:78px;overflow:visible}
+.expansion-side .analysis-spark-hist{stroke:#5b46c9;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:600;stroke-dashoffset:0;filter:drop-shadow(0 4px 6px rgba(91,70,201,.35))}
+.expansion-side .analysis-spark-proj{stroke:#e9935f;stroke-width:2;opacity:.9}
+.expansion-side .analysis-spark-dot{fill:var(--lq-lime);stroke:#2c3300;stroke-width:1.2}
+.expansion-side .analysis-spark-axis{color:var(--lq-ink-2);font-size:10px}
+.expansion-side .analysis-sub{border-top:1px solid rgba(91,70,201,.1);margin-top:6px;padding-top:2px}
+.expansion-side .analysis-sub>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:10px 4px;font-size:12px;font-weight:500;color:var(--lq-ink);border-radius:12px;transition:background .25s}
+.expansion-side .analysis-sub>summary::-webkit-details-marker{display:none}
+.expansion-side .analysis-sub>summary::after{content:'+';flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(155,135,236,.16);color:#3f2f9c;font-weight:500;transition:transform .4s var(--lq-ease),background .3s}
+.expansion-side .analysis-sub[open]>summary::after{transform:rotate(45deg);background:var(--lq-lime);color:var(--lq-lime-ink)}
+.expansion-side .analysis-sub>summary:hover{background:rgba(255,255,255,.6)}
+.expansion-side .analysis-sub>summary:focus-visible{outline:2px solid #5b46c9;outline-offset:1px}
+.expansion-side .analysis-sub[open]>summary~*{animation:mx-focus .5s var(--lq-ease) both}
+.expansion-side .analysis-form-grid label{color:var(--lq-ink)}.expansion-side .analysis-form-grid small{color:var(--lq-ink-2)}
+.expansion-side .analysis-warnings,.expansion-side .analysis-list{color:var(--lq-ink-2)}.expansion-side .analysis-list small{color:var(--lq-ink-2)}
+/* New result: blur into focus and draw the income line (market-analysis.js toggles .is-entering) */
+.expansion-side [data-map-analysis].is-entering>*{animation:mx-focus .6s var(--lq-ease) both}
+.expansion-side [data-map-analysis].is-entering>:nth-child(2){animation-delay:70ms}.expansion-side [data-map-analysis].is-entering>:nth-child(n+3){animation-delay:140ms}
+.expansion-side [data-map-analysis].is-entering .analysis-spark-hist{animation:an-draw 1.4s var(--lq-ease) .2s both}
+@keyframes an-draw{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){
+  .expansion-side [data-map-analysis].is-entering>*,.expansion-side [data-map-analysis].is-entering .analysis-spark-hist,.expansion-side .analysis-sub[open]>summary~*{animation:none!important}
+  .expansion-side .analysis-sub>summary::after{transition:none}
+}
+/* ==== end liquid glass ==== */

@@ -30,6 +30,18 @@
     catch { return null; }
   };
   const list = value => Array.isArray(value) ? value : value ? [value] : [];
+  // Liquid glass motion for the side panel: restart the blur-into-focus and count up changed numbers.
+  const reducedMotion = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  function refocus(el) {
+    if (!el || reducedMotion()) return;
+    el.classList.remove('is-refocus'); void el.offsetWidth; el.classList.add('is-refocus');
+  }
+  function countUpValue(el) {
+    if (!el || reducedMotion() || !root.LiquidMotion?.countUp || el.dataset.lqShown === el.textContent) return;
+    // A fresh node stops any count-up still running on the old one from writing stale text.
+    const fresh = el.cloneNode(true); delete fresh.dataset.lqCounted; fresh.dataset.lqShown = el.textContent;
+    el.replaceWith(fresh); root.LiquidMotion.countUp(fresh);
+  }
   function boundedCache(limit) {
     const entries=new Map();
     return {
@@ -318,7 +330,7 @@
     }
     function showPopup(event) {
       const id=event.features?.[0]?.properties?.id??event.features?.[0]?.id,geo=findGeo(id);
-      if(!geo)return;lastPopup={id:String(id),lngLat:event.lngLat};refreshPopup();
+      if(!geo)return;lastPopup={id:String(id),lngLat:event.lngLat};refreshPopup();popup?.addClassName?.('is-entering');
     }
     function addGeographyLayers(source, layers, before) {
       map.addLayer({ id: layers.fill, type: 'fill', source, layout:{visibility:'none'}, paint: { 'fill-color': MISSING, 'fill-opacity': 0.78 } }, before);
@@ -497,6 +509,7 @@
     let year = options.year || new Date().getFullYear(), metric = 'potentialRevenue', scenario = 'base', appliedScenario = 'base';
     let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
     let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [], selectedEstimate=null;
+    let lastFocusKey = null;
     let level = 'state', sourceVersion=latestSourceVersion, currentLegend, map, geometryGroup=null, loadedRequestKey=null;
     const legends = new Map(), compared = new Map(), aborters = new Map();
     let selectedRecord=null, comparisonResult=null, scenarioResult=null;
@@ -567,6 +580,7 @@
     }
     function renderOverview(raw=null,estimate=null) {
       const geo=raw?.geography||raw||{}, metrics=raw?.metrics||geo.metrics||{};
+      const focusKey=String(geo.id||geo.name||'India');if(focusKey!==lastFocusKey){lastFocusKey=focusKey;refocus($('.expansion-side'));}
       $('[data-map-place-title]').textContent=geo.name||'India';
       const geographyLevel=geo.level||'national';
       const hierarchy=[...path.map(item=>item.name),geo.name||'India'].filter((item,index,array)=>index===0||item!==array[index-1]);
@@ -588,6 +602,7 @@
         const card=$(`[data-market-metric="${key}"]`);if(!card)continue;
         const metric=item.metric;card.querySelector('[data-value]').textContent=key==='customers'&&metric?.value!==null&&metric?.value!==undefined?`${root.FranchiseDisplay?.count(metric.value)||metric.value} people`:display(metric);
         card.querySelector('[data-note]').textContent=item.note;
+        countUpValue(card.querySelector('[data-value]'));
       }
       const pop=metrics.population,spend=metrics.monthlyPerCapitaSpend,dam=categoryTAM;
       let narrative;

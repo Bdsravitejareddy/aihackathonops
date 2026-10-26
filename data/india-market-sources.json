@@ -1,0 +1,432 @@
+{
+  "version": "1.2.0",
+  "sources": [
+    {
+      "id": "census-2011-pca-town-ward",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "title": "Census of India 2011 Primary Census Abstract: Town and Ward datasets",
+      "url": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "referencePeriod": "2011 Census",
+      "geography": "India; administrative units and town/ward geographies as published",
+      "updateFrequency": "Decennial census; historical baseline",
+      "licenseNote": "Use subject to Census of India terms and attribution requirements.",
+      "variables": [
+        "population",
+        "households",
+        "sex",
+        "literacy",
+        "workers",
+        "town and ward identifiers"
+      ],
+      "limitations": [
+        "Dated 2011 baseline, not a current population count.",
+        "Published geography and identifiers may not align with current boundaries or postal PINs."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "census-2011-pca",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "census-2011-c14-age",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "title": "Census of India 2011 C-14: Population in five-year age group by residence and sex",
+      "url": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "referencePeriod": "2011 Census",
+      "geography": "India; published state and district tables, with finer geography where available",
+      "updateFrequency": "Decennial census; historical baseline",
+      "licenseNote": "Use subject to Census of India terms and attribution requirements.",
+      "variables": [
+        "age group",
+        "sex",
+        "rural/urban residence",
+        "population"
+      ],
+      "limitations": [
+        "Dated 2011 baseline; age tables do not provide current demographic counts.",
+        "Tabulation geography and suppression/availability vary by table."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "census-2011-age",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "mospi-hces-2023-24-report-592",
+      "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
+      "title": "Household Consumption Expenditure Survey 2023-24, NSS Report No. 592",
+      "url": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "downloadUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "referencePeriod": "2023-08 to 2024-07",
+      "releaseDate": "2025-01-31",
+      "geography": "India and all 36 State/UTs, rural and urban sector (published summary tables)",
+      "updateFrequency": "Periodic household survey; not annual at every published detail",
+      "licenseNote": "MoSPI e-Sankhyiki catalog identifies the HCES product under revised GSDD guidelines (NDSAP 2012). Report No. 592, Statements 3R/3U; attribute MoSPI and retain table/page references.",
+      "variables": [
+        "monthly per-capita consumption expenditure",
+        "clothing and bedding",
+        "footwear",
+        "rural/urban sector",
+        "imputation status"
+      ],
+      "limitations": [
+        "HCES estimates are survey aggregates at State/UT-sector resolution; not district, city or PIN measurements.",
+        "Clothing and bedding excludes tailoring charges.",
+        "Do not interpret category expenditure as brand demand or actual franchise sales.",
+        "Without-imputation values are used for the map."
+      ],
+      "evidenceClass": "official_survey_estimate",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "artifact": "data/india-geography/hces-state-sector.json",
+        "benchmarkCatalog": "data/india-market-benchmarks.json",
+        "datasetId": "hces-2023-24-state-sector",
+        "status": "unavailable",
+        "coverage": "Benchmark extract covers 36 State/UTs \u00d7 rural and urban; no spatial state_sector geography records are seeded."
+      }
+    },
+    {
+      "id": "mospi-plfs-2023-24",
+      "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
+      "title": "Annual Report, Periodic Labour Force Survey 2023-24",
+      "url": "https://mospi.gov.in/sites/default/files/publication_reports/AnnualReport_PLFS2023-24L2.pdf",
+      "referencePeriod": "2023-04 to 2024-03",
+      "geography": "India and published state/sector estimates",
+      "updateFrequency": "Annual report",
+      "licenseNote": "Official MoSPI publication; cite report and table for reuse.",
+      "variables": [
+        "labor force participation",
+        "worker population ratio",
+        "unemployment",
+        "employment characteristics"
+      ],
+      "limitations": [
+        "Survey estimates with published geography and sample design; not PIN-level income or employment counts."
+      ],
+      "evidenceClass": "official_survey_estimate"
+    },
+    {
+      "id": "rbi-dbie",
+      "publisher": "Reserve Bank of India",
+      "title": "Database on Indian Economy (DBIE)",
+      "url": "https://dbie.rbi.org.in/",
+      "referencePeriod": "Series-specific; record the vintage for each extracted series",
+      "geography": "India and available state/district/sector series, depending on indicator",
+      "updateFrequency": "Series-specific",
+      "licenseNote": "RBI public statistical database; observe series-specific terms and attribution.",
+      "variables": [
+        "banking and credit indicators",
+        "economic and financial time series"
+      ],
+      "limitations": [
+        "Coverage and geography differ by series.",
+        "Deposits and credit are not household income or apparel expenditure."
+      ],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "state-des-national-accounts",
+      "publisher": "State Directorates of Economics and Statistics",
+      "title": "State domestic product and national accounts publications",
+      "url": "https://mospi.gov.in/state-domestic-product",
+      "referencePeriod": "State-series specific; vintage and base year must be recorded per observation",
+      "geography": "State; district estimates only where the relevant state DES publishes them",
+      "updateFrequency": "State and series specific",
+      "licenseNote": "Consult and cite the publishing state DES terms and publication for each series.",
+      "variables": [
+        "gross state domestic product",
+        "net state domestic product",
+        "sectoral value added"
+      ],
+      "limitations": [
+        "Base years, methods, price basis and district coverage may differ across states.",
+        "State product is not household income; do not combine incomparable series."
+      ],
+      "evidenceClass": "official_observed"
+    },
+    {
+      "id": "india-post-pin-directory",
+      "publisher": "Department of Posts, Ministry of Communications, Government of India",
+      "title": "Post Office and PIN Code Directory",
+      "url": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "referencePeriod": "Directory downloaded 2026-10-26 (165,627 offices, 19,586 PINs)",
+      "geography": "Postal PIN and post office records",
+      "updateFrequency": "As published by India Post",
+      "licenseNote": "Government Open Data License - India (data.gov.in); attribute Department of Posts.",
+      "variables": [
+        "PIN code",
+        "post office",
+        "office type",
+        "delivery status",
+        "district",
+        "state",
+        "latitude",
+        "longitude"
+      ],
+      "limitations": [
+        "Postal lookup only; a PIN is not a census unit, market boundary, or guaranteed catchment.",
+        "Contains no observed income, population, apparel spend or footfall.",
+        "12,015 offices lack coordinates and several thousand have coordinates outside India or in the wrong state; see india-pin-quality-report.json."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "india-post-pin-directory-areas",
+        "status": "available"
+      }
+    },
+    {
+      "id": "ogd-india-pin-geojson",
+      "publisher": "Open Government Data Platform India",
+      "title": "All India Pincode Boundary GeoJSON",
+      "url": "https://sikkim.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "referencePeriod": "Dataset vintage must be checked when downloaded",
+      "geography": "Postal PIN boundary geometries as supplied in the dataset",
+      "updateFrequency": "Dataset-specific; verify catalog updates",
+      "licenseNote": "Check the dataset's applicable Government Open Data License and attribution metadata before reuse.",
+      "variables": [
+        "PIN code",
+        "boundary geometry"
+      ],
+      "limitations": [
+        "Geometry supports spatial lookup only after coverage and topology validation.",
+        "A polygon does not imply observed PIN population, income or spend."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "india-post-pin-boundaries",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "nic-bharatmap-state-district",
+      "publisher": "National Informatics Centre, Government of India",
+      "title": "BharatMapService state and district administrative boundaries",
+      "url": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+      "referencePeriod": "Updated through October 2017 per service metadata",
+      "geography": "36 states and 717 districts; source codes aligned to Census 2011 with post-2011 district additions",
+      "updateFrequency": "Service metadata; query availability and update frequency not confirmed",
+      "licenseNote": "Government service metadata is public; explicit reuse and redistribution terms were not verified. No feature artifact retained.",
+      "variables": [
+        "state geometry",
+        "district geometry",
+        "Census 2011 administrative codes"
+      ],
+      "limitations": [
+        "Feature query timed out with no response during implementation.",
+        "October 2017 boundaries omit later district changes; no Census population crosswalk validated."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "nic-bharatmap-state-district-boundaries",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "soi-state-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "title": "soi-state-boundaries",
+      "url": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "referencePeriod": "unverified",
+      "geography": "state",
+      "updateFrequency": "As published; not verified for ingestion",
+      "licenseNote": "No redistribution authorization established for an ingested artifact in this task.",
+      "variables": [
+        "geometry"
+      ],
+      "limitations": [
+        "Official catalog identifies archive; no geometry acquired. Current website copyright policy requires written reproduction permission. Archive-specific reuse license and vintage unverified."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "soi-state-boundaries",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "soi-district-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "title": "soi-district-boundaries",
+      "url": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "referencePeriod": "unverified",
+      "geography": "district",
+      "updateFrequency": "As published; not verified for ingestion",
+      "licenseNote": "No redistribution authorization established for an ingested artifact in this task.",
+      "variables": [
+        "geometry"
+      ],
+      "limitations": [
+        "No geometry acquired or validated; reuse permission, actual district coverage, identifier scheme and Census 2011 crosswalk unverified."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "soi-district-boundaries",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "census-2011-area",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "title": "census-2011-area",
+      "url": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "referencePeriod": "2011",
+      "geography": "state_district",
+      "updateFrequency": "As published; not verified for ingestion",
+      "licenseNote": "No redistribution authorization established for an ingested artifact in this task.",
+      "variables": [
+        "area"
+      ],
+      "limitations": [
+        "No official area table acquired or aligned to boundaries; area and density remain unavailable."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "census-2011-area",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "mohfw-population-projections-2011-2036",
+      "publisher": "National Commission on Population, Ministry of Health & Family Welfare",
+      "title": "official-state-projections",
+      "url": "https://www.mohfw.gov.in/",
+      "referencePeriod": "2011-2036; Technical Group report July 2020",
+      "geography": "state",
+      "updateFrequency": "As published; not verified for ingestion",
+      "licenseNote": "No redistribution authorization established for an ingested artifact in this task.",
+      "variables": [
+        "geometry"
+      ],
+      "limitations": [
+        "Official report URL returns HTTP 404 (4660-byte HTML response); no projections ingested. Projections must remain distinct from Census observations."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "official-state-projections",
+        "status": "unavailable"
+      }
+    },
+    {
+      "id": "geoboundaries-ind-adm1",
+      "publisher": "geoBoundaries; underlying source: DataMeet India community / Election Commission of India",
+      "title": "India ADM1 State and Union Territory Boundaries (simplified)",
+      "url": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM1/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "referencePeriod": "Boundary vintage 2011; source data updated 2023-01-19; build 2023-12-12",
+      "geography": "36 state and UT polygons, WGS84 longitude/latitude",
+      "updateFrequency": "Versioned source; refresh only after metadata and license review",
+      "licenseNote": "CC BY 2.5 India for underlying DataMeet India/Election Commission source; attribute source and geoBoundaries. Simplified geometry is for overview mapping, not legal/cadastral use.",
+      "variables": [
+        "state and UT polygons",
+        "source ISO subdivision code",
+        "source boundary ID"
+      ],
+      "limitations": [
+        "Cartographic simplification reduces boundary detail.",
+        "2011 boundary vintage does not guarantee alignment with later admin or Census geography changes."
+      ],
+      "evidenceClass": "derived_geometry",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "geoboundaries-india-adm1",
+        "status": "available"
+      }
+    },
+    {
+      "id": "census-state-population-2011",
+      "publisher": "Ministry of Health and Family Welfare; source data from Office of the Registrar General & Census Commissioner, India",
+      "title": "State-wise Rural and Urban Population as per 2001 and 2011 Census, Table 2",
+      "url": "https://nhm.gov.in/images/pdf/monitoring/rhs/rhs-march-2011-tables-final-9-4-2012.pdf",
+      "referencePeriod": "Census 2011",
+      "geography": "State/UT, rural and urban",
+      "updateFrequency": "Decennial Census; historical baseline",
+      "licenseNote": "Aggregate values are cited and attributed to the Census. OGD catalog entry for state/UT rural-urban Census 2011 data is https://www.data.gov.in/resource/stateut-wise-rural-and-urban-population-census-2011-and-estimation-mid-year-population. Dataset values are used only where a geographic crosswalk is defensible.",
+      "variables": [
+        "rural population",
+        "urban population",
+        "total population"
+      ],
+      "limitations": [
+        "2011 historic values; not current population.",
+        "Legacy AP and J&K counts are not split across later geographies; unavailable values remain missing."
+      ],
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "census-state-population-2011",
+        "status": "available"
+      }
+    },
+    {
+      "id": "geoboundaries-ind-adm2",
+      "publisher": "geoBoundaries; underlying source: Pathways Data Pvt. Ltd. / Local Government Directory (lgdirectory.gov.in)",
+      "title": "India ADM2 District Boundaries (simplified)",
+      "url": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+      "referencePeriod": "2021 boundaries; source updated 2023-01-19; build 2023-12-12",
+      "geography": "735 district polygons, WGS84 longitude/latitude",
+      "updateFrequency": "Versioned source; refresh only after metadata and license review",
+      "licenseNote": "ODbL 1.0; attribute geoBoundaries and Pathways Data / lgdirectory.gov.in. Share-alike applies to the boundary database.",
+      "variables": [
+        "district polygons",
+        "source boundary ID"
+      ],
+      "limitations": [
+        "Cartographic simplification reduces boundary detail.",
+        "One polygon is labelled \"DATA NOT AVAILABLE\" in the source."
+      ],
+      "evidenceClass": "derived_geometry",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "geoboundaries-india-adm2-worldpop-2020",
+        "status": "available"
+      }
+    },
+    {
+      "id": "worldpop-2020-1km-unadj-ind",
+      "publisher": "WorldPop, University of Southampton",
+      "title": "India 2020 population counts, 1 km, UN-adjusted",
+      "url": "https://hub.worldpop.org/geodata/summary?id=31527",
+      "downloadUrl": "https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/IND/ind_ppp_2020_1km_Aggregated_UNadj.tif",
+      "referencePeriod": "2020",
+      "geography": "1 km grid",
+      "updateFrequency": "Annual series to 2020",
+      "licenseNote": "CC BY 4.0; attribute WorldPop.",
+      "variables": [
+        "population count per grid cell"
+      ],
+      "limitations": [
+        "Modelled disaggregation; under-allocates very dense urban cores (corrected for Mumbai, Chennai and Kolkata against Census 2011)."
+      ],
+      "evidenceClass": "derived_estimate"
+    },
+    {
+      "id": "careedge-apparel-retail-fy25",
+      "publisher": "IBEF, reporting CareEdge Ratings",
+      "title": "India's apparel retail market poised to reach US$ 193 billion by FY30",
+      "url": "https://www.ibef.org/news/india-s-apparel-retail-market-poised-to-reach-us-193-billion-by-fy30-careedge",
+      "referencePeriod": "FY25",
+      "geography": "India",
+      "updateFrequency": "Report-specific",
+      "licenseNote": "Cite IBEF/CareEdge; figures used as published shares only.",
+      "variables": [
+        "organised share of apparel retail (41%)",
+        "online share of organised apparel retail (22%)"
+      ],
+      "limitations": [
+        "National shares; no urban/rural or state split."
+      ],
+      "evidenceClass": "derived_estimate"
+    }
+  ]
+}

@@ -86,3 +86,19 @@ test('a confirmed shared save shows pending while the request is in flight', asy
   await saving;
   assert.equal(persisted.mode, 'shared');
 });
+
+test('whenSynced waits for an in-flight workspace write before dependent reads', async () => {
+  let finishSave;
+  const persisted = createPersistence({ storage: memoryStorage(), fetchImpl: async (_url, options = {}) => options.method === 'PUT'
+    ? new Promise(resolve => { finishSave = resolve; })
+    : { ok: true, json: async () => ({ state: { apps: [], territories: [], settings: {} }, revision: 1 }) } });
+  await persisted.load();
+  const saving = persisted.save({ apps: [], territories: [], settings: {} });
+  let synchronized = false;
+  const ready = persisted.whenSynced().then(() => { synchronized = true; });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(synchronized, false);
+  finishSave({ ok: true, json: async () => ({ revision: 2 }) });
+  await Promise.all([saving, ready]);
+  assert.equal(synchronized, true);
+});

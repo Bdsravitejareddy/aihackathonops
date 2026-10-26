@@ -4,7 +4,26 @@
     "minInvestment": 30,
     "minArea": 400,
     "minLaunch": 3,
-    "targetLaunch": 6
+    "targetLaunch": 6,
+    "weights": {
+      "investment": 35,
+      "space": 15,
+      "area": 15,
+      "experience": 20,
+      "business": 5,
+      "launch": 10
+    },
+    "grades": {
+      "A": 80,
+      "B": 65,
+      "C": 50
+    },
+    "allowedTiers": [
+      "Tier 1",
+      "Tier 2",
+      "Tier 3"
+    ],
+    "pinPrefixes": []
   },
   "rows": [
     {
@@ -341,7 +360,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "This territory has no open slots; the brand is not adding stores there now."
     },
     {
       "id": "APP-217",

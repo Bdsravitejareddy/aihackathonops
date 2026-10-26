@@ -1,0 +1,208 @@
+{
+  "source": {
+    "sourceId": "worldpop-2020-1km-unadj-ind",
+    "title": "WorldPop India 2020 population counts, 1 km, UN-adjusted (ind_ppp_2020_1km_Aggregated_UNadj.tif)",
+    "publisher": "WorldPop, University of Southampton",
+    "url": "https://hub.worldpop.org/geodata/summary?id=31527",
+    "downloadUrl": "https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/IND/ind_ppp_2020_1km_Aggregated_UNadj.tif",
+    "referencePeriod": "2020",
+    "license": "CC BY 4.0",
+    "evidenceClass": "derived_estimate"
+  },
+  "organisedStoreShare": {
+    "value": 0.3198,
+    "organisedShare": 0.41,
+    "onlineShareOfOrganised": 0.22,
+    "source": {
+      "sourceId": "careedge-apparel-retail-fy25",
+      "title": "India's apparel retail market poised to reach US$ 193 billion by FY30: CareEdge",
+      "publisher": "IBEF (India Brand Equity Foundation), reporting CareEdge Ratings",
+      "url": "https://www.ibef.org/news/india-s-apparel-retail-market-poised-to-reach-us-193-billion-by-fy30-careedge",
+      "referencePeriod": "FY25",
+      "evidenceClass": "derived_estimate"
+    }
+  },
+  "gridSha256": "27d08e3eabf59f63a2147901c25c046d584c3295f9ceb4c4cf08a902a5bec911",
+  "states": {
+    "IN-PY": {
+      "population2020": 1388724,
+      "urbanPopulation2020": 972200,
+      "urbanDensityThreshold": 2449
+    },
+    "IN-MH": {
+      "population2020": 126117990,
+      "urbanPopulation2020": 56941864,
+      "urbanDensityThreshold": 1215
+    },
+    "IN-NL": {
+      "population2020": 2018771,
+      "urbanPopulation2020": 582758,
+      "urbanDensityThreshold": 1204
+    },
+    "IN-LD": {
+      "population2020": 38722,
+      "urbanPopulation2020": 28156,
+      "urbanDensityThreshold": 1510
+    },
+    "IN-UP": {
+      "population2020": 231428541,
+      "urbanPopulation2020": 51588206,
+      "urbanDensityThreshold": 2242
+    },
+    "IN-TN": {
+      "population2020": 80846800,
+      "urbanPopulation2020": 39059090,
+      "urbanDensityThreshold": 974
+    },
+    "IN-CT": {
+      "population2020": 29493955,
+      "urbanPopulation2020": 6854202,
+      "urbanDensityThreshold": 834
+    },
+    "IN-GJ": {
+      "population2020": 69341186,
+      "urbanPopulation2020": 29519681,
+      "urbanDensityThreshold": 1287
+    },
+    "IN-DL": {
+      "population2020": 19311895,
+      "urbanPopulation2020": 18835213,
+      "urbanDensityThreshold": 2516
+    },
+    "IN-SK": {
+      "population2020": 665746,
+      "urbanPopulation2020": 166578,
+      "urbanDensityThreshold": 898
+    },
+    "IN-TR": {
+      "population2020": 4006972,
+      "urbanPopulation2020": 1041415,
+      "urbanDensityThreshold": 1306
+    },
+    "IN-WB": {
+      "population2020": 99267487,
+      "urbanPopulation2020": 31646946,
+      "urbanDensityThreshold": 2679
+    },
+    "IN-OR": {
+      "population2020": 46453329,
+      "urbanPopulation2020": 7746538,
+      "urbanDensityThreshold": 1251
+    },
+    "IN-BR": {
+      "population2020": 125455911,
+      "urbanPopulation2020": 14171105,
+      "urbanDensityThreshold": 3477
+    },
+    "IN-LA": {
+      "population2020": 306303,
+      "urbanPopulation2020": 69227,
+      "urbanDensityThreshold": 69
+    },
+    "IN-RJ": {
+      "population2020": 80195421,
+      "urbanPopulation2020": 19941921,
+      "urbanDensityThreshold": 1180
+    },
+    "IN-TG": {
+      "population2020": 38983240,
+      "urbanPopulation2020": 15155156,
+      "urbanDensityThreshold": 1255
+    },
+    "IN-AP": {
+      "population2020": 52654906,
+      "urbanPopulation2020": 15513372,
+      "urbanDensityThreshold": 1521
+    },
+    "IN-MZ": {
+      "population2020": 1314829,
+      "urbanPopulation2020": 681944,
+      "urbanDensityThreshold": 120
+    },
+    "IN-AR": {
+      "population2020": 1737428,
+      "urbanPopulation2020": 397238,
+      "urbanDensityThreshold": 360
+    },
+    "IN-ML": {
+      "population2020": 3721244,
+      "urbanPopulation2020": 741362,
+      "urbanDensityThreshold": 1075
+    },
+    "IN-JH": {
+      "population2020": 39218977,
+      "urbanPopulation2020": 9424948,
+      "urbanDensityThreshold": 1856
+    },
+    "IN-AS": {
+      "population2020": 34979782,
+      "urbanPopulation2020": 4935205,
+      "urbanDensityThreshold": 1723
+    },
+    "IN-MN": {
+      "population2020": 3484282,
+      "urbanPopulation2020": 1017299,
+      "urbanDensityThreshold": 1651
+    },
+    "IN-KA": {
+      "population2020": 68782417,
+      "urbanPopulation2020": 26587699,
+      "urbanDensityThreshold": 1036
+    },
+    "IN-UT": {
+      "population2020": 11755439,
+      "urbanPopulation2020": 3553433,
+      "urbanDensityThreshold": 1615
+    },
+    "IN-DH": {
+      "population2020": 823503,
+      "urbanPopulation2020": 479172,
+      "urbanDensityThreshold": 1830
+    },
+    "IN-MP": {
+      "population2020": 84047191,
+      "urbanPopulation2020": 23211596,
+      "urbanDensityThreshold": 773
+    },
+    "IN-GA": {
+      "population2020": 1516470,
+      "urbanPopulation2020": 933879,
+      "urbanDensityThreshold": 687
+    },
+    "IN-KL": {
+      "population2020": 33766520,
+      "urbanPopulation2020": 16016802,
+      "urbanDensityThreshold": 1776
+    },
+    "IN-CH": {
+      "population2020": 881511,
+      "urbanPopulation2020": 861528,
+      "urbanDensityThreshold": 3063
+    },
+    "IN-AN": {
+      "population2020": 361984,
+      "urbanPopulation2020": 134145,
+      "urbanDensityThreshold": 1374
+    },
+    "IN-HP": {
+      "population2020": 7568684,
+      "urbanPopulation2020": 758069,
+      "urbanDensityThreshold": 1341
+    },
+    "IN-JK": {
+      "population2020": 14511419,
+      "urbanPopulation2020": 3988890,
+      "urbanDensityThreshold": 1601
+    },
+    "IN-PB": {
+      "population2020": 30768389,
+      "urbanPopulation2020": 11526529,
+      "urbanDensityThreshold": 1238
+    },
+    "IN-HR": {
+      "population2020": 29411915,
+      "urbanPopulation2020": 10246370,
+      "urbanDensityThreshold": 1763
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "purpose": "Contrast official 2011 Census urban geographies; these are not PIN or store catchments and do not support an investment decision.",
+  "cases": [
+    {
+      "id": "bengaluru-metro",
+      "role": "metro",
+      "name": "Bengaluru BBMP",
+      "geography": { "level": "census_town", "sourceUnit": "BBMP (M Corp. + OG)", "state": "Karnataka", "referenceYear": 2011 },
+      "population": { "value": 8495492, "unit": "people", "evidenceClass": "official_observed", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6763/", "table": "PCA-TV" },
+      "catchmentPinPopulation": null,
+      "incomeProxy": null,
+      "apparelSpend": null,
+      "evidence": [{ "topic": "population", "value": 8495492, "unit": "people", "referenceYear": 2011, "evidenceClass": "official_observed", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6763/" }],
+      "limitations": ["Census 2011 is dated and is city-unit population, not a current store catchment.", "No verified PIN crosswalk, local income proxy, footfall, competitors, or store economics are included.", "HCES Karnataka urban apparel consumption is a regional survey benchmark and cannot be assigned as BBMP observed spend."]
+    },
+    {
+      "id": "mysuru-tier2",
+      "role": "tier2",
+      "name": "Mysore (M Corp. + OG)",
+      "geography": { "level": "census_town", "sourceUnit": "Mysore (M Corp. + OG)", "state": "Karnataka", "referenceYear": 2011 },
+      "population": { "value": 920550, "unit": "people", "evidenceClass": "official_observed", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/626/download/2152/DH_2011_2923_PART_A_DCHB_MYSORE.pdf", "table": "District Census Handbook, Part A" },
+      "catchmentPinPopulation": null,
+      "incomeProxy": null,
+      "apparelSpend": null,
+      "evidence": [{ "topic": "population", "value": 920550, "unit": "people", "referenceYear": 2011, "evidenceClass": "official_observed", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/626/download/2152/DH_2011_2923_PART_A_DCHB_MYSORE.pdf" }],
+      "limitations": ["Census 2011 is dated and is city-unit population, not a current store catchment.", "No verified PIN crosswalk, local income proxy, footfall, competitors, or store economics are included.", "HCES Karnataka urban apparel consumption is a regional survey benchmark and cannot be assigned as Mysore observed spend."]
+    },
+    {
+      "id": "raichur-small-city",
+      "role": "smaller_city",
+      "name": "Raichur (CMC)",
+      "geography": { "level": "census_town", "sourceUnit": "Raichur (CMC)", "state": "Karnataka", "referenceYear": 2011 },
+      "population": { "value": null, "unit": "people", "evidenceClass": "unavailable", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6750", "reason": "Official PCA-TV catalog identifies the CMC and downloadable table, but numeric population has not been independently extracted and checked." },
+      "catchmentPinPopulation": null,
+      "incomeProxy": null,
+      "apparelSpend": null,
+      "evidence": [{ "topic": "geography", "value": "Raichur (CMC)", "referenceYear": 2011, "evidenceClass": "official_observed", "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6750" }],
+      "limitations": ["City population is deliberately unavailable until verified from the official table.", "No verified PIN crosswalk, local income proxy, footfall, competitors, or store economics are included.", "HCES Karnataka rural and urban estimates are statewide-sector benchmarks and cannot be assigned as Raichur observed spend."]
+    }
+  ]
+}

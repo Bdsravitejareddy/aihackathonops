@@ -25,6 +25,7 @@
     return {
       workspaceId: id,
       get mode() { return mode; },
+      whenSynced() { return queue; },
       async load() {
         const versionAtStart = changeVersion;
         if (fetchImpl) {

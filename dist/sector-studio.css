@@ -1,0 +1,45 @@
+/* Sector studio and the Expansion sector bar; liquid-glass tokens from liquid.css with plain fallbacks. */
+.sector-slot{margin-bottom:20px}
+.sector-studio h3{margin:22px 0 10px;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sector-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.sector-chip{border:1px solid var(--lq-glass-line,#dfe5e3);background:var(--lq-glass-strong,#fff);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--lq-ink,#354947);display:inline-flex;align-items:center;gap:6px;transition:transform .2s var(--lq-ease,ease),box-shadow .2s}
+.sector-chip:hover{transform:translateY(-1px);box-shadow:0 6px 18px -10px rgba(76,56,150,.45)}
+.sector-chip.is-active{background:var(--lq-glass-violet,#e8f3ed);color:#fff;border-color:transparent}
+.sector-chip.is-active .tag{background:rgba(255,255,255,.85);color:var(--lq-ink,#2e7255)}
+.sector-chip small{color:var(--lq-muted,#758083);font-weight:500}
+.sector-chip.is-active small{color:rgba(255,255,255,.8)}
+.sector-add label{font-size:11px;color:var(--lq-ink-2,#66796e);display:block;margin-bottom:7px}
+.sector-add-row{display:flex;gap:9px;flex-wrap:wrap}
+.sector-add-row .input{flex:1 1 280px}
+.sector-busy{display:flex;gap:18px;align-items:flex-start;padding:18px;border-radius:var(--lq-radius-s,12px);background:var(--lq-glass-strong,#fafcfb)}
+.sector-busy ol{margin:10px 0 4px;padding-left:18px;font-size:12px;line-height:1.9;color:var(--lq-muted,#8a9496)}
+.sector-busy li.is-on{color:var(--lq-ink,#243e35);font-weight:600}
+.sector-spinner{width:34px;height:34px;flex:none;border-radius:50%;border:3px solid var(--lq-lilac,#e8f4ec);border-top-color:var(--lq-lavender,#126455);animation:sector-spin 1s linear infinite}
+@keyframes sector-spin{to{transform:rotate(360deg)}}
+.sector-profile-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.sector-name-input{font:700 18px var(--lq-sans,inherit);margin-top:6px;min-width:min(320px,100%)}
+.sector-hces{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.sector-hces-item{display:flex;gap:8px;align-items:center;font-size:11px;padding:7px 10px;border-radius:10px;border:1px solid var(--line,#e7ebeb);background:rgba(255,255,255,.35);cursor:pointer}
+.sector-hces-item.is-on{background:var(--lq-lilac,#e8f3ed);border-color:var(--lq-lavender-2,#b7d3c4);font-weight:600}
+.sector-hces-item small{margin-left:auto;color:var(--lq-muted,#8a9496);font-weight:400;white-space:nowrap}
+.sector-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.sector-field{display:grid;grid-template-columns:1fr auto;gap:5px 8px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.4);border:1px solid var(--line,#e7ebeb)}
+.sector-field label{font-size:11px;color:var(--lq-ink-2,#66796e)}
+.sector-field-input{grid-column:1/-1;display:flex;align-items:center;gap:8px}
+.sector-field-input .input{width:120px}
+.sector-field-input span{font-size:10px;color:var(--lq-muted,#8a9496)}
+.sector-field .tag,.sector-src{grid-row:1;grid-column:2;justify-self:end}
+.sector-src{font-size:10px;font-weight:600;border-radius:20px;padding:4px 9px;background:#e8f3ed;color:#2e7255;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.sector-weights{display:grid;gap:8px}
+.sector-weight{display:grid;grid-template-columns:140px 1fr 44px;align-items:center;gap:12px;font-size:12px}
+.sector-weight input{accent-color:var(--lq-lavender,#145f50);width:100%}
+.sector-weight strong{text-align:right;font-variant-numeric:tabular-nums}
+.sector-rejected{margin-top:16px;font-size:11px;color:#aa5549}
+.sector-rejected summary{cursor:pointer;font-weight:600}
+.sector-changes{border-radius:var(--lq-radius-s,12px);padding:14px 18px;margin-bottom:16px;background:linear-gradient(180deg,#6f58d8,#8169e0);color:#fff;box-shadow:var(--lq-shadow,none);font-size:12px;line-height:1.7}
+.sector-changes ul{margin:6px 0 0;padding-left:18px}
+.sector-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px 8px 18px;border-radius:999px;margin-bottom:12px;font-size:12px}
+.sector-bar select{min-width:200px}
+.sector-bar .hint{margin-left:auto}
+@media(max-width:640px){.sector-weight{grid-template-columns:100px 1fr 40px}.sector-bar{border-radius:var(--lq-radius-s,14px)}.sector-bar .hint{margin-left:0}}
+@media (prefers-reduced-motion:reduce){.sector-spinner{animation-duration:3s}.sector-chip{transition:none}}

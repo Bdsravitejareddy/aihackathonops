@@ -1,18 +1,18 @@
 'use strict';
 
 const http = require('node:http');
-const { Pool } = require('pg');
-const { createHandler } = require('./app.cjs');
-const { createStore } = require('./store.cjs');
+const path = require('node:path');
+const { createApplicationRuntime } = require('./runtime.cjs');
 const { createStaticHandler } = require('./static.cjs');
-const { normalizeDatabaseUrl } = require('./db-config.cjs');
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Copy .env.example and set the Neon connection string.');
-const pool = new Pool({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL), max: 5 });
-const api = createHandler({ store: createStore(pool) });
-const serveStatic = createStaticHandler({ directory: require('node:path').resolve(__dirname, '..', 'dist') });
+const { api, pool } = createApplicationRuntime({ logger: {
+  info(message, metadata) { process.stdout.write(`${message} ${JSON.stringify(metadata)}\n`); },
+  error(message, metadata) { process.stderr.write(`${message} ${metadata ? JSON.stringify(metadata) : ''}\n`); }
+} });
+const serveStatic = createStaticHandler({ directory: path.resolve(__dirname, '..', 'dist') });
 const staticServer = http.createServer((req, res) => req.url.startsWith('/api/') ? api(req, res) : serveStatic(req, res));
 const port = Number(process.env.PORT || 8080);
+
 // Local development is intentionally restricted to this machine until authentication is added.
 staticServer.listen(port, '127.0.0.1', () => process.stdout.write(`FranchiseOS listening at http://127.0.0.1:${port}\n`));
 process.on('SIGINT', async () => { staticServer.close(); await pool.end(); process.exit(0); });

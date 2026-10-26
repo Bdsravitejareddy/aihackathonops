@@ -1,0 +1,307 @@
+{
+  "source": {
+    "title": "PCA SD: Primary census abstract (PCA) data, India & States/UTs - State and district level - 2011 (DDW_PCA0000_2011_Indiastatedist.xlsx)",
+    "publisher": "Office of the Registrar General & Census Commissioner, India (Census of India 2011)",
+    "url": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+    "catalogUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191",
+    "table": "Sheet1: rows with Level=STATE (35 states/UTs) and Level=DISTRICT (Telangana districts under State 28; Leh(Ladakh) and Kargil under State 01); TOT_P column by TRU=Total/Rural/Urban. India row (Level=India) used as national check.",
+    "retrievedAt": "2026-10-26",
+    "sha256": "7a8f70d46c43b5dd30eefe920f251752f69f6af8589594c21ac06499074646f5",
+    "path": "data/india-geography/sources/DDW_PCA0000_2011_Indiastatedist.xlsx",
+    "referencePeriod": "Census 2011 (final PCA)",
+    "geographicResolution": "State/UT as constituted in 2011; rural and urban",
+    "method": "TOT_P by TRU for Level=STATE rows. Final Primary Census Abstract figures replace the earlier provisional table (1,210,193,422).",
+    "sourcePopulationTotal": 1210854977,
+    "sourceRuralTotal": 833748852,
+    "sourceUrbanTotal": 377106125,
+    "license": "Census of India 2011 data published by ORGI; attribute Office of the Registrar General & Census Commissioner, India."
+  },
+  "observations": [
+    {
+      "state": "Jammu and Kashmir",
+      "sourceName": "JAMMU & KASHMIR",
+      "rural": 9108060,
+      "urban": 3433242,
+      "total": 12541302
+    },
+    {
+      "state": "Himachal Pradesh",
+      "sourceName": "HIMACHAL PRADESH",
+      "rural": 6176050,
+      "urban": 688552,
+      "total": 6864602
+    },
+    {
+      "state": "Punjab",
+      "sourceName": "PUNJAB",
+      "rural": 17344192,
+      "urban": 10399146,
+      "total": 27743338
+    },
+    {
+      "state": "Chandigarh",
+      "sourceName": "CHANDIGARH",
+      "rural": 28991,
+      "urban": 1026459,
+      "total": 1055450
+    },
+    {
+      "state": "Uttarakhand",
+      "sourceName": "UTTARAKHAND",
+      "rural": 7036954,
+      "urban": 3049338,
+      "total": 10086292
+    },
+    {
+      "state": "Haryana",
+      "sourceName": "HARYANA",
+      "rural": 16509359,
+      "urban": 8842103,
+      "total": 25351462
+    },
+    {
+      "state": "Delhi",
+      "sourceName": "NCT OF DELHI",
+      "rural": 419042,
+      "urban": 16368899,
+      "total": 16787941
+    },
+    {
+      "state": "Rajasthan",
+      "sourceName": "RAJASTHAN",
+      "rural": 51500352,
+      "urban": 17048085,
+      "total": 68548437
+    },
+    {
+      "state": "Uttar Pradesh",
+      "sourceName": "UTTAR PRADESH",
+      "rural": 155317278,
+      "urban": 44495063,
+      "total": 199812341
+    },
+    {
+      "state": "Bihar",
+      "sourceName": "BIHAR",
+      "rural": 92341436,
+      "urban": 11758016,
+      "total": 104099452
+    },
+    {
+      "state": "Sikkim",
+      "sourceName": "SIKKIM",
+      "rural": 456999,
+      "urban": 153578,
+      "total": 610577
+    },
+    {
+      "state": "Arunachal Pradesh",
+      "sourceName": "ARUNACHAL PRADESH",
+      "rural": 1066358,
+      "urban": 317369,
+      "total": 1383727
+    },
+    {
+      "state": "Nagaland",
+      "sourceName": "NAGALAND",
+      "rural": 1407536,
+      "urban": 570966,
+      "total": 1978502
+    },
+    {
+      "state": "Manipur",
+      "sourceName": "MANIPUR",
+      "rural": 2021640,
+      "urban": 834154,
+      "total": 2855794
+    },
+    {
+      "state": "Mizoram",
+      "sourceName": "MIZORAM",
+      "rural": 525435,
+      "urban": 571771,
+      "total": 1097206
+    },
+    {
+      "state": "Tripura",
+      "sourceName": "TRIPURA",
+      "rural": 2712464,
+      "urban": 961453,
+      "total": 3673917
+    },
+    {
+      "state": "Meghalaya",
+      "sourceName": "MEGHALAYA",
+      "rural": 2371439,
+      "urban": 595450,
+      "total": 2966889
+    },
+    {
+      "state": "Assam",
+      "sourceName": "ASSAM",
+      "rural": 26807034,
+      "urban": 4398542,
+      "total": 31205576
+    },
+    {
+      "state": "West Bengal",
+      "sourceName": "WEST BENGAL",
+      "rural": 62183113,
+      "urban": 29093002,
+      "total": 91276115
+    },
+    {
+      "state": "Jharkhand",
+      "sourceName": "JHARKHAND",
+      "rural": 25055073,
+      "urban": 7933061,
+      "total": 32988134
+    },
+    {
+      "state": "Odisha",
+      "sourceName": "ODISHA",
+      "rural": 34970562,
+      "urban": 7003656,
+      "total": 41974218
+    },
+    {
+      "state": "Chhattisgarh",
+      "sourceName": "CHHATTISGARH",
+      "rural": 19607961,
+      "urban": 5937237,
+      "total": 25545198
+    },
+    {
+      "state": "Madhya Pradesh",
+      "sourceName": "MADHYA PRADESH",
+      "rural": 52557404,
+      "urban": 20069405,
+      "total": 72626809
+    },
+    {
+      "state": "Gujarat",
+      "sourceName": "GUJARAT",
+      "rural": 34694609,
+      "urban": 25745083,
+      "total": 60439692
+    },
+    {
+      "state": "Daman and Diu",
+      "sourceName": "DAMAN & DIU",
+      "rural": 60396,
+      "urban": 182851,
+      "total": 243247
+    },
+    {
+      "state": "Dadra and Nagar Haveli",
+      "sourceName": "DADRA & NAGAR HAVELI",
+      "rural": 183114,
+      "urban": 160595,
+      "total": 343709
+    },
+    {
+      "state": "Maharashtra",
+      "sourceName": "MAHARASHTRA",
+      "rural": 61556074,
+      "urban": 50818259,
+      "total": 112374333
+    },
+    {
+      "state": "Andhra Pradesh",
+      "sourceName": "ANDHRA PRADESH",
+      "rural": 56361702,
+      "urban": 28219075,
+      "total": 84580777
+    },
+    {
+      "state": "Karnataka",
+      "sourceName": "KARNATAKA",
+      "rural": 37469335,
+      "urban": 23625962,
+      "total": 61095297
+    },
+    {
+      "state": "Goa",
+      "sourceName": "GOA",
+      "rural": 551731,
+      "urban": 906814,
+      "total": 1458545
+    },
+    {
+      "state": "Lakshadweep",
+      "sourceName": "LAKSHADWEEP",
+      "rural": 14141,
+      "urban": 50332,
+      "total": 64473
+    },
+    {
+      "state": "Kerala",
+      "sourceName": "KERALA",
+      "rural": 17471135,
+      "urban": 15934926,
+      "total": 33406061
+    },
+    {
+      "state": "Tamil Nadu",
+      "sourceName": "TAMIL NADU",
+      "rural": 37229590,
+      "urban": 34917440,
+      "total": 72147030
+    },
+    {
+      "state": "Puducherry",
+      "sourceName": "PUDUCHERRY",
+      "rural": 395200,
+      "urban": 852753,
+      "total": 1247953
+    },
+    {
+      "state": "Andaman and Nicobar Islands",
+      "sourceName": "ANDAMAN & NICOBAR ISLANDS",
+      "rural": 237093,
+      "urban": 143488,
+      "total": 380581
+    }
+  ],
+  "successorCrosswalk": {
+    "note": "2011 Census units that were later split. Successor totals are additive and reconcile exactly to their 2011 parent.",
+    "rows": [
+      {
+        "state": "Telangana",
+        "rural": 21395009,
+        "urban": 13608665,
+        "total": 35003674
+      },
+      {
+        "state": "Andhra Pradesh",
+        "rural": 34966693,
+        "urban": 14610410,
+        "total": 49577103
+      },
+      {
+        "state": "Ladakh",
+        "rural": 212280,
+        "urban": 62009,
+        "total": 274289
+      },
+      {
+        "state": "Jammu and Kashmir",
+        "rural": 8895780,
+        "urban": 3371233,
+        "total": 12267013
+      }
+    ],
+    "methods": {
+      "Telangana": "Telangana as constituted after the Andhra Pradesh Reorganisation (Amendment) Act, 2014: the ten 2011 districts (35,193,978; rural 21,585,313; urban 13,608,665 from the PCA district rows) less the seven Khammam mandals transferred to Andhra Pradesh (190,304 people, all rural). Total 35,003,674 is the Government of Telangana figure.",
+      "Andhra Pradesh": "Final 2011 undivided Andhra Pradesh less Telangana (residual, includes the seven transferred mandals).",
+      "Ladakh": "Leh (Ladakh) + Kargil district rows of the PCA (2019 Jammu and Kashmir Reorganisation Act).",
+      "Jammu and Kashmir": "Final 2011 Jammu and Kashmir less Ladakh (residual)."
+    },
+    "parents": {
+      "Telangana": "Andhra Pradesh",
+      "Andhra Pradesh": "Andhra Pradesh",
+      "Ladakh": "Jammu and Kashmir",
+      "Jammu and Kashmir": "Jammu and Kashmir"
+    }
+  }
+}

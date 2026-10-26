@@ -1,0 +1,448 @@
+{
+  "schemaVersion": 1,
+  "version": "1.2.0",
+  "retrievedAt": "2026-10-26",
+  "datasets": [
+    {
+      "id": "india-post-pin-boundaries",
+      "sourceId": "ogd-india-pin-geojson",
+      "publisher": "Department of Posts / OGD India",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "downloadUrl": null,
+      "sourceVintage": "unverified",
+      "level": "pin",
+      "codeScheme": "india-post-pin-6",
+      "license": {
+        "status": "unverified",
+        "url": "https://data.gov.in/Godl",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "HTTP 200 catalog shell has no resources (empty resources state); Sikkim official mirror renders No Result Found. Download URL, vintage, feature count and crosswalk unverified."
+      ],
+      "variables": [
+        "geometry",
+        "PIN"
+      ]
+    },
+    {
+      "id": "soi-state-boundaries",
+      "sourceId": "soi-state-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "sourceUrl": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "downloadUrl": "https://surveyofindia.gov.in/documents/State_District_Subdistrict_PAN%20INDIA.rar",
+      "sourceVintage": "unverified",
+      "level": "state",
+      "codeScheme": "unverified",
+      "license": {
+        "status": "restricted",
+        "url": "https://surveyofindia.gov.in/pages/copyright-policy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog identifies archive; no geometry acquired. Current website copyright policy requires written reproduction permission. Archive-specific reuse license and vintage unverified."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "soi-district-boundaries",
+      "sourceId": "soi-district-boundaries",
+      "publisher": "Survey of India, Government of India",
+      "sourceUrl": "https://surveyofindia.gov.in/pages/administrative-boundary-data-base-abdb-",
+      "downloadUrl": "https://surveyofindia.gov.in/documents/State_District_Subdistrict_PAN%20INDIA.rar",
+      "sourceVintage": "unverified",
+      "level": "district",
+      "codeScheme": "unverified",
+      "license": {
+        "status": "restricted",
+        "url": "https://surveyofindia.gov.in/pages/copyright-policy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No geometry acquired or validated; reuse permission, actual district coverage, identifier scheme and Census 2011 crosswalk unverified."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "nic-bharatmap-state-district-boundaries",
+      "sourceId": "nic-bharatmap-state-district",
+      "publisher": "National Informatics Centre, Government of India",
+      "title": "BharatMapService Admin Boundary District MapServer",
+      "sourceUrl": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+      "downloadUrl": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer/1/query?where=1%3D1&outFields=*&outSR=4326&f=geojson&returnGeometry=true",
+      "sourceVintage": "updated through October 2017; source metadata reports 36 states and 717 districts",
+      "level": "district",
+      "codeScheme": "Census 2011 codes with post-2011 districts assigned 701+; AP/Telangana code handling documented by source",
+      "license": {
+        "status": "unverified",
+        "url": "https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_District/MapServer",
+        "note": "Public government ArcGIS REST service metadata is available; no explicit reuse/redistribution license was verified. No offline artifact retained."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official NIC MapServer metadata verified and advertises GeoJSON query support, but the feature query timed out with no response during implementation. No geometries were obtained, validated or copied into the application; service reuse terms are also unverified."
+      ],
+      "variables": [
+        "state geometry",
+        "district geometry",
+        "Census 2011 administrative codes"
+      ]
+    },
+    {
+      "id": "census-2011-pca",
+      "sourceId": "census-2011-pca-town-ward",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191",
+      "downloadUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "sourceVintage": "2011",
+      "level": "census_state_district",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official catalog verified in search. HTTPS download fails curl error 60 (unable to get local issuer certificate); official censusindia.mha.gov.in alternate returns HTTP 500 with zero bytes. No population, sex, households or age 0-6 rows ingested."
+      ],
+      "variables": [
+        "population",
+        "households",
+        "sex",
+        "age_0_6"
+      ]
+    },
+    {
+      "id": "census-2011-age",
+      "sourceId": "census-2011-c14-age",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "downloadUrl": null,
+      "sourceVintage": "2011",
+      "level": "state_district_age_sex",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "C-14 inventory only; no table acquired, precise download and reuse terms unverified. PCA age 0-6 must not be treated as full age distribution."
+      ],
+      "variables": [
+        "age",
+        "sex",
+        "population"
+      ]
+    },
+    {
+      "id": "census-2011-area",
+      "sourceId": "census-2011-area",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "sourceUrl": "https://censusindia.gov.in/census.website/en/data/census-tables",
+      "downloadUrl": null,
+      "sourceVintage": "2011",
+      "level": "state_district",
+      "codeScheme": "census-2011",
+      "license": {
+        "status": "unverified",
+        "url": "https://censusindia.gov.in/census.website/en/node/288",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "No official area table acquired or aligned to boundaries; area and density remain unavailable."
+      ],
+      "variables": [
+        "area"
+      ]
+    },
+    {
+      "id": "official-state-projections",
+      "sourceId": "mohfw-population-projections-2011-2036",
+      "publisher": "National Commission on Population, Ministry of Health & Family Welfare",
+      "sourceUrl": "https://www.mohfw.gov.in/",
+      "downloadUrl": "https://www.mohfw.gov.in/sites/default/files/Population%20Projection%20Report%202011-2036%20-%20upload_compressed_0.pdf",
+      "sourceVintage": "2011-2036; Technical Group report July 2020",
+      "level": "state",
+      "codeScheme": "report-specific; unverified",
+      "license": {
+        "status": "unverified",
+        "url": "https://www.mohfw.gov.in/",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "Official report URL returns HTTP 404 (4660-byte HTML response); no projections ingested. Projections must remain distinct from Census observations."
+      ],
+      "variables": [
+        "geometry"
+      ]
+    },
+    {
+      "id": "hces-2023-24-state-sector",
+      "sourceId": "mospi-hces-2023-24-report-592",
+      "publisher": "Ministry of Statistics and Programme Implementation",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "downloadUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "sourceVintage": "2023-08 to 2024-07; released 2025-01-31",
+      "level": "state_sector",
+      "codeScheme": "published state names; no crosswalk verified",
+      "license": {
+        "status": "unverified",
+        "url": "https://www.mospi.gov.in/CopyrightPolicy",
+        "note": "No redistribution authorization established for an ingested artifact in this task."
+      },
+      "status": "unavailable",
+      "artifact": null,
+      "coverage": {
+        "featureCount": 0,
+        "rowCount": 0,
+        "populationTotal": null
+      },
+      "knownGaps": [
+        "State/sector clothing+bedding and footwear values are now extracted into the versioned HCES artifact and benchmark catalog. They are joined to the state map only; the source table is non-spatial and supplies no district, city or PIN observations. The separately named state_sector geography level is therefore not populated in market_geographies."
+      ],
+      "variables": [
+        "clothing_bedding_mpce",
+        "footwear_mpce"
+      ]
+    },
+    {
+      "id": "geoboundaries-india-adm1",
+      "sourceId": "geoboundaries-ind-adm1",
+      "title": "geoBoundaries India ADM1, simplified geometry",
+      "publisher": "geoBoundaries; underlying source: DataMeet India community / Election Commission of India",
+      "sourceUrl": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM1/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "sourceVintage": "2011 boundary vintage; source data updated 2023-01-19; build 2023-12-12",
+      "level": "state",
+      "featureLevel": "state",
+      "codeScheme": "ISO 3166-2 shapeISO; source shapeID retained",
+      "license": {
+        "status": "verified",
+        "url": "https://creativecommons.org/licenses/by/2.5/in/",
+        "note": "Underlying DataMeet India community / Election Commission of India boundary data is marked CC BY 2.5 India. Attribute geoBoundaries and the underlying source; see the linked API metadata. Geometry is a simplified derivative."
+      },
+      "status": "available",
+      "artifact": "data/india-geography/india-state-features.geojson",
+      "sha256": "6c80972d882f98e40531a1919ebc4df611153e8c33ebaa8bfd9d8d38074c2936",
+      "coverage": {
+        "featureCount": 36,
+        "rowCount": 36,
+        "populationTotal": 1210854977,
+        "mappedPopulationGeographies": 36,
+        "sourcePopulationTotal": 1210854977,
+        "hcesStateSectorRows": 36
+      },
+      "knownGaps": [
+        "Boundary is simplified and is for cartographic display, not cadastral/legal determination.",
+        "Population is the final Census 2011 PCA. Andhra Pradesh, Telangana, Jammu and Kashmir and Ladakh use official successor totals (Telangana after the 2014 transfer of seven Khammam mandals; Ladakh = Leh + Kargil) that reconcile exactly to their 2011 parents.",
+        "Population is Census 2011, while apparel expenditure is HCES 2023-24; annual estimates are hybrid and high uncertainty.",
+        "Households, age bands, income proxies, district and PIN mappings, local competition and observed footfall are not integrated."
+      ],
+      "variables": [
+        "state/UT geometry",
+        "Census 2011 final PCA population rural/urban for all 36 states/UTs",
+        "HCES 2023-24 rural/urban clothing+bedding and footwear MPCE",
+        "derived annual clothing/footwear expenditure"
+      ]
+    },
+    {
+      "id": "geoboundaries-india-adm2-worldpop-2020",
+      "sourceId": "geoboundaries-ind-adm2",
+      "title": "India districts (geoBoundaries ADM2) with WorldPop 2020 population and HCES apparel spend",
+      "publisher": "geoBoundaries / Pathways Data / Local Government Directory; WorldPop; MoSPI",
+      "sourceUrl": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+      "sourceVintage": "2021 boundaries; WorldPop 2020; HCES 2023-24",
+      "level": "district",
+      "featureLevel": "district",
+      "codeScheme": "district:<state ISO>-<slug>; geoBoundaries shapeID retained as sourceCode",
+      "license": {
+        "status": "verified",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "note": "Boundaries ODbL 1.0 (attribute geoBoundaries and Pathways Data / lgdirectory.gov.in; share-alike applies to the boundary database). WorldPop CC BY 4.0."
+      },
+      "status": "available",
+      "artifact": "data/india-geography/india-district-features.geojson",
+      "sha256": "3ac48a7b362e3765380c0f78cf2caae4940c1461f8dc0001dbfdde7cb7cd92a5",
+      "coverage": {
+        "featureCount": 735,
+        "rowCount": 735,
+        "populationTotal": 1377492172
+      },
+      "knownGaps": [
+        "Population is a modelled 2020 estimate (WorldPop), validated against same-named Census 2011 districts; see india-district-reconciliation.json.",
+        "Apparel spend applies state HCES rural/urban rates to the modelled urban mix.",
+        "One source polygon is labelled \"DATA NOT AVAILABLE\" by geoBoundaries and has no PINs."
+      ],
+      "variables": [
+        "district geometry",
+        "modelled 2020 population (total/urban/rural)",
+        "households scaled from Census 2011",
+        "apparel spend per person",
+        "annual apparel expenditure"
+      ]
+    },
+    {
+      "id": "india-post-pin-directory-areas",
+      "sourceId": "india-post-pin-directory",
+      "title": "Approximate PIN areas from the All India Pincode Directory with WorldPop 2020 population",
+      "publisher": "Department of Posts (directory); WorldPop; MoSPI",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "downloadUrl": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "sourceVintage": "Directory downloaded 2026-10-26; WorldPop 2020",
+      "level": "pin",
+      "featureLevel": "pin",
+      "codeScheme": "pin:<6-digit PIN>",
+      "license": {
+        "status": "verified",
+        "url": "https://data.gov.in/government-open-data-license-india",
+        "note": "Government Open Data License - India (directory); WorldPop CC BY 4.0."
+      },
+      "status": "available",
+      "ingest": "seed-script",
+      "artifact": "data/india-geography/india-pin-features.geojson.gz",
+      "sha256": "da58b81ef52680f64fa75ec0f4b1d9322e4b2c770b4882dd74e168fbd1b85c73",
+      "coverage": {
+        "featureCount": 19426,
+        "rowCount": 19586,
+        "populationTotal": 1377026253
+      },
+      "knownGaps": [
+        "PIN areas are approximate Voronoi cells of cleaned post-office locations, not official delivery boundaries; replace with the India Post PIN boundary GeoJSON when available.",
+        "151 PINs have no valid office location and are unmapped.",
+        "PINs that the directory places at the same coordinates share one area and split its population equally."
+      ],
+      "variables": [
+        "approximate PIN geometry",
+        "modelled 2020 population constrained to district totals",
+        "post offices",
+        "apparel spend per person",
+        "annual apparel expenditure"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "geoboundaries-ind-adm1-source",
+      "title": "Pinned geoBoundaries India ADM1 simplified source GeoJSON",
+      "publisher": "geoBoundaries; underlying source: DataMeet India / Election Commission of India",
+      "path": "data/india-geography/sources/geoBoundaries-IND-ADM1-simplified.geojson",
+      "sourceUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1_simplified.geojson",
+      "license": "CC BY 2.5 India",
+      "sha256": "4c63fe43294a391e8f2de4e9f86f3edb60f8688275b9fee90c61fb2aa0c26061"
+    },
+    {
+      "id": "census-state-population-2011-final-pca-source",
+      "title": "PCA SD: Primary census abstract (PCA) data, India & States/UTs - State and district level - 2011 (DDW_PCA0000_2011_Indiastatedist.xlsx)",
+      "publisher": "Office of the Registrar General & Census Commissioner, India (Census of India 2011)",
+      "path": "data/india-geography/sources/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "referencePeriod": "2011",
+      "license": "Census of India 2011 data published by ORGI; attribute Office of the Registrar General & Census Commissioner, India.",
+      "sha256": "7a8f70d46c43b5dd30eefe920f251752f69f6af8589594c21ac06499074646f5"
+    },
+    {
+      "id": "census-state-population-2011",
+      "title": "PCA SD: Primary census abstract (PCA) data, India & States/UTs - State and district level - 2011 (DDW_PCA0000_2011_Indiastatedist.xlsx)",
+      "publisher": "Office of the Registrar General & Census Commissioner, India (Census of India 2011)",
+      "path": "data/india-geography/census-state-population-2011-final.json",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "referencePeriod": "2011",
+      "license": "Census of India 2011 data published by ORGI; attribute Office of the Registrar General & Census Commissioner, India.",
+      "sha256": "6d4bafb729cc40eecb197b515a02b18fbf3671e5a740a286140147814efefde7"
+    },
+    {
+      "id": "hces-state-sector-2023-24",
+      "title": "Household Consumption Expenditure Survey 2023-24, NSS Report No. 592",
+      "publisher": "Ministry of Statistics and Programme Implementation",
+      "path": "data/india-geography/hces-state-sector.json",
+      "sourceUrl": "https://mospi.gov.in/sites/default/files/publication_reports/Final_Report_HCES_2023-24L.pdf",
+      "referencePeriod": "2023-24",
+      "license": "Government statistical publication; link and attribute NSS Report 592, Tables 3R/3U.",
+      "sha256": "df3ae9e3e7e9a2ae253ffe321a445361ad247f7c268415b0ab547d6d15c084a8"
+    }
+  ],
+  "geographies": [],
+  "relationships": [],
+  "backendContract": {
+    "geographyTable": "market_geographies",
+    "relationshipTable": "market_geo_relationships",
+    "properties": [
+      "population",
+      "households",
+      "demographics",
+      "apparelSpendPerPersonMonthly",
+      "apparelSpendEvidenceClass",
+      "incomeProxy",
+      "regionalIncomeProxy",
+      "regionalApparelSpendMonthly",
+      "evidence",
+      "evidenceClass",
+      "confidence",
+      "warnings"
+    ],
+    "geometryField": "geom",
+    "relationshipType": "contains",
+    "note": "Empty arrays are intentional: no validated geometries, metrics or crosswalks. Never synthesize rows from this manifest. This file is a source availability manifest, not a completed ingest snapshot."
+  }
+}

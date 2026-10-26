@@ -1,0 +1,56 @@
+/* Territories page. Liquid-glass tokens come from liquid.css; this sheet only lays out the cards. */
+.te-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;margin-top:18px}
+@media(min-width:1100px){.te-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:560px){.te-grid{grid-template-columns:1fr}}
+.te-card{display:flex;flex-direction:column;gap:10px;min-width:0;height:100%;padding:18px}
+.te-card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.te-city{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.te-place{margin-top:-6px}
+.te-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.te-meta>div{display:grid;grid-template-rows:auto auto;align-content:start;min-height:52px;gap:2px}
+.te-meta-label{font-size:11px;color:var(--lq-muted,#7c7799)}
+.te-meta-value{font-size:20px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.te-of{font-size:12px;color:var(--lq-muted,#7c7799)}
+.te-noslots{align-self:flex-start}
+.te-note-line{margin:0;font-size:11px;line-height:1.45;color:var(--lq-muted,#7c7799)}
+.te-error{font-size:12px;margin:0}
+.te-summary .te-meta--summary{grid-template-columns:1fr 1fr}
+/* KPI block: four equal cells, labels share a row height so values line up across cards. */
+.te-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin-top:2px}
+.te-kpi{display:grid;grid-template-rows:2.4em auto auto;align-content:start;gap:2px;min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8)}
+.te-label{font-size:11px;line-height:1.2;color:var(--lq-ink-2,#4a4566)}
+.te-value{font-size:19px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.2;overflow-wrap:anywhere}
+.te-unit{font-size:11px;margin-left:3px;color:var(--lq-muted,#7c7799)}
+.te-note{font-size:10px;line-height:1.35;color:var(--lq-muted,#7c7799);overflow-wrap:anywhere}
+.te-kpis--loading .te-value{color:var(--lq-muted,#7c7799)}
+/* Drill-down: city → PINs → applications. Height animates with grid-template-rows, so content can be measured-free. */
+.te-toggle{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:6px 0;font:inherit;font-size:13px;font-weight:600;color:var(--lq-ink,#1d1a2e);cursor:pointer;text-align:left}
+.te-toggle:focus-visible{outline:2px solid var(--lq-lavender,#9b87ec);outline-offset:3px;border-radius:6px}
+.te-chevron{display:inline-block;transition:transform .35s var(--lq-ease,cubic-bezier(.2,.8,.2,1));color:var(--lq-muted,#7c7799)}
+.te-toggle[aria-expanded="true"] .te-chevron{transform:rotate(90deg)}
+.te-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--lq-ink-2,#4a4566);background:rgba(255,255,255,.8);border-radius:999px;padding:1px 8px}
+.te-collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--lq-ease,cubic-bezier(.2,.8,.2,1)),opacity .3s ease;opacity:0}
+.te-collapse[data-open="true"]{grid-template-rows:1fr;opacity:1}
+.te-collapse-inner{min-height:0;overflow:hidden}
+.te-pins{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.te-pin{display:grid;gap:8px;padding:12px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.8);min-width:0}
+.te-pin-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.te-pin-head strong{display:block;font-size:14px;font-variant-numeric:tabular-nums}
+.te-pin-head small{display:block;font-size:10px;color:var(--lq-muted,#7c7799);overflow-wrap:anywhere}
+.te-open-screener{font-size:11px;white-space:nowrap}
+.te-pin-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;margin:0}
+.te-pin-kpis>div{display:grid;grid-template-rows:auto auto;gap:1px;min-width:0}
+.te-pin-kpis dt{font-size:10px;color:var(--lq-muted,#7c7799)}
+.te-pin-kpis dd{margin:0;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.te-apps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.te-app{display:grid;gap:6px;padding:10px;border-radius:12px;background:#fff;border:1px solid rgba(120,104,190,.12)}
+.te-app-main{display:grid;gap:1px;min-width:0}
+.te-app-name{font:inherit;font-size:13px;text-align:left;justify-self:start;padding:0}
+.te-app-id{font-size:10px;color:var(--lq-muted,#7c7799)}
+.te-app-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.te-score{font-size:11px;color:var(--lq-ink-2,#4a4566);margin-right:4px}
+.te-score strong{font-size:13px;color:var(--lq-ink,#1d1a2e)}
+.te-empty{margin:0;font-size:12px}
+.is-full .te-meta-value{color:var(--lq-muted,#7c7799)}
+@media(prefers-reduced-motion:reduce){.te-collapse,.te-chevron{transition:none}}
+@media(max-width:560px){.te-kpis{grid-template-columns:1fr 1fr}.te-value{font-size:17px}}

@@ -1,0 +1,839 @@
+{
+ "version": "1.0.0",
+ "classification": "HRA city classes X/Y/Z (Census 2011 population basis)",
+ "evidenceClass": "official_observed",
+ "tierMapping": {
+  "X": "Tier 1",
+  "Y": "Tier 2",
+  "Z": "Tier 3"
+ },
+ "tierMappingNote": "X/Y/Z is the central-government HRA classification by urban-agglomeration population; mapping to Tier 1/2/3 retail cost bands is a model convention, not part of the order.",
+ "source": {
+  "publisher": "Government of India, Ministry of Finance, Department of Expenditure",
+  "title": "Office Memorandum: Implementation of recommendations of the Seventh Central Pay Commission relating to grant of House Rent Allowance (HRA) to Central Government employees — Annexure: List of cities/towns classified for grant of HRA",
+  "omNumber": "No. 2/5/2017-E.II(B)",
+  "date": "2017-07-07",
+  "url": "https://doe.gov.in/files/circulars_document/7th_July_2017.pdf",
+  "retrievedAt": "2026-10-26",
+  "supportingPassage": "The remaining cities/towns in various States/UTs which are not covered by classification as \"X\" or \"Y\", are classified as \"Z\" for the purpose of HRA.",
+  "note": "Population basis: Census 2011",
+  "verification": "Annexure pages read from the scanned PDF and checked by hand on 2026-10-26; \"Guttack\" in an OCR transcription corrected to \"Cuttack (UA)\" as printed."
+ },
+ "cities": [
+  {
+   "printedName": "Hyderabad (UA)",
+   "names": [
+    "Hyderabad",
+    "Secunderabad",
+    "Rangareddy",
+    "Ranga Reddy",
+    "Medchal Malkajgiri",
+    "Medchal-Malkajgiri"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "X"
+  },
+  {
+   "printedName": "Delhi (UA)",
+   "names": [
+    "Delhi",
+    "New Delhi"
+   ],
+   "state": "Delhi",
+   "class": "X"
+  },
+  {
+   "printedName": "Ahmedabad (UA)",
+   "names": [
+    "Ahmedabad",
+    "Ahmadabad"
+   ],
+   "state": "Gujarat",
+   "class": "X"
+  },
+  {
+   "printedName": "Bengalore/Bengaluru (UA)",
+   "names": [
+    "Bengaluru",
+    "Bangalore",
+    "Bengaluru Urban"
+   ],
+   "state": "Karnataka",
+   "class": "X"
+  },
+  {
+   "printedName": "Greater Mumbai (UA)",
+   "names": [
+    "Mumbai",
+    "Bombay",
+    "Mumbai Suburban",
+    "Mumbai City",
+    "Thane",
+    "Greater Mumbai"
+   ],
+   "state": "Maharashtra",
+   "class": "X"
+  },
+  {
+   "printedName": "Pune (UA)",
+   "names": [
+    "Pune",
+    "Poona"
+   ],
+   "state": "Maharashtra",
+   "class": "X"
+  },
+  {
+   "printedName": "Chennai (UA)",
+   "names": [
+    "Chennai",
+    "Madras"
+   ],
+   "state": "Tamil Nadu",
+   "class": "X"
+  },
+  {
+   "printedName": "Kolkata (UA)",
+   "names": [
+    "Kolkata",
+    "Calcutta"
+   ],
+   "state": "West Bengal",
+   "class": "X"
+  },
+  {
+   "printedName": "Vijayawada (UA)",
+   "names": [
+    "Vijayawada"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "Y"
+  },
+  {
+   "printedName": "Warangal (UA)",
+   "names": [
+    "Warangal"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "Y"
+  },
+  {
+   "printedName": "Greater Visakhapatnam (M.Corpn.)",
+   "names": [
+    "Visakhapatnam",
+    "Vizag"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "Y"
+  },
+  {
+   "printedName": "Guntur (UA)",
+   "names": [
+    "Guntur"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "Y"
+  },
+  {
+   "printedName": "Nellore (UA)",
+   "names": [
+    "Nellore"
+   ],
+   "state": "Andhra Pradesh/Telangana",
+   "class": "Y"
+  },
+  {
+   "printedName": "Guwahati (UA)",
+   "names": [
+    "Guwahati"
+   ],
+   "state": "Assam",
+   "class": "Y"
+  },
+  {
+   "printedName": "Patna (UA)",
+   "names": [
+    "Patna"
+   ],
+   "state": "Bihar",
+   "class": "Y"
+  },
+  {
+   "printedName": "Chandigarh (UA)",
+   "names": [
+    "Chandigarh"
+   ],
+   "state": "Chandigarh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Durg-Bhilai Nagar (UA)",
+   "names": [
+    "Durg",
+    "Bhilai"
+   ],
+   "state": "Chhattisgarh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Raipur (UA)",
+   "names": [
+    "Raipur"
+   ],
+   "state": "Chhattisgarh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Rajkot (UA)",
+   "names": [
+    "Rajkot"
+   ],
+   "state": "Gujarat",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jamnagar (UA)",
+   "names": [
+    "Jamnagar"
+   ],
+   "state": "Gujarat",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bhavnagar (UA)",
+   "names": [
+    "Bhavnagar"
+   ],
+   "state": "Gujarat",
+   "class": "Y"
+  },
+  {
+   "printedName": "Vadodara (UA)",
+   "names": [
+    "Vadodara",
+    "Baroda"
+   ],
+   "state": "Gujarat",
+   "class": "Y"
+  },
+  {
+   "printedName": "Surat (UA)",
+   "names": [
+    "Surat"
+   ],
+   "state": "Gujarat",
+   "class": "Y"
+  },
+  {
+   "printedName": "Faridabad*(M.Corpn.)",
+   "names": [
+    "Faridabad"
+   ],
+   "state": "Haryana",
+   "class": "Y",
+   "note": "Marked * in the annexure: \"Only for the purpose of extending HRA on the basis of dependency.\" Retail rents in NCR satellites can exceed the Y-class band."
+  },
+  {
+   "printedName": "Gurgaon*(UA)",
+   "names": [
+    "Gurugram",
+    "Gurgaon"
+   ],
+   "state": "Haryana",
+   "class": "Y",
+   "note": "Marked * in the annexure: \"Only for the purpose of extending HRA on the basis of dependency.\" Retail rents in NCR satellites can exceed the Y-class band."
+  },
+  {
+   "printedName": "Srinagar (UA)",
+   "names": [
+    "Srinagar"
+   ],
+   "state": "Jammu & Kashmir",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jammu (UA)",
+   "names": [
+    "Jammu"
+   ],
+   "state": "Jammu & Kashmir",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jamshedpur (UA)",
+   "names": [
+    "Jamshedpur"
+   ],
+   "state": "Jharkhand",
+   "class": "Y"
+  },
+  {
+   "printedName": "Dhanbad (UA)",
+   "names": [
+    "Dhanbad"
+   ],
+   "state": "Jharkhand",
+   "class": "Y"
+  },
+  {
+   "printedName": "Ranchi (UA)",
+   "names": [
+    "Ranchi"
+   ],
+   "state": "Jharkhand",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bokaro Steel City (UA)",
+   "names": [
+    "Bokaro"
+   ],
+   "state": "Jharkhand",
+   "class": "Y"
+  },
+  {
+   "printedName": "Belgaum (UA)",
+   "names": [
+    "Belagavi",
+    "Belgaum"
+   ],
+   "state": "Karnataka",
+   "class": "Y"
+  },
+  {
+   "printedName": "Hubli-Dharwad (M.Corpn.)",
+   "names": [
+    "Hubballi-Dharwad",
+    "Hubli-Dharwad",
+    "Hubballi",
+    "Hubli",
+    "Dharwad"
+   ],
+   "state": "Karnataka",
+   "class": "Y"
+  },
+  {
+   "printedName": "Mangalore (UA)",
+   "names": [
+    "Mangaluru",
+    "Mangalore",
+    "Dakshina Kannada"
+   ],
+   "state": "Karnataka",
+   "class": "Y"
+  },
+  {
+   "printedName": "Mysore (UA)",
+   "names": [
+    "Mysuru",
+    "Mysore"
+   ],
+   "state": "Karnataka",
+   "class": "Y"
+  },
+  {
+   "printedName": "Gulbarga (UA)",
+   "names": [
+    "Kalaburagi",
+    "Gulbarga"
+   ],
+   "state": "Karnataka",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kozhikode (UA)",
+   "names": [
+    "Kozhikode",
+    "Calicut"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kochi (UA)",
+   "names": [
+    "Kochi",
+    "Cochin",
+    "Ernakulam"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Thiruvananthapuram (UA)",
+   "names": [
+    "Thiruvananthapuram",
+    "Trivandrum"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Thrissur (UA)",
+   "names": [
+    "Thrissur"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Malappuram (UA)",
+   "names": [
+    "Malappuram"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kannur (UA)",
+   "names": [
+    "Kannur"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kollam (UA)",
+   "names": [
+    "Kollam"
+   ],
+   "state": "Kerala",
+   "class": "Y"
+  },
+  {
+   "printedName": "Gwalior (UA)",
+   "names": [
+    "Gwalior"
+   ],
+   "state": "Madhya Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Indore (UA)",
+   "names": [
+    "Indore"
+   ],
+   "state": "Madhya Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bhopal (UA)",
+   "names": [
+    "Bhopal"
+   ],
+   "state": "Madhya Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jabalpur (UA)",
+   "names": [
+    "Jabalpur"
+   ],
+   "state": "Madhya Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Ujjain (M. Corpn.)",
+   "names": [
+    "Ujjain"
+   ],
+   "state": "Madhya Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Amravati (M.Corpn.)",
+   "names": [
+    "Amravati"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Nagpur (UA)",
+   "names": [
+    "Nagpur"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Aurangabad (UA)",
+   "names": [
+    "Aurangabad",
+    "Chhatrapati Sambhajinagar"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Nashik (UA)",
+   "names": [
+    "Nashik"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bhiwandi (UA)",
+   "names": [
+    "Bhiwandi"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Solapur (M.Corpn.)",
+   "names": [
+    "Solapur"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kolhapur (UA)",
+   "names": [
+    "Kolhapur"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Vasai-Virar City (M. Corpn.)",
+   "names": [
+    "Vasai-Virar",
+    "Vasai",
+    "Virar"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Malegaon (UA)",
+   "names": [
+    "Malegaon"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Nanded-Waghala (M. Corpn.)",
+   "names": [
+    "Nanded"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Sangli (UA)",
+   "names": [
+    "Sangli"
+   ],
+   "state": "Maharashtra",
+   "class": "Y"
+  },
+  {
+   "printedName": "Cuttack (UA)",
+   "names": [
+    "Cuttack"
+   ],
+   "state": "Odisha",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bhubaneswar (UA)",
+   "names": [
+    "Bhubaneswar"
+   ],
+   "state": "Odisha",
+   "class": "Y"
+  },
+  {
+   "printedName": "Raurkela (UA)",
+   "names": [
+    "Rourkela",
+    "Raurkela"
+   ],
+   "state": "Odisha",
+   "class": "Y"
+  },
+  {
+   "printedName": "Puducherry/Pondicherry (UA)",
+   "names": [
+    "Puducherry",
+    "Pondicherry"
+   ],
+   "state": "Puducherry",
+   "class": "Y"
+  },
+  {
+   "printedName": "Amritsar (UA)",
+   "names": [
+    "Amritsar"
+   ],
+   "state": "Punjab",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jalandhar (UA)",
+   "names": [
+    "Jalandhar"
+   ],
+   "state": "Punjab",
+   "class": "Y"
+  },
+  {
+   "printedName": "Ludhiana (M. Coprn.)",
+   "names": [
+    "Ludhiana"
+   ],
+   "state": "Punjab",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bikaner (M.Corpn.)",
+   "names": [
+    "Bikaner"
+   ],
+   "state": "Rajasthan",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jaipur (M.Corpn.)",
+   "names": [
+    "Jaipur"
+   ],
+   "state": "Rajasthan",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jodhpur (UA)",
+   "names": [
+    "Jodhpur"
+   ],
+   "state": "Rajasthan",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kota (M.Corpn.)",
+   "names": [
+    "Kota"
+   ],
+   "state": "Rajasthan",
+   "class": "Y"
+  },
+  {
+   "printedName": "Ajmer (UA)",
+   "names": [
+    "Ajmer"
+   ],
+   "state": "Rajasthan",
+   "class": "Y"
+  },
+  {
+   "printedName": "Salem (UA)",
+   "names": [
+    "Salem"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Tiruppur (UA)",
+   "names": [
+    "Tiruppur"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Coimbatore (UA)",
+   "names": [
+    "Coimbatore"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Tiruchirappalli (UA)",
+   "names": [
+    "Tiruchirappalli",
+    "Trichy"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Madurai (UA)",
+   "names": [
+    "Madurai"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Erode (UA)",
+   "names": [
+    "Erode"
+   ],
+   "state": "Tamil Nadu",
+   "class": "Y"
+  },
+  {
+   "printedName": "Moradabad (M.Corpn.)",
+   "names": [
+    "Moradabad"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Meerut (UA)",
+   "names": [
+    "Meerut"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Ghaziabad*(UA)",
+   "names": [
+    "Ghaziabad"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y",
+   "note": "Marked * in the annexure: \"Only for the purpose of extending HRA on the basis of dependency.\" Retail rents in NCR satellites can exceed the Y-class band."
+  },
+  {
+   "printedName": "Aligarh(UA)",
+   "names": [
+    "Aligarh"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Agra (UA)",
+   "names": [
+    "Agra"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Bareilly (UA)",
+   "names": [
+    "Bareilly"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Lucknow (UA)",
+   "names": [
+    "Lucknow"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Kanpur (UA)",
+   "names": [
+    "Kanpur"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Allahabad (UA)",
+   "names": [
+    "Prayagraj",
+    "Allahabad"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Gorakhpur (UA)",
+   "names": [
+    "Gorakhpur"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Varanasi (UA)",
+   "names": [
+    "Varanasi"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Saharanpur (M.Corpn.)",
+   "names": [
+    "Saharanpur"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Noida* (CT)",
+   "names": [
+    "Noida",
+    "Gautam Buddha Nagar"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y",
+   "note": "Marked * in the annexure: \"Only for the purpose of extending HRA on the basis of dependency.\" Retail rents in NCR satellites can exceed the Y-class band."
+  },
+  {
+   "printedName": "Firozabad (NPP)",
+   "names": [
+    "Firozabad"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Jhansi (UA)",
+   "names": [
+    "Jhansi"
+   ],
+   "state": "Uttar Pradesh",
+   "class": "Y"
+  },
+  {
+   "printedName": "Dehradun (UA)",
+   "names": [
+    "Dehradun"
+   ],
+   "state": "Uttarakhand",
+   "class": "Y"
+  },
+  {
+   "printedName": "Asansol (UA)",
+   "names": [
+    "Asansol"
+   ],
+   "state": "West Bengal",
+   "class": "Y"
+  },
+  {
+   "printedName": "Siliguri (UA)",
+   "names": [
+    "Siliguri"
+   ],
+   "state": "West Bengal",
+   "class": "Y"
+  },
+  {
+   "printedName": "Durgapur (UA)",
+   "names": [
+    "Durgapur"
+   ],
+   "state": "West Bengal",
+   "class": "Y"
+  }
+ ],
+ "matching": "Matched on city, postal city, district, India Post district and parent-district slug within the same state. District aliases (e.g. Rangareddy/Medchal for the Hyderabad UA, Thane for Greater Mumbai UA) are a model convention; PINs under 30% urban step down one class. All Delhi NCT districts lie in the Delhi UA."
+}

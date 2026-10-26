@@ -134,3 +134,9 @@ body.expansion-fullscreen #main{background:none;-webkit-backdrop-filter:none;bac
 .hover-tip[hidden]{display:none}
 [data-tip],[data-tip-key]{cursor:help}
 [data-tip-key]:focus-visible,[data-tip]:focus-visible{outline:2px solid #cfe043;outline-offset:2px;border-radius:4px}
+
+/* Content guard rails on Data review */
+.guard-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:14px 22px;border-top:1px solid rgba(120,104,190,.12)}
+.guard-row p{margin:4px 0;font-size:13px;color:var(--lq-ink)}.guard-row small{color:var(--lq-muted)}
+.guard-tag{min-width:72px;text-align:center}.guard-high .guard-tag{color:#9b1c1c;background:#fde8e8}.guard-medium .guard-tag{color:#8a5300;background:#fdf1dc}.guard-low .guard-tag{color:#4b3bb0;background:#ece8fb}
+@media (max-width:560px){.guard-row{grid-template-columns:1fr;padding:12px 14px}}

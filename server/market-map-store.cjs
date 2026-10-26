@@ -115,6 +115,8 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     state: p.state || (row.kind === 'state' ? row.name : null),
     city: p.city || (row.kind === 'city' ? row.name : null),
     pin: p.pin || (row.kind === 'pin' ? row.name : null),
+    anchor: Array.isArray(p.anchor) && p.anchor.length === 2 && p.anchor.every(Number.isFinite) ? p.anchor : null,
+    district: p.district || null,
     ancestors: p.ancestors || null,
     customerMarketInputs: p.customerMarketInputs || null,
     geometry: row.geometry || null,
@@ -175,8 +177,8 @@ function createMarketMapStore(pool) {
       } finally { client.release(); }
     },
 
-    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {}, includeGeometry = true } = {}) {
-      const cacheKey=JSON.stringify([this.sourceVersion,parentId,level,bbox,metricKey,scenario,includeGeometry]);
+    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {}, includeGeometry = true, maxRows = null } = {}) {
+      const cacheKey=JSON.stringify([this.sourceVersion,parentId,level,bbox,metricKey,scenario,includeGeometry,maxRows]);
       return cachedList(cacheKey, async () => {
       const wanted = level || (parentId ? null : 'state');
       if (wanted && !LEVELS.includes(wanted)) return [];
@@ -193,7 +195,7 @@ function createMarketMapStore(pool) {
         const offset = params.length - 3;
         where.push(`g.geom && ST_MakeEnvelope($${offset}, $${offset + 1}, $${offset + 2}, $${offset + 3}, 4326)`);
       }
-      params.push(MAX_BY_LEVEL[wanted || 'district']);
+      params.push(Number.isInteger(maxRows) && maxRows > 0 ? Math.min(maxRows, 6000) : MAX_BY_LEVEL[wanted || 'district']);
       const geometrySql=includeGeometry ? 'CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END' : 'NULL::jsonb';
       const sql = `SELECT g.external_id, g.kind, g.name, g.properties, ${geometrySql} AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id = g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id = r.parent_id WHERE ${where.length ? where.join(' AND ') : 'TRUE'} ORDER BY g.name, g.external_id LIMIT $${params.length}`;
       const result = await pool.query(sql, params);

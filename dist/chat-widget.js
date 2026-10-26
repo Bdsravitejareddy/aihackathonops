@@ -24,17 +24,17 @@
 
   // Overview and applications read the workbook state and the cards the page already computed.
   function overviewData({ state = {}, results = [] }) {
-    const count = status => results.filter(a => a.status === status).length;
+    const count = status => results.filter(a => a.status === status).length, inCategory = name => results.filter(a => a.category === name).length;
     const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
-    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'),
+    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), futureExpansion: inCategory('Future expansion'),
       territories: (state.territories || []).length, pendingCorrections: (state.apps || []).reduce((n, a) => n + (a.pending?.length || 0), 0), source: state.source || null, slotsTotal, slotsRecommended: count('Recommended') };
-    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Clarification needed', data.clarification),
-      fieldOf('Site needed', data.siteNeeded), fieldOf('Waitlisted', data.waitlisted), fieldOf('Territories uploaded', data.territories),
+    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Data required', data.dataRequired),
+      fieldOf('Future expansion', data.futureExpansion), fieldOf('Territories uploaded', data.territories),
       fieldOf('Pending data corrections', data.pendingCorrections), fieldOf('Data source', data.source)].filter(Boolean), gaps: [] };
   }
   function applicationsData({ results = [] }) {
     const byStatus = {};
-    for (const a of results) byStatus[a.status || 'Unscreened'] = (byStatus[a.status || 'Unscreened'] || 0) + 1;
+    for (const a of results) byStatus[a.category || a.status || 'Unscreened'] = (byStatus[a.category || a.status || 'Unscreened'] || 0) + 1;
     const top = [...results].filter(a => Number.isFinite(a.score)).sort((a, b) => b.score - a.score)[0] || null;
     const held = byStatus['Clarification needed'] || 0;
     const data = { total: results.length, byStatus, held, top: top ? { id: top.id, name: clean(top.name || top.id, 60), score: Math.round(top.score), grade: top.grade || null } : null };
@@ -135,7 +135,7 @@
   function bulletsFor(ctx) {
     const d = ctx.data || {}, out = [];
     if (ctx.page === 'overview') {
-      out.push(`${plural(d.applications, 'application')}: ${d.recommended} recommended, ${d.clarification} need clarification, ${d.siteNeeded} need a site`);
+      out.push(`${plural(d.applications, 'application')}: ${d.recommended} recommended, ${d.dataRequired} data required, ${d.futureExpansion} future expansion`);
       if (d.slotsTotal) out.push(`${d.slotsRecommended} of ${d.slotsTotal} territory slots recommended`);
       if (d.pendingCorrections) out.push(`${plural(d.pendingCorrections, 'data correction')} waiting for review`);
       if (d.territories) out.push(`${plural(d.territories, 'territory', 'territories')} loaded${d.source ? ` from ${d.source}` : ''}`);

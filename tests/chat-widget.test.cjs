@@ -10,9 +10,9 @@ const Chat = require('../dist/chat-widget.js');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 const results = [
-  { key: 'a', id: 'APP-001', name: 'Asha', status: 'Recommended', score: 81, high: 84, grade: 'A', territory: 'T1', reasons: ['Strong capital'] },
-  { key: 'b', id: 'APP-002', name: 'Ben', status: 'Clarification needed', score: 52, high: 70, grade: 'C', territory: 'T1', reasons: ['Missing area'] },
-  { key: 'c', id: 'APP-003', name: 'Chen', status: 'Site needed', score: 66, high: 66, grade: 'B', territory: 'T2', reasons: [] }
+  { key: 'a', id: 'APP-001', name: 'Asha', status: 'Recommended', category: 'Recommended', score: 81, high: 84, grade: 'A', territory: 'T1', reasons: ['Strong capital'] },
+  { key: 'b', id: 'APP-002', name: 'Ben', status: 'Clarification needed', category: 'Data required', score: 52, high: 70, grade: 'C', territory: 'T1', reasons: ['Missing area'] },
+  { key: 'c', id: 'APP-003', name: 'Chen', status: 'Site needed', category: 'Data required', score: 66, high: 66, grade: 'B', territory: 'T2', reasons: [] }
 ];
 const state = { apps: [{ key: 'a', pending: [] }, { key: 'b', pending: [{ field: 'area' }] }], territories: [{ id: 'T1' }, { id: 'T2' }], settings: { model: 'industry-v2', minInvestment: 50, minArea: 800, minLaunch: 6, targetLaunch: 12, sectorName: 'Apparel' }, source: 'Synthetic demo · 3 applicants' };
 const location = { id: 'pin:560058', name: '560058', level: 'pin', metrics: { potentialRevenue: { value: 176172949, unit: 'INR/year', evidenceClass: 'derived_estimate' }, population: { value: 120000, unit: 'people' } } };
@@ -28,7 +28,7 @@ test('overview snapshot carries pipeline counts and the workbook source, not the
   assert.equal(ctx.page, 'overview');
   assert.equal(byLabel['Total applications'], '3');
   assert.equal(byLabel['Recommended partners'], '1');
-  assert.equal(byLabel['Clarification needed'], '1');
+  assert.equal(byLabel['Data required'], '2');
   assert.equal(byLabel['Pending data corrections'], '1');
   assert.equal(byLabel['Data source'], 'Synthetic demo · 3 applicants');
   assert.ok(ctx.facts.length <= 24, 'snapshot stays compact');

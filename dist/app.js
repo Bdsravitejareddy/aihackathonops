@@ -60,6 +60,8 @@ async function loadScreeningApplicants(location,controller=territoryScreening){
  loadScreeningMarketContext(location,controller);
  const key=`${persistence.workspaceId}:${pin}`;
  try{
+   await persistence.whenSynced();
+   if(revision!==screeningRequestRevision||controller!==territoryScreening)return;
    let pending=screeningApplicantsCache.get(key);
    if(!pending){pending=marketRequest('/api/screening/applications?'+new URLSearchParams({workspaceId:persistence.workspaceId,pin})).then(data=>data.applications||[]);screeningApplicantsCache.set(key,pending);pending.catch(()=>{if(screeningApplicantsCache.get(key)===pending)screeningApplicantsCache.delete(key);});}
    const rows=await pending;
@@ -70,6 +72,7 @@ async function loadScreeningApplicants(location,controller=territoryScreening){
 }
 async function fetchApplicantsForLocation(location){
  const pin=location?.pin||location?.id?.match(/\b\d{6}\b/)?.[0];if(!pin)return[];
+ await persistence.whenSynced();
  const key=`${persistence.workspaceId}:${pin}`;let pending=screeningApplicantsCache.get(key);
  if(!pending){pending=marketRequest('/api/screening/applications?'+new URLSearchParams({workspaceId:persistence.workspaceId,pin})).then(data=>data.applications||[]);screeningApplicantsCache.set(key,pending);pending.catch(()=>{if(screeningApplicantsCache.get(key)===pending)screeningApplicantsCache.delete(key);});}
  const assessed=screeningRowsForPin(await pending);

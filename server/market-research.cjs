@@ -206,7 +206,8 @@ function createMarketResearchService(options = {}) {
     const result = await generate({ prompt, clientId });
     if (!result.ok) return result;
     if (!result.text) return fail('invalid_response', 'Research provider returned an empty answer.');
-    const citations = result.citations.length ? result.citations : extractCitations({ groundingChunks: (Array.isArray(clean.evidence) ? clean.evidence : []).map(item => ({ web: { uri: item?.url, title: item?.title } })) });
+    const suppliedEvidence = Array.isArray(clean.evidence) ? clean.evidence : Array.isArray(clean.sourceEvidence) ? clean.sourceEvidence : [];
+    const citations = result.citations.length ? result.citations : extractCitations({ groundingChunks: suppliedEvidence.map(item => ({ web: { uri: item?.url, title: item?.title } })) });
     if (!citations.length) return fail('invalid_response', 'Research answer did not include grounded source citations.');
     if (!hasOnlyContextNumbers(result.text, clean)) return fail('invalid_response', 'Research answer contained a numerical claim not present in deterministic assessment context.');
     return { ok: true, answer: result.text.slice(0, 5000), citations: citations.map(item => ({ ...item, publicationDate: item.publicationDate || null, retrievedAt: item.retrievedAt || result.retrievedAt })), retrievedAt: result.retrievedAt, usage: result.usage };

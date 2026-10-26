@@ -150,6 +150,7 @@ test('illustrative financial scenario sends editable assumptions to the determin
   assert.match(h.root.textContent,/editable demo assumptions/i);
   assert.match(h.root.textContent,/not observed PIN footfall/i);
   const form=h.root.querySelector('[data-financial-scenario]');
+  assert.equal(form.checkValidity(),true,'the default illustrative assumptions must pass browser form validation');
   form.elements.monthlyFixedCosts.value='120000';
   form.dispatchEvent(new h.dom.window.Event('submit',{bubbles:true,cancelable:true}));
   await new Promise(resolve=>setImmediate(resolve));

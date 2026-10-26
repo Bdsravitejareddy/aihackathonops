@@ -87,8 +87,9 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
         const segmentOf = value => typeof value === 'string' && value.trim().length <= 100 ? value.trim() : 'mass-market-family-apparel';
         const buildResearchContext = async (geographyId, payload) => {
           const scenario = payload.assumptions && typeof payload.assumptions === 'object' && !Array.isArray(payload.assumptions) ? payload.assumptions : {};
-          const geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', scenario)
-            || (/^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null);
+          const pinGeography = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
+          let geography = pinGeography;
+          if (!geography) geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', scenario);
           if (!geography) return { error: { status:404, message:'Geography not found' } };
           let assessment = null;
           if (payload.assessmentId !== undefined || payload.workspaceId !== undefined) {
@@ -109,14 +110,16 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
                 scenarios:Object.fromEntries(Object.entries(forecast.scenarios || {}).map(([key,value])=>[key,{roiPercent:value.roiPercent,paybackMonths:value.paybackMonths,annualRevenue:value.years?.[0]?.nominalRevenue ?? null,year5Revenue:value.years?.at(-1)?.nominalRevenue ?? null,npv:value.npv}])) };
             } catch { return { error:{ status:400, message:'Financial assumptions are invalid.' } }; }
           }
-          const extra = await marketMapStore.getMapEvidence?.(geographyId);
+          let extra = null;
+          try { extra = await marketMapStore.getMapEvidence?.(geographyId); }
+          catch { /* The location catalog's own evidence remains valid when supplemental PostGIS evidence is unavailable. */ }
           const snapshot = assessment?.snapshot || {};
           const context = {
-            location:{ id:geography.id, name:geography.name, level:geography.level, sourceVersion:marketMapStore.sourceVersion || 'india-geography-1.1.2' },
+            location:{ id:geography.id, name:geography.name, level:geography.level, pin:geography.pin || null, city:geography.city || null, state:geography.state || null, sourceVersion:geography.sourceVersion || marketMapStore.sourceVersion || 'india-geography-1.1.2' },
             targetApparelSegment:segmentOf(payload.segment),
             deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:geography.metrics, demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
             assumptions:scenario,
-            sourceEvidence:(extra?.evidence || geography.evidence || []).slice(0,20),
+            sourceEvidence:[...(geography.evidence || []), ...(extra?.evidence || [])].filter((item, index, all) => all.findIndex(candidate => candidate.sourceId === item.sourceId && candidate.url === item.url) === index).slice(0,20),
             dataWarnings:[...(geography.warnings || []), ...(extra?.warnings || [])]
           };
           return { context, segment:segmentOf(payload.segment), assessmentId:assessment?.id || null, assessmentVersion:assessment?.version || null,
@@ -135,6 +138,13 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const contextHash = createHash('sha256').update(JSON.stringify(built.context)).digest('hex');
             const modelVersion = marketResearchService.modelVersion || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
             const clientId = req.socket?.remoteAddress || 'local-client';
+            const persistResearch = async record => {
+              try { await marketResearchStore.save(record); return null; }
+              catch (error) {
+                if (!/^pin:\d{6}$/.test(geographyId)) throw error;
+                return 'This answer was generated from the current verified context but could not be cached because PIN research records are not yet linked to a Neon geography row.';
+              }
+            };
             if (researchMatch[2] === 'research') {
               if (payload.refresh === true) await marketResearchStore.markStale({ geographyId, segment:built.segment });
               else {
@@ -143,8 +153,8 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
               }
               const result = await marketResearchService.researchLocation(built.context, { clientId });
               if (!result.ok) return reply(res, researchError(result), { error:result.error.message, code:result.error.code });
-              await marketResearchStore.save({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'cards', result, citations:result.citations });
-              return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion });
+              const persistenceWarning = await persistResearch({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'cards', result, citations:result.citations });
+              return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion, ...(persistenceWarning ? { persistenceWarning } : {}) });
             }
             const question = typeof payload.question === 'string' ? payload.question.trim() : '';
             if (!question || question.length > 2000) return reply(res, 400, { error:'Question must contain 1–2,000 characters.' });
@@ -153,8 +163,8 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             if (cached) return reply(res, 200, { ...cached.result, citations:cached.citations, retrievedAt:cached.retrievedAt, modelVersion, cached:true, assessmentVersion:built.assessmentVersion });
             const result = await marketResearchService.answerQuestion({ context:built.context, question, clientId });
             if (!result.ok) return reply(res, researchError(result), { error:result.error.message, code:result.error.code });
-            await marketResearchStore.save({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'answer', promptHash, result, citations:result.citations });
-            return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion });
+            const persistenceWarning = await persistResearch({ geographyId, segment:built.segment, assessmentId:built.assessmentId, assessmentVersion:built.assessmentVersion, assessmentKey:built.assessmentKey, modelVersion, contextHash, recordType:'answer', promptHash, result, citations:result.citations });
+            return reply(res, 200, { ...result, modelVersion, cached:false, assessmentVersion:built.assessmentVersion, ...(persistenceWarning ? { persistenceWarning } : {}) });
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/levels') {
             const metric = url.searchParams.get('metric') || 'apparelExpenditure';

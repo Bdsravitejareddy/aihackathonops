@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Readable } = require('node:stream');
 const { createHandler } = require('../server/app.cjs');
+const { createMarketLocationData } = require('../server/market-location-data.cjs');
 
 const geographyId='state:IN-KA', workspaceId='f28e574b-6f52-4f24-97c6-69e0c28bb54f', assessmentId='d18b6324-2abc-4f24-97c6-69e0c28bb54f';
 function setup({ service, researchStore }={}) {
@@ -50,4 +51,22 @@ test('research API validates questions and gracefully disables Gemini when not c
  const disabled=createHandler({store:{async load(){return null},async save(){return 1}},marketMapStore:{async getMapGeography(){return null}},marketResearchService:null,marketResearchStore:null,marketSources:{},marketBenchmarks:{}});
  const req=Readable.from([Buffer.from('{}')]);req.method='POST';req.url=`/api/market/map/geographies/${encodeURIComponent(geographyId)}/research`;req.headers={host:'127.0.0.1:8080','content-type':'application/json'};let status,payload;const res={writeHead(code){status=code},end(data){payload=JSON.parse(data)}};await disabled(req,res);
  assert.equal(status,503);assert.match(payload.error,/configure Gemini/i);assert.equal(JSON.stringify(payload).includes('API_KEY'),false);assert.equal(h.researchCalls,0);
+});
+
+test('PIN Q&A falls back to the verified postal and HCES directory when PostGIS lookup fails',async()=>{
+ let context;
+ const marketMapStore={sourceVersion:'test-pin-fallback',async getMapGeography(){throw new Error('PostGIS unavailable')},async getMapEvidence(){return {evidence:[],warnings:[]}}};
+ const service={modelVersion:'gemini-test',async answerQuestion(input){context=input.context;return {ok:true,answer:'The supplied regional survey is not a PIN-level observation.',citations:[{url:'https://mospi.gov.in',title:'MoSPI'}],retrievedAt:'2026-10-26T00:00:00.000Z'}}};
+ const researchStore={async getCached(){return null},async save(){return {id:'record'}}};
+ const handler=createHandler({store:{async load(){return null},async save(){return 1}},marketMapStore,marketLocationData:createMarketLocationData(),marketResearchStore:researchStore,marketResearchService:service});
+ const req=Readable.from([Buffer.from(JSON.stringify({question:'Why is this regional benchmark not observed for the PIN?'}))]);req.method='POST';req.url=`/api/market/map/geographies/${encodeURIComponent('pin:560026')}/ask`;req.headers={host:'127.0.0.1:8080','content-type':'application/json'};let status,payload;const res={writeHead(code){status=code},end(data){payload=JSON.parse(data)}};await handler(req,res);
+ assert.equal(status,200);assert.equal(context.location.pin,'560026');assert.ok(context.sourceEvidence.some(item=>item.referencePeriod==='2023-24'));
+});
+
+test('PIN Q&A still returns the grounded answer when the local PIN is not in Neon research geography tables',async()=>{
+ const marketMapStore={sourceVersion:'test-pin',async getMapGeography(){throw new Error('PIN not in PostGIS')},async getMapEvidence(){return {evidence:[],warnings:[]}}};
+ const service={modelVersion:'gemini-test',async answerQuestion(){return {ok:true,answer:'This is a state-sector survey estimate, not PIN-level observation.',citations:[{url:'https://mospi.gov.in',title:'MoSPI'}],retrievedAt:'2026-10-26T00:00:00.000Z'}}};
+ const handler=createHandler({store:{async load(){return null},async save(){return 1}},marketMapStore,marketLocationData:createMarketLocationData(),marketResearchStore:{async getCached(){return null},async save(){throw new Error('Research geography does not exist')}},marketResearchService:service});
+ const req=Readable.from([Buffer.from(JSON.stringify({question:'What does this spending evidence mean?'}))]);req.method='POST';req.url=`/api/market/map/geographies/${encodeURIComponent('pin:560026')}/ask`;req.headers={host:'127.0.0.1:8080','content-type':'application/json'};let status,payload;const res={writeHead(code){status=code},end(data){payload=JSON.parse(data)}};await handler(req,res);
+ assert.equal(status,200);assert.match(payload.answer,/state-sector/);assert.equal(payload.cached,false);assert.match(payload.persistenceWarning,/could not be cached/i);
 });

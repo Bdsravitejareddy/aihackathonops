@@ -136,6 +136,14 @@ test('uses evidence links already in the assessment when no new web grounding is
   assert.equal(result.citations[0].url, 'https://censusindia.gov.in/');
 });
 
+test('uses API sourceEvidence links when explaining an existing assessment without a new web search', async () => {
+  const context = { location:{name:'PIN 560026'}, deterministicAssessment:{metrics:{}}, sourceEvidence:[{title:'MoSPI HCES report',url:'https://mospi.gov.in/hces.pdf',referenceYear:2024}] };
+  const service = createMarketResearchService({ apiKey:'secret', fetchImpl:async()=>groundedPayload('The provided survey is a regional estimate, not a PIN observation.',null) });
+  const result = await service.answerQuestion({ context, question:'Why is this not observed at the selected PIN?' });
+  assert.equal(result.ok,true);
+  assert.equal(result.citations[0].url,'https://mospi.gov.in/hces.pdf');
+});
+
 test('rejects answers that introduce a number absent from deterministic context', async () => {
   const service = createMarketResearchService({ apiKey: 'secret', fetchImpl: async () => groundedPayload('The local market grew 18% last year. [1]', null, [{ web: { uri: 'https://example.org/source', title: 'Source' } }]) });
   const result = await service.answerQuestion({ context: validContext, question: 'How fast is the market growing?' });

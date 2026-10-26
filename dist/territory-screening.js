@@ -156,7 +156,7 @@
     function metricCard(key, raw) {
       const conf=TEXT[key]||[key.replace(/([a-z])([A-Z])/g,'$1 $2'), ''];
       const val=metricValue(raw), card=doc.createElement('article'); card.className='ts-metric';
-      const h=doc.createElement('span'); h.textContent=conf[0]; const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1],doc.defaultView?.FranchiseDisplay);
+      const h=doc.createElement('span'); h.textContent=conf[0]; const tipKey={population:'catchment',tam:'tam',apparelExpenditure:'tam',monthlyPerCapitaSpend:'spend'}[key]; if(tipKey){h.dataset.tipKey=tipKey;h.tabIndex=0;} const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1],doc.defaultView?.FranchiseDisplay);
       const evidence=doc.createElement('small'); evidence.textContent=(raw?.evidenceClass || (val===null?'Missing evidence':'Evidence class not supplied')).replace(/_/g,' ').replace(/\bmodeled\b/gi,'modelled');
       card.append(h,strong,evidence);
       if(raw?.referenceYear || raw?.referencePeriod){const year=doc.createElement('small');year.textContent=`Reference: ${raw.referenceYear || raw.referencePeriod}`;card.append(year);}

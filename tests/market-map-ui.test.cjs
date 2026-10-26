@@ -181,7 +181,7 @@ test('area popup labels each supported geography level and keeps population as c
     h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
     const html=h.window.maplibregl.Popup.instances.at(-1).html;
     assert.match(html,new RegExp(`<small>${level[0].toUpperCase()+level.slice(1)}</small>`));
-    assert.match(html,/<span>Catchment<\/span>/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
+    assert.match(html,/<span[^>]*>Catchment<\/span>/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
   }
 });
 

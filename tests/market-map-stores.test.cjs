@@ -111,9 +111,10 @@ test('PIN popup loads competitors once on click and shows the store note and KPI
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
   await loadPins();
   h.container.querySelector('[data-map-pin="pin:560058"]').dispatchEvent(new h.window.Event('mouseenter'));
-  const hover = popupOf(h);
-  assert.ok(hover, 'popup is rendered on hover');
-  for (const text of ['Annual category spend', 'Potential revenue', 'Consumer spend', 'You have a store here']) assert.match(hover.textContent, new RegExp(text));
+  const hover = h.container.querySelector('.expansion-hover');
+  assert.ok(hover, 'a small hover card is rendered on hover');
+  assert.match(hover.textContent, /You have a store here/); assert.match(hover.textContent, /Click for full details/);
+  assert.equal(popupOf(h), null, 'the full popup waits for a click');
   assert.equal(competitorRequests(h).length, 0, 'no competitor request on hover before click');
 
   await clickPin(h, 'pin:560058');
@@ -153,11 +154,11 @@ test('a next-best PIN shows no store note on hover and is not a store', async t 
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
   await loadPins();
   h.container.querySelector('[data-map-pin="pin:560059"]').dispatchEvent(new h.window.Event('mouseenter'));
-  const popup = popupOf(h);
-  assert.ok(popup, 'popup is rendered');
-  assert.match(popup.textContent, /Potential revenue/);
-  assert.match(popup.textContent, /#1 next-best PIN to open/);
-  assert.doesNotMatch(popup.textContent, /You have a store here/);
+  const card = h.container.querySelector('.expansion-hover');
+  assert.ok(card, 'hover card is rendered');
+  assert.match(card.textContent, /Potential revenue/);
+  assert.match(card.textContent, /#1 next-best PIN to open/);
+  assert.doesNotMatch(card.textContent, /You have a store here/);
   assert.equal(h.adapter.hasStore('560059'), false);
 });
 

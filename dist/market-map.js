@@ -286,7 +286,8 @@
       loadAnalysis(id); loadCompetitors(id);
     }
 
-    const tile = (title, value, sub = '', tone = '') => `<div class="expansion-popup-kpi${tone ? ' is-' + tone : ''}"><span>${escape(title)}</span><strong>${escape(value)}</strong>${sub ? `<small>${escape(sub)}</small>` : ''}</div>`;
+    const TILE_TIPS = { TAM: 'tam', 'Potential revenue': 'potentialRevenue', Catchment: 'catchment', 'Consumer spend': 'spend', 'Investment required': 'investment', Payback: 'payback' };
+    const tile = (title, value, sub = '', tone = '') => `<div class="expansion-popup-kpi${tone ? ' is-' + tone : ''}"><span${TILE_TIPS[title] ? ` data-tip-key="${TILE_TIPS[title]}" tabindex="0"` : ''}>${escape(title)}</span><strong>${escape(value)}</strong>${sub ? `<small>${escape(sub)}</small>` : ''}</div>`;
     const metricTiles = metrics => {
       const m = reliableMetrics(metrics), out = [];
       if (metricValue(m.tam) !== null) out.push(tile('TAM', display(m.tam), 'Annual category spend', 'prominent'));
@@ -337,23 +338,33 @@
     function showPopup(id, lngLat, pinned) {
       const html = popupHtml(id); if (!html) return;
       popup?.remove(); lastPopup = { id, lngLat };
-      popup = new lib.Popup({ closeButton: true, maxWidth: '340px', offset: pinned ? [0, -34] : 8 }).setLngLat(lngLat).setHTML(html).addTo(map);
+      popup = new lib.Popup({ closeButton: true, maxWidth: '340px', anchor: pinned ? 'bottom' : undefined, offset: pinned ? [0, -20] : 8 }).setLngLat(lngLat).setHTML(html).addTo(map);
       popup.addClassName?.('is-entering');
     }
 
     // Pins: green for existing stores, grey and numbered for the next-best PINs to open.
-    function hoverPin(item) {
-      if (lastPopup?.id !== item.id) showPopup(item.id, item.anchor, true);
-      clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => { if (!destroyed && lastPopup?.id === item.id) loadPinData(item.id); }, 400);
+    // Hover shows a small card above the pin, never over it, and leaves any clicked popup in place.
+    // The full popup opens on click; hovering only warms its data.
+    let hoverCard = null;
+    function hoverCardHtml(item) {
+      const store = isStore(item.id), revenue = numeric(item.potentialRevenue) ? display({ value: item.potentialRevenue, unit: 'INR/year' }) : null;
+      const place = [item.district, item.state].filter(Boolean).join(' · ');
+      return `<div class="expansion-hover"><strong>PIN ${escape(item.pin)}</strong><span>${store ? 'You have a store here' : numeric(item.rank) ? `#${escape(item.rank)} next-best PIN to open` : 'PIN code'}${place ? ` · ${escape(place)}` : ''}</span>${revenue ? `<span>Potential revenue ${escape(revenue)}</span>` : ''}<small>Click for full details</small></div>`;
     }
+    function hoverPin(item) {
+      hoverCard?.remove(); hoverCard = null;
+      if (lastPopup?.id !== item.id) hoverCard = new lib.Popup({ closeButton: false, closeOnClick: false, className: 'expansion-hover-popup', anchor: 'bottom', offset: [0, -18], maxWidth: '240px' }).setLngLat(item.anchor).setHTML(hoverCardHtml(item)).addTo(map);
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => { if (!destroyed) loadPinData(item.id); }, 400);
+    }
+    function unhoverPin() { clearTimeout(hoverTimer); hoverCard?.remove(); hoverCard = null; }
     // Selection only toggles a class, so a focused marker keeps focus when it is clicked.
     function markSelected() {
       if (!container) return;
       container.querySelectorAll('[data-map-pin]').forEach(el => el.classList.toggle('is-selected', el.dataset.mapPin === String(selected)));
     }
     function selectPin(item) {
-      clearTimeout(hoverTimer); selected = item.id; highlight(); markSelected();
+      unhoverPin(); selected = item.id; highlight(); markSelected();
       showPopup(item.id, item.anchor, true); loadPinData(item.id); onSelect(item.id);
     }
     function pinElement(kind, item) {
@@ -363,7 +374,8 @@
       el.innerHTML = `<span aria-hidden="true">${kind === 'store' ? '' : escape(item.rank)}</span>`;
       el.addEventListener('mouseenter', () => hoverPin(item));
       el.addEventListener('focus', () => hoverPin(item));
-      el.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
+      el.addEventListener('mouseleave', unhoverPin);
+      el.addEventListener('blur', unhoverPin);
       el.addEventListener('click', event => { event.stopPropagation(); selectPin(item); });
       return el;
     }
@@ -485,7 +497,7 @@
         const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: motion(600) });
       },
       reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: motion(800) }); },
-      destroy() { destroyed = true; clearTimeout(oppTimer); clearTimeout(hoverTimer); oppAbort?.abort(); markers.forEach(marker => marker.remove()); markers = []; popup?.remove(); popupContexts.clear(); lastPopup = null; map.remove(); }
+      destroy() { destroyed = true; clearTimeout(oppTimer); clearTimeout(hoverTimer); oppAbort?.abort(); markers.forEach(marker => marker.remove()); markers = []; popup?.remove(); hoverCard?.remove(); popupContexts.clear(); lastPopup = null; map.remove(); }
     };
   }
 
@@ -526,7 +538,7 @@
           <div class="expansion-side-head"><div><div class="eyebrow">MARKET INTELLIGENCE</div><h1 data-map-place-title>India</h1><p data-map-place-path>National overview · Apparel & fashion</p></div><button type="button" class="button small" data-map-sidebar-close aria-label="Hide insights">×</button></div>
           <div class="expansion-action-row"><button class="button primary small" type="button" data-map-open-market>Open Market Intelligence</button><button class="button small" type="button" data-map-screen-pin disabled>Screen PIN</button></div>
           <div class="expansion-market-overview" data-map-overview aria-live="polite">
-            ${[['tam','Annual category-spend TAM'],['population','Catchment population'],['spending','Consumer spend / person / month']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span>${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
+            ${[['tam','Annual category-spend TAM'],['population','Catchment population'],['spending','Consumer spend / person / month']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span data-tip-key="${key==='population'?'catchment':key}" tabindex="0">${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
           </div>
           <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
           <section class="analysis-section" aria-label="Store cost and return analysis"><h2 class="analysis-title">Analysis <span>store costs, ROI &amp; payback</span></h2><div data-map-analysis aria-live="polite"></div></section>

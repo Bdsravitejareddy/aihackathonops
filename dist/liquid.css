@@ -128,3 +128,9 @@ body.expansion-fullscreen::before,body.expansion-fullscreen::after{display:none}
 body.expansion-fullscreen .main{padding:0}
 body.expansion-fullscreen #main{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;border-radius:0;padding:0;box-shadow:none;min-height:0}
 .stat-value.stat-empty{font-size:22px;line-height:1.2;color:var(--lq-muted,#8b9596)}
+
+/* Hover explanations (tooltip.js) */
+.hover-tip{position:fixed;z-index:9999;padding:8px 11px;border-radius:10px;background:rgba(20,18,38,.94);color:#f4f2ff;font:400 12px/1.45 var(--lq-sans,system-ui);box-shadow:0 10px 26px -10px rgba(6,4,20,.6);pointer-events:none}
+.hover-tip[hidden]{display:none}
+[data-tip],[data-tip-key]{cursor:help}
+[data-tip-key]:focus-visible,[data-tip]:focus-visible{outline:2px solid #cfe043;outline-offset:2px;border-radius:4px}

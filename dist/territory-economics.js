@@ -22,7 +22,8 @@
   }
 
   function kpi(label, value, note, extra = '') {
-    return `<div class="te-kpi"><span class="te-label">${escape(label)}</span><strong class="te-value">${value}</strong><small class="te-note">${note}</small>${extra}</div>`;
+    const tipKey={'Catchment population':'catchment','TAM · category spend':'tam','Investment required':'investment','Payback · base case':'payback'}[label]||'';
+    return `<div class="te-kpi"><span class="te-label"${tipKey?` data-tip-key="${tipKey}" tabindex="0"`:''}>${escape(label)}</span><strong class="te-value">${value}</strong><small class="te-note">${note}</small>${extra}</div>`;
   }
 
   /** Four equal KPI cards for a territory aggregate (or a single-PIN territory). */

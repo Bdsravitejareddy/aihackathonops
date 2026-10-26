@@ -315,3 +315,11 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
 /* Full-screen map: the footer would push the page past the viewport and let it scroll, hiding the toolbar. */
 body.expansion-fullscreen .main>footer{display:none}
 html:has(body.expansion-fullscreen){overflow:hidden}
+
+/* Pin hover card: small, above the pin, does not take clicks or cover the pin. */
+.expansion-hover-popup{pointer-events:none}
+.expansion-hover-popup .maplibregl-popup-content{padding:8px 11px;border-radius:12px;background:rgba(20,18,38,.92);color:#f4f2ff;box-shadow:0 10px 24px -12px rgba(6,4,20,.7)}
+.expansion-hover-popup .maplibregl-popup-tip{border-top-color:rgba(20,18,38,.92)}
+.expansion-hover{display:grid;gap:2px;font-size:12px;line-height:1.35}
+.expansion-hover strong{font-size:13px}
+.expansion-hover small{opacity:.7}

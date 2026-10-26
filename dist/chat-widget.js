@@ -26,10 +26,10 @@
   function overviewData({ state = {}, results = [] }) {
     const count = status => results.filter(a => a.status === status).length, inCategory = name => results.filter(a => a.category === name).length;
     const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
-    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), futureExpansion: inCategory('Future expansion'),
+    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), futureExpansion: inCategory('Future expansion'), notAccepted: inCategory('Not accepted'),
       territories: (state.territories || []).length, pendingCorrections: (state.apps || []).reduce((n, a) => n + (a.pending?.length || 0), 0), source: state.source || null, slotsTotal, slotsRecommended: count('Recommended') };
     return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Data required', data.dataRequired),
-      fieldOf('Future expansion', data.futureExpansion), fieldOf('Territories uploaded', data.territories),
+      fieldOf('Future expansion', data.futureExpansion), fieldOf('Not accepted', data.notAccepted), fieldOf('Territories uploaded', data.territories),
       fieldOf('Pending data corrections', data.pendingCorrections), fieldOf('Data source', data.source)].filter(Boolean), gaps: [] };
   }
   function applicationsData({ results = [] }) {
@@ -206,11 +206,12 @@
       'Investment required is the cost to open one store in the base case:',
       '• fit-out per sq ft, a rent deposit, opening stock, the franchise fee, pre-opening costs and a few months of fixed costs as a reserve.',
       '• Rent and wages follow the city tier (HRA class X, Y or Z). The range runs from the cheapest to the most expensive end of each cost.'] },
-    { topic: /\b(categor(?:y|ies)|classif\w*|data required|future expansion)\b/i, text: [
+    { topic: /\b(categor(?:y|ies)|classif\w*|data required|future expansion|not accepted)\b/i, text: [
       'Every application falls into one of three categories:',
       '• Recommended: meets the requirements and has a territory slot.',
       '• Data required: something is missing, conflicting or below a requirement (funding, area, site, floor, launch timing).',
-      '• Future expansion: a good application where the location does not fit right now (slot taken, existing store, or a territory the brand is not opening).'] }
+      '• Future expansion: a good application where the location does not fit right now (a higher-ranked applicant has the slot, or the brand is not opening in that pin code).',
+      '• Not accepted: a store already trades in that pin code, and the brand never opens two stores in one pin code.'] }
   ];
   function methodAnswer(text, ctx, doc) {
     // A question about a named application belongs to the rule bot, which knows that applicant's reasons.

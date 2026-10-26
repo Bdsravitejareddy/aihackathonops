@@ -71,7 +71,7 @@
     const recommended = apps.filter(a => a.status === 'Recommended').length;
     const orphan = apps.filter(a => !territory.pins.map(String).includes(String(a.pin))).length;
     const noSlots = territory.slots === 0;
-    const slots = noSlots ? '<span class="te-meta-label">Recommended</span><span class="tag gray te-noslots">No open slots</span>' : `<span class="te-meta-label">Recommended</span><span class="te-meta-value">${recommended}<span class="te-of"> / ${escape(territory.slots ?? '?')}</span></span>`;
+    const slots = noSlots ? '<span class="te-meta-label" data-tip-key="slots" tabindex="0">Recommended</span><span class="tag gray te-noslots">No open slots</span>' : `<span class="te-meta-label" data-tip-key="slots" tabindex="0">Recommended</span><span class="te-meta-value">${recommended}<span class="te-of"> / ${escape(territory.slots ?? '?')}</span></span>`;
     const key = `t:${territory.id}`;
     const pins = territory.pins.map(pin => pinBlock(territory, pin, applications)).join('');
     return `<section class="panel territory-card te-card${noSlots ? ' is-full' : ''}" data-territory="${escape(territory.id)}">
@@ -79,7 +79,7 @@
       <div class="te-city">${escape(territory.city)}</div>
       <div class="small-text muted te-place">${escape(territory.tier)} · ${escape(territory.state)}</div>
       ${territory.issues?.length ? `<div class="info-row warning">${territory.issues.map(escape).join('<br>')}</div>` : ''}
-      <div class="te-meta"><div><span class="te-meta-label">Applications</span><span class="te-meta-value">${apps.length}</span></div><div>${slots}</div></div>
+      <div class="te-meta"><div><span class="te-meta-label" data-tip-key="applications" tabindex="0">Applications</span><span class="te-meta-value">${apps.length}</span></div><div>${slots}</div></div>
       <div class="te-kpi-holder" data-te-kpis="${escape(territory.id)}"><div class="te-kpis te-kpis--loading" aria-busy="true">${['Catchment population', 'TAM · category spend', 'Investment required', 'Payback · base case'].map(label => `<div class="te-kpi"><span class="te-label">${label}</span><strong class="te-value">…</strong></div>`).join('')}</div></div>
       ${noSlots ? '<p class="te-note-line">This territory has no open slots, so no store investment is counted.</p>' : ''}
       ${orphan ? `<p class="te-note-line">${orphan} application${orphan === 1 ? '' : 's'} list a PIN outside this territory.</p>` : ''}

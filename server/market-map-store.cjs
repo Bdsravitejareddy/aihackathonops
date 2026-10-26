@@ -7,6 +7,7 @@ const ALLOWED_METRICS = new Set(['population','populationDensity','households','
 const canonicalId = (kind, id) => String(id).startsWith(`${kind}:`) ? String(id) : `${kind}:${id}`;
 const priorityCatalog = require('../data/india-geography/karnataka-priority-places.json');
 const priorityPlaces = priorityCatalog.places;
+const { missingEvidence } = require('./market-evidence.cjs');
 const priorityById = new Map(priorityPlaces.map(place => [place.id, place]));
 const placeRow = place => ({ external_id:place.id, kind:place.level, name:place.name, parent_external_id:place.parentId,
   geometry:place.geometry, area_km2:null, properties:{ sourceCode:place.sourceCode, state:place.state, city:place.city,
@@ -38,6 +39,14 @@ function metric(value, unit, evidenceClass, source = null, warnings = []) {
   const available = Number.isFinite(value);
   return { value: available ? value : null, unit, evidenceClass: available ? evidenceClass : 'unavailable', evidence: source ? [source] : [], warnings: available ? warnings : warnings.concat('Required source data or explicit scenario assumptions are unavailable.') };
 }
+
+const gapFor = key => {
+  if (['population','households'].includes(key)) return missingEvidence('geography_mismatch', 'Use a supported census geography or add a validated crosswalk for this location.');
+  if (key === 'competitorCount') return missingEvidence('not_integrated', 'Add a verified competitor dataset or record a dated local store survey.');
+  if (['tam','sam','som','apparelExpenditure','populationDensity','revenue'].includes(key)) return missingEvidence('missing_calculation_dependency', 'Provide the supported source metrics and explicit assumptions this calculation requires.');
+  if (['monthlyPerCapitaSpend','incomeProxy','ageGroups','malePopulation','femalePopulation'].includes(key)) return missingEvidence('source_unavailable', 'Use a compatible cited source when available; keep this metric blank until then.');
+  return missingEvidence('user_input_required', 'Provide a supported value or required assumption, then recalculate.');
+};
 
 function normalizeFeature(row, metricKey, scenario = {}) {
   const p = row.properties || {};
@@ -87,6 +96,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     paybackMonths: metric(p.paybackMonths ?? null, 'months', 'model_assumption', sourceFor('paybackMonths')),
     viability: metric(p.viability ?? null, 'score / 100', 'derived_estimate', sourceFor('viability'))
   };
+  for (const [key, value] of Object.entries(metrics)) if (value.value === null) value.missing = gapFor(key);
   return {
     id: row.external_id,
     sourceCode: p.sourceCode || row.external_id,

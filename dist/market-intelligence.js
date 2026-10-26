@@ -10,6 +10,13 @@
   const money = value => Number.isFinite(Number(value)) && value !== null ? '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits:0 }) : 'Unavailable';
   const count = value => Number.isFinite(Number(value)) && value !== null ? Number(value).toLocaleString('en-IN') : 'Unavailable';
   const valueOf = metric => metric && metric.status !== 'unavailable' && Number.isFinite(Number(metric.value)) && metric.value !== null ? metric.value : null;
+  const causeLabels = { source_unavailable:'Source unavailable', not_integrated:'Source not integrated', geography_mismatch:'Geography mismatch', missing_calculation_dependency:'Missing calculation dependency', api_database_failure:'API/database failure', user_input_required:'User input required' };
+  const fallbackAction = { population:'Use a supported census geography or add a validated population crosswalk.', monthlyPerCapitaSpend:'Check for a compatible cited spending benchmark at this geography.', incomeProxy:'Add a compatible, cited local income source before applying an income adjustment.', tam:'Supply supported population and annual per-person spend inputs.', sam:'Resolve TAM evidence, then document category, audience, price and accessibility factors.', som:'Resolve SAM evidence, then enter an explicit capture assumption.', competitorCount:'Add verified competitor coverage or record a dated local store survey.', breakEvenRevenue:'Enter monthly fixed costs and a gross margin above royalties.', paybackMonths:'Enter investment, revenue, fixed costs and a valid contribution margin.' };
+  const gapDescription = (key, item) => {
+    if (!item || item.value !== null && item.value !== undefined) return null;
+    const cause = item.missing?.cause || 'user_input_required';
+    return `${causeLabels[cause] || 'Evidence gap'}: ${item.missing?.nextAction || fallbackAction[key] || 'Provide a supported source or required input, then recalculate.'}`;
+  };
   const cleanUrl = url => { try { const parsed = new URL(url); return ['https:','http:'].includes(parsed.protocol) ? parsed.href : null; } catch { return null; } };
   const element = (doc, tag, className, text) => { const node = doc.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
   const metricLine = (doc, label, metric, formatter = money) => {
@@ -78,6 +85,8 @@
     if (!competitors.length) missing.push('local competitor inventory');
     if (valueOf(metrics.breakEvenRevenue) === null && forecast?.economics?.breakEvenRevenueMonthly == null) missing.push('store costs and margin');
     next.append(element(doc,'p','',missing.length ? `Missing: ${missing.join('; ')}.` : 'Review comparable store sales and local access before making an investment decision.'));
+    const uniqueGaps = [...new Set([...Object.entries(geographic), ...Object.entries(metrics)].map(([key,item])=>gapDescription(key,item)).filter(Boolean))];
+    if (uniqueGaps.length) { const list=element(doc,'ul','mi-gap-actions'); for (const action of uniqueGaps) list.append(element(doc,'li','',action)); next.append(list); }
     target.append(next);
     const drawer = element(doc,'details','mi-evidence'); drawer.append(element(doc,'summary','','Evidence & Methodology'));
     const list = element(doc,'ul',''); list.dataset.miEvidence = '';
@@ -166,7 +175,7 @@
             article.append(links);researchBody.append(article);shown++;
           }
           if(!shown)researchBody.textContent='No cited context cards were returned.';
-        } catch(error) { if(revision===researchRevision&&researchPanel.isConnected) researchBody.textContent=`Research unavailable: ${error.message||'service could not respond'}. The market snapshot remains available.`; }
+        } catch(error) { if(revision===researchRevision&&researchPanel.isConnected) researchBody.textContent=`API/database failure: ${error.message||'service could not respond'}. Retry the research service; the market snapshot remains available.`; }
         finally { if(revision===researchRevision&&researchPanel.isConnected) refresh.disabled=false; }
       }
       refresh.addEventListener('click',()=>loadResearch(true));
@@ -236,7 +245,7 @@
           suggestions.append(button);
         }
         if (!rows?.length) suggestions.append(element(doc,'p','mi-note','No sourced match yet. You can analyse a manually entered place with missing evidence shown.'));
-      } catch { if (current === revision) suggestions.append(element(doc,'p','mi-note','Location search is temporarily unavailable.')); }
+      } catch { if (current === revision) suggestions.append(element(doc,'p','mi-note','API/database failure: location search is temporarily unavailable. Retry the search service or select a manually entered location and review its evidence gaps.')); }
     });
     if (query && !selectedLocation) { locationInput.value=query; locationInput.dispatchEvent(new win.Event('input',{bubbles:true})); }
     function setLocation(location) {

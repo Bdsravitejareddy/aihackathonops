@@ -1,6 +1,7 @@
 'use strict';
 
 const DEFAULT_ELASTICITIES = Object.freeze([0.5, 0.75, 1, 1.25]);
+const { missingEvidence } = require('./market-evidence.cjs');
 
 function isPositiveFinite(value) {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
@@ -10,8 +11,8 @@ function metric(status, value, unit, evidenceClass, assumptions = [], warnings =
   return { status, value, unit, evidenceClass, assumptions, warnings };
 }
 
-function unavailable(unit, reason, assumptions = []) {
-  return metric('unavailable', null, unit, 'derived_estimate', assumptions, [reason]);
+function unavailable(unit, reason, assumptions = [], cause = 'user_input_required', nextAction = 'Provide the missing input, then recalculate this assessment.') {
+  return { ...metric('unavailable', null, unit, 'derived_estimate', assumptions, [reason]), missing: missingEvidence(cause, nextAction) };
 }
 
 function finiteEstimate(value, unit, assumptions, warning) {
@@ -85,12 +86,12 @@ function calculateMarketAssessment(input = {}) {
 
   metrics.annualPerCapitaSpend = isPositiveFinite(monthlyPerCapitaSpend)
     ? finiteEstimate(monthlyPerCapitaSpend * 12, 'INR/person/year', [...spendAssumptions, 'Monthly per-capita spend multiplied by 12.'], 'Annualizing monthly per-capita spend overflowed the supported numeric range.')
-    : unavailable('INR/person/year', 'A positive monthly per-capita spend or convertible household spend is required.', spendAssumptions);
+    : unavailable('INR/person/year', 'A positive monthly per-capita spend or convertible household spend is required.', spendAssumptions, 'user_input_required', 'Enter a sourced monthly per-person spend, or household spend with household size.');
 
   const population = demand.population;
   metrics.tam = isPositiveFinite(population) && metrics.annualPerCapitaSpend.value !== null
     ? finiteEstimate(population * metrics.annualPerCapitaSpend.value, 'INR/year', [`Population ${population} × annual per-capita spend; no household conversion applied.`], 'TAM multiplication overflowed the supported numeric range.')
-    : unavailable('INR/year', 'TAM requires positive population and per-capita spend.');
+    : unavailable('INR/year', 'TAM requires positive population and per-capita spend.', [], 'missing_calculation_dependency', 'Supply supported population and annual per-person spend inputs; TAM will remain blank until both are present.');
 
   const names = ['categoryShare', 'audienceFit', 'priceEligibility', 'accessibility'];
   const factors = names.map(name => factor(segmentation[name], name, [], warnings));
@@ -99,11 +100,11 @@ function calculateMarketAssessment(input = {}) {
     const share = factors.reduce((product, value) => product * value, 1);
     metrics.sam = finiteEstimate(metrics.tam.value * share, 'INR/year', names.map((name, index) => `${name}=${factors[index]} applied once.`), 'SAM calculation overflowed the supported numeric range.');
   } else {
-    metrics.sam = unavailable('INR/year', 'SAM requires TAM and explicit category, audience, price, and accessibility factors.');
+    metrics.sam = unavailable('INR/year', 'SAM requires TAM and explicit category, audience, price, and accessibility factors.', [], metrics.tam.value === null ? 'missing_calculation_dependency' : 'user_input_required', metrics.tam.value === null ? 'Resolve the TAM population and spend dependencies first.' : 'Enter documented category share, audience fit, price eligibility, and accessibility factors.');
   }
   metrics.som = metrics.sam.value !== null && captureRate !== null
     ? finiteEstimate(metrics.sam.value * captureRate, 'INR/year', [`Capture rate ${captureRate} applied once to SAM.`], 'SOM calculation overflowed the supported numeric range.')
-    : unavailable('INR/year', 'SOM requires SAM and an explicit capture rate from 0 to 1.');
+    : unavailable('INR/year', 'SOM requires SAM and an explicit capture rate from 0 to 1.', [], metrics.sam.value === null ? 'missing_calculation_dependency' : 'user_input_required', metrics.sam.value === null ? 'Resolve the SAM dependencies first.' : 'Enter an explicit capture rate from 0 to 1.');
 
   const royaltyRate = economics.royaltyRate === undefined ? 0 : economics.royaltyRate;
   const contributionMargin = isPositiveFinite(economics.grossMargin) && economics.grossMargin <= 1
@@ -115,14 +116,14 @@ function calculateMarketAssessment(input = {}) {
       ...(economics.royaltyRate === undefined ? ['Royalty rate was not supplied and is assumed to be 0 for this calculation.'] : [])
     ], 'Break-even calculation overflowed the supported numeric range.');
   } else {
-    metrics.breakEvenRevenue = unavailable('INR/month', 'Break-even revenue requires positive monthly fixed costs and a gross margin greater than the supplied royalty rate.');
+    metrics.breakEvenRevenue = unavailable('INR/month', 'Break-even revenue requires positive monthly fixed costs and a gross margin greater than the supplied royalty rate.', [], 'user_input_required', 'Enter monthly fixed costs and a gross margin above the royalty rate.');
   }
   const monthlyContribution = isPositiveFinite(economics.monthlyRevenue) && contributionMargin !== null
     ? economics.monthlyRevenue * contributionMargin - (Number.isFinite(economics.monthlyFixedCosts) && economics.monthlyFixedCosts >= 0 ? economics.monthlyFixedCosts : NaN)
     : NaN;
   metrics.paybackMonths = isPositiveFinite(economics.initialInvestment) && Number.isFinite(monthlyContribution) && monthlyContribution > 0
     ? finiteEstimate(economics.initialInvestment / monthlyContribution, 'months', ['Initial investment divided by positive monthly contribution after fixed costs; assumes constant monthly performance.'], 'Payback calculation overflowed the supported numeric range.')
-    : unavailable('months', 'Payback requires positive initial investment and positive monthly contribution after fixed costs.');
+    : unavailable('months', 'Payback requires positive initial investment and positive monthly contribution after fixed costs.', [], 'missing_calculation_dependency', 'Provide initial investment, monthly revenue, fixed costs, and a valid gross margin/royalty rate.');
 
   const riskWarnings = [];
   if (input.risk?.downsideCashFlowNegative === true) riskWarnings.push('Downside scenario has negative cash flow.');

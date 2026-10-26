@@ -26,6 +26,16 @@ test('missing, zero, negative and non-finite proxies remain unavailable', () => 
   }
 });
 
+test('missing calculation and user-input gaps expose stable causes and practical actions', () => {
+  const result = calculateMarketAssessment({});
+  assert.equal(result.metrics.annualPerCapitaSpend.value, null);
+  assert.equal(result.metrics.annualPerCapitaSpend.missing.cause, 'user_input_required');
+  assert.match(result.metrics.annualPerCapitaSpend.missing.nextAction, /sourced monthly/i);
+  assert.equal(result.metrics.tam.value, null);
+  assert.equal(result.metrics.tam.missing.cause, 'missing_calculation_dependency');
+  assert.match(result.metrics.tam.missing.nextAction, /population and annual per-person spend/i);
+});
+
 test('assessment keeps per-capita and household expenditure as distinct units', () => {
   const perCapita = calculateMarketAssessment({ demand: { population: 1000, monthlyPerCapitaSpend: 200 } });
   assert.equal(perCapita.metrics.annualPerCapitaSpend.unit, 'INR/person/year');
@@ -54,6 +64,7 @@ test('break-even and payback require complete inputs and return transparent valu
   assert.equal(result.metrics.paybackMonths.value, 12);
   const incomplete = calculateMarketAssessment({ economics: { monthlyFixedCosts: 100000, grossMargin: 0 } });
   assert.equal(incomplete.metrics.breakEvenRevenue.value, null);
+  assert.equal(incomplete.metrics.breakEvenRevenue.missing.cause, 'user_input_required');
   assert.equal(incomplete.metrics.paybackMonths.value, null);
 });
 

@@ -104,6 +104,19 @@ test('analysed snapshot names missing dimensions and deduplicates relevant evide
   assert.equal(h.rootElement.querySelector('a[href="https://example.org/hces"]').textContent.includes('HCES'),true);
 });
 
+test('missing market evidence shows its cause and a practical next action while preserving null', t => {
+  const h = snapshotHarness({analyzed:true,selectedLocation:{name:'560026',level:'pin',metrics:{
+    population:{value:null,missing:{cause:'geography_mismatch',nextAction:'Use a supported census geography or add a validated PIN-to-population crosswalk.'}},
+    monthlyPerCapitaSpend:{value:null,missing:{cause:'source_unavailable',nextAction:'Select a region with a published benchmark.'}}
+  }},result:{metrics:{tam:{value:null,status:'unavailable',missing:{cause:'missing_calculation_dependency',nextAction:'Supply population and spend inputs.'}}}}});
+  t.after(()=>h.dom.window.close());
+  const text=h.rootElement.querySelector('[data-mi-results]').textContent;
+  assert.match(text,/geography mismatch/i);
+  assert.match(text,/validated PIN-to-population crosswalk/i);
+  assert.match(text,/source unavailable/i);
+  assert.match(text,/supply population and spend inputs/i);
+});
+
 test('commercial and advanced controls retain existing field names for the API', t => {
   const h = snapshotHarness({ analyzed:true }); t.after(() => h.dom.window.close());
   assert.ok(h.rootElement.querySelector('[data-mi-commercial] [name="investment"]'));
@@ -134,7 +147,8 @@ test('grounded research cards display cited context without changing numeric sna
 test('research outage leaves the deterministic snapshot usable', async t => {
   const h=snapshotHarness({analyzed:true,selectedLocation:{id:'ka',name:'Karnataka',level:'state'},research:async()=>{throw Error('Research unavailable');}});
   t.after(()=>h.dom.window.close());await new Promise(resolve=>setImmediate(resolve));
-  assert.match(h.rootElement.querySelector('[data-mi-research]').textContent,/Research unavailable/);
+  assert.match(h.rootElement.querySelector('[data-mi-research]').textContent,/API\/database failure/i);
+  assert.match(h.rootElement.querySelector('[data-mi-research]').textContent,/retry the research service/i);
   assert.equal(h.rootElement.querySelector('[data-mi-results]').hidden,false);
 });
 

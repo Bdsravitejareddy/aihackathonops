@@ -21,6 +21,13 @@ test('PIN 560026 resolves to sourced Bengaluru postal offices and Karnataka HCES
   assert.equal(place.metrics.annualPerCapitaSpend.value, 4490.64);
   assert.equal(place.metrics.apparelExpenditure.value, null);
   assert.equal(place.metrics.tam.value, null);
+  assert.deepEqual(place.metrics.population.missing, {
+    cause: 'geography_mismatch',
+    nextAction: 'Use a supported census geography or add a validated PIN-to-population crosswalk.'
+  });
+  assert.equal(place.metrics.tam.missing.cause, 'missing_calculation_dependency');
+  assert.equal(place.metrics.competitorCount.missing.cause, 'not_integrated');
+  assert.equal(place.metrics.population.value, null, 'missing evidence must remain null');
   assert.ok(place.evidence.some(row => /Department of Posts/i.test(row.publisher)));
   assert.ok(place.evidence.some(row => /MoSPI/i.test(row.publisher)));
 });

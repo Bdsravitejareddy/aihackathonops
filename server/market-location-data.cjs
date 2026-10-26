@@ -2,9 +2,11 @@
 
 const postalSnapshot = require('../data/india-pin-postal-snapshot.json');
 const benchmarkCatalog = require('../data/india-market-benchmarks.json');
+const { missingEvidence } = require('./market-evidence.cjs');
 
 function createMarketLocationData({ pins = postalSnapshot.pins, benchmarks = benchmarkCatalog.observations } = {}) {
   const byPin = new Map(pins.map(item => [item.pin, item]));
+  const gap = missingEvidence;
   function resolvePin(pin) {
     if (!/^\d{6}$/.test(String(pin || ''))) return null;
     const record = byPin.get(String(pin));
@@ -80,18 +82,18 @@ function createMarketLocationData({ pins = postalSnapshot.pins, benchmarks = ben
       areaKm2: null,
       sourceVersion: postalSnapshot.version,
       metrics: {
-        population: { value: null, unit: 'people', evidenceClass: 'unavailable', evidence: [], warnings: ['No defensible population-to-PIN crosswalk or PIN boundary is available.'] },
-        populationDensity: { value: null, unit: 'people/km²', evidenceClass: 'unavailable', evidence: [], warnings: ['PIN geometry and compatible population are unavailable.'] },
-        households: { value: null, unit: 'households', evidenceClass: 'unavailable', evidence: [], warnings: ['No PIN-level household count is available.'] },
-        incomeProxy: { value: null, unit: 'INR/person/month', evidenceClass: 'unavailable', evidence: [], warnings: ['No compatible local income proxy is available; no income adjustment is applied.'] },
-        monthlyPerCapitaSpend: spend || { value: null, unit: 'INR/person/month', evidenceClass: 'unavailable', evidence: [], warnings: ['No state-sector HCES benchmark is present for this location.'] },
-        annualPerCapitaSpend: annualSpend || { value: null, unit: 'INR/person/year', evidenceClass: 'unavailable', evidence: [], warnings: ['No compatible HCES benchmark is available.'] },
-        apparelExpenditure: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], warnings: ['Total market expenditure requires a defensible PIN catchment population.'] },
-        tam: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], warnings: ['TAM requires a supported catchment population; no city total is substituted for this PIN.'] },
-        sam: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], warnings: ['SAM requires TAM and documented target-category, brand-fit, and accessibility factors.'] },
-        som: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], warnings: ['SOM requires a supported SAM and an explicit market-capture assumption.'] },
-        competitorCount: { value: null, unit: 'stores', evidenceClass: 'unavailable', evidence: [], warnings: ['No verified competitor inventory is available for this PIN.'] },
-        revenue: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], warnings: ['Store revenue requires a store-specific demand or observed footfall model.'] }
+        population: { value: null, unit: 'people', evidenceClass: 'unavailable', evidence: [], missing: gap('geography_mismatch', 'Use a supported census geography or add a validated PIN-to-population crosswalk.'), warnings: ['No defensible population-to-PIN crosswalk or PIN boundary is available.'] },
+        populationDensity: { value: null, unit: 'people/km²', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Add a compatible population observation and PIN-area geometry before calculating density.'), warnings: ['PIN geometry and compatible population are unavailable.'] },
+        households: { value: null, unit: 'households', evidenceClass: 'unavailable', evidence: [], missing: gap('geography_mismatch', 'Use a supported census geography or add a validated PIN-to-household crosswalk.'), warnings: ['No PIN-level household count is available.'] },
+        incomeProxy: { value: null, unit: 'INR/person/month', evidenceClass: 'unavailable', evidence: [], missing: gap('source_unavailable', 'Use a compatible, cited local income source when one is available; leave the income adjustment blank meanwhile.'), warnings: ['No compatible local income proxy is available; no income adjustment is applied.'] },
+        monthlyPerCapitaSpend: spend || { value: null, unit: 'INR/person/month', evidenceClass: 'unavailable', evidence: [], missing: gap('source_unavailable', 'Check for a published HCES benchmark matching this state and sector; keep the value blank if none is available.'), warnings: ['No state-sector HCES benchmark is present for this location.'] },
+        annualPerCapitaSpend: annualSpend || { value: null, unit: 'INR/person/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Provide a compatible monthly HCES benchmark before annualizing per-person spend.'), warnings: ['No compatible HCES benchmark is available.'] },
+        apparelExpenditure: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Provide a supported catchment population and compatible spending benchmark; no market total is inferred.'), warnings: ['Total market expenditure requires a defensible PIN catchment population.'] },
+        tam: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Provide supported catchment population and compatible annual per-person spend before calculating TAM.'), warnings: ['TAM requires a supported catchment population; no city total is substituted for this PIN.'] },
+        sam: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Resolve TAM evidence, then document target-category, brand-fit, and accessibility factors.'), warnings: ['SAM requires TAM and documented target-category, brand-fit, and accessibility factors.'] },
+        som: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Resolve SAM evidence, then enter an explicit market-capture assumption.'), warnings: ['SOM requires a supported SAM and an explicit market-capture assumption.'] },
+        competitorCount: { value: null, unit: 'stores', evidenceClass: 'unavailable', evidence: [], missing: gap('not_integrated', 'Build a verified competitor inventory for this PIN or record a dated local store survey.'), warnings: ['No verified competitor inventory is available for this PIN.'] },
+        revenue: { value: null, unit: 'INR/year', evidenceClass: 'unavailable', evidence: [], missing: gap('missing_calculation_dependency', 'Provide store-specific demand assumptions or observed footfall and conversion evidence before projecting revenue.'), warnings: ['Store revenue requires a store-specific demand or observed footfall model.'] }
       },
       evidence: [postalEvidence, ...(urban ? [hcesSource(urban)] : []), ...(rural ? [hcesSource(rural)] : [])],
       confidence: urban ? 'postal location verified; spend is state-sector benchmark; PIN demand unsupported' : 'postal location verified; economic evidence missing',

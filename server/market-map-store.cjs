@@ -102,7 +102,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     breakEvenRevenue: metric(p.breakEvenRevenue ?? null, 'INR/year', 'model_assumption', sourceFor('breakEvenRevenue')),
     paybackMonths: metric(p.paybackMonths ?? null, 'months', 'model_assumption', sourceFor('paybackMonths')),
     potentialRevenue: { ...metric(potentialRevenue, 'INR/year', 'derived_estimate', sourceFor('organisedStoreShare'), [`Potential revenue = modelled 2020 population (${p.modelPopulation ?? p.population ?? 'n/a'}) × rural/urban HCES 2023-24 clothing & footwear spend × 12 × organised physical-store share (${storeShare ?? 'n/a'}: 41% organised × 78% offline, CareEdge FY25). Area-wide demand, not one store's sales.`]),
-      evidence: sourceRows.filter(item => ['population','apparelSpendPerPersonMonthly','organisedStoreShare'].includes(item.metric)), components: { population2020: p.modelPopulation ?? (p.populationReferenceYear === 2020 ? population : null), annualApparelExpenditure2020: modelAnnual, organisedStoreShare: storeShare } },
+      evidence: sourceRows.filter(item => ['population','apparelSpendPerPersonMonthly','organisedStoreShare'].includes(item.metric)), components: { population2020: p.modelPopulation ?? (p.populationReferenceYear === 2020 ? population : null), urbanPopulation2020: p.modelUrbanPopulation ?? (p.populationReferenceYear === 2020 && Number.isFinite(Number(p.urbanPopulation)) && p.urbanPopulation !== null ? Number(p.urbanPopulation) : null), annualApparelExpenditure2020: modelAnnual, organisedStoreShare: storeShare } },
     viability: metric(p.viability ?? null, 'score / 100', 'derived_estimate', sourceFor('viability'))
   };
   for (const [key, value] of Object.entries(metrics)) if (value.value === null) value.missing = gapFor(key);

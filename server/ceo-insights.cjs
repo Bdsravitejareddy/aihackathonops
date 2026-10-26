@@ -13,7 +13,9 @@ const tierText = tier => tier.tierClass === 'mixed' ? 'state-wide mixed city-tie
 const weakest = (...badges) => badges.sort((a, b) => BADGE_RANK[a] - BADGE_RANK[b])[0];
 
 /** The ranking metric: potentialRevenue where the map supplies it, otherwise annual clothing & footwear spend. */
-function rankingMetric(features) {
+function rankingMetric(features, sector = null) {
+  // A researched sector never falls back to apparel spend: without its potential revenue the areas are unranked.
+  if (sector && !sector.builtIn) return 'potentialRevenue';
   return features.some(f => finite(f.metrics?.potentialRevenue?.value)) ? 'potentialRevenue' : 'apparelExpenditure';
 }
 
@@ -33,10 +35,10 @@ function rankAreas(features, metric) {
  * @param loadGeography  async id → geography, the same loader the Analysis endpoint uses
  * @param stores     number of stores for the capital card
  */
-async function buildCeoInsights({ features, loadGeography, stores = 5, topN = 5 }) {
+async function buildCeoInsights({ features, loadGeography, stores = 5, topN = 5, sector = null }) {
   if (!Array.isArray(features)) throw new TypeError('features must be an array');
   if (!Number.isInteger(stores) || stores < 1 || stores > 100) throw new RangeError('stores must be an integer from 1 to 100');
-  const metric = rankingMetric(features), metricLabel = metric === 'potentialRevenue' ? 'potential revenue' : 'annual clothing & footwear spend';
+  const metric = rankingMetric(features, sector), metricLabel = metric === 'potentialRevenue' ? `${sector && !sector.builtIn ? sector.name.toLowerCase() + ' ' : ''}potential revenue` : 'annual clothing & footwear spend';
   const { ranked, insufficient } = rankAreas(features, metric);
   const top = ranked.slice(0, topN), cards = [], warnings = [];
 
@@ -55,7 +57,7 @@ async function buildCeoInsights({ features, loadGeography, stores = 5, topN = 5 
   const analysed = [];
   for (const item of top) {
     const geography = await loadGeography(item.id);
-    if (geography) analysed.push({ item, analysis: analyzeLocation({ geography }) });
+    if (geography) analysed.push({ item, analysis: analyzeLocation({ geography, sector }) });
   }
   const byReturn = [...analysed].sort((a, b) => {
     const pa = a.analysis.scenarios.mid.paybackMonths ?? Infinity, pb = b.analysis.scenarios.mid.paybackMonths ?? Infinity;

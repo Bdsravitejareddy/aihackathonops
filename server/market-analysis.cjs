@@ -137,7 +137,23 @@ function validateOverrides(overrides) {
   return out;
 }
 
-function buildAssumptions(tier, income, overrides) {
+// Sector store format fields that replace the apparel cost catalog values (same value at every level).
+const SECTOR_STORE_MAP = { areaSqFt: 'areaSqFt', revenuePerSqFtYear: 'revenuePerSqFtYear', capexPerSqFt: 'fitOutPerSqFt', grossMargin: 'grossMargin', royaltyRate: 'royaltyRate', sqFtPerEmployee: 'sqFtPerEmployee' };
+
+function applySectorStore(assumptions, sector) {
+  if (!sector?.store) return;
+  for (const [field, key] of Object.entries(SECTOR_STORE_MAP)) {
+    const value = sector.store[field];
+    if (!finite(value)) continue;
+    const cited = sector.evidence?.[`store.${field}`];
+    assumptions[key] = { ...assumptions[key], value: { low: value, mid: value, high: value },
+      evidenceClass: cited ? 'derived_estimate' : 'model_assumption',
+      sources: cited ? [{ title: cited.title || null, url: cited.url, supportingPassage: cited.quote || undefined }].map(sourceRef) : [],
+      method: `${sector.name} store format${cited ? '' : ' (assumption: ' + (sector.rationale?.[`store.${field}`] || 'unsourced') + ')'}.`, caveat: 'One value for all scenarios; edit the sector profile or override here.', sector: sector.id };
+  }
+}
+
+function buildAssumptions(tier, income, overrides, sector = null) {
   const assumptions = {};
   for (const [key, item] of Object.entries(costCatalog.assumptions)) {
     const value = item.byTierClass ? Object.fromEntries(LEVELS.map(level => [level, item.byTierClass[tier.levels[level]][level]])) : { ...item.value };
@@ -151,6 +167,7 @@ function buildAssumptions(tier, income, overrides) {
     value: incomeRate !== null && incomeRate > cpi ? { low: cpi, mid: (cpi + incomeRate) / 2, high: incomeRate } : { low: 0.04, mid: 0.05, high: 0.06 },
     evidenceClass: incomeRate !== null ? 'derived_estimate' : 'model_assumption', sources: [...growth.sources.map(sourceRef), ...(incomeRate !== null ? [income.source] : [])],
     method: growth.method, caveat: 'Assumes same-store sales track prices (low) up to full state income growth (high).', overridden: false };
+  applySectorStore(assumptions, sector);
   for (const [key, levels] of Object.entries(overrides)) {
     if (key === 'annualRevenue') continue;
     assumptions[key] = { ...assumptions[key], value: { ...assumptions[key].value, ...levels }, evidenceClass: 'user_assumption', overridden: true };
@@ -253,11 +270,12 @@ function projectScenario({ investment, annualRevenue, fixedMonthly, contribution
 }
 
 /** Full analysis for one geography. Throws RangeError for invalid overrides. */
-function analyzeLocation({ geography, overrides } = {}) {
+function analyzeLocation({ geography, overrides, sector = null } = {}) {
   if (!geography || typeof geography !== 'object') throw new TypeError('geography is required');
   const checked = validateOverrides(overrides);
   const tier = resolveTier(geography), incomeTrend = estimateIncomeTrend(geography);
-  const assumptions = buildAssumptions(tier, incomeTrend, checked);
+  const assumptions = buildAssumptions(tier, incomeTrend, checked, sector?.builtIn ? null : sector);
+  const categoryLabel = sector && !sector.builtIn ? sector.name.toLowerCase() : 'apparel';
   const costRange = estimateCostRange(assumptions);
   const base = revenueBase(geography, assumptions, checked.annualRevenue);
   const warnings = [...tier.warnings];
@@ -291,28 +309,36 @@ function analyzeLocation({ geography, overrides } = {}) {
   for (const s of Object.values(scenarios)) {
     if (s.paybackMonths !== null && s.paybackMonths < 1) warnings.push(`${s.label}: payback under one month is implausible.`);
     if (s.paybackMonths === 1) warnings.push(`${s.label}: payback in the first month is implausible; check revenue and investment inputs.`);
-    if (s.roi5YearPercent !== null && s.roi5YearPercent > 500) warnings.push(`${s.label}: 5-year ROI of ${s.roi5YearPercent}% is outside the plausible range for apparel retail; check revenue and cost inputs.`);
+    if (s.roi5YearPercent !== null && s.roi5YearPercent > 500) warnings.push(`${s.label}: 5-year ROI of ${s.roi5YearPercent}% is outside the plausible range for ${categoryLabel} retail; check revenue and cost inputs.`);
     if (s.annualRoiPercent !== null && s.annualRoiPercent > 150) warnings.push(`${s.label}: annual ROI of ${s.annualRoiPercent}% is implausibly high.`);
     if (s.roi5YearPercent !== null && s.roi5YearPercent < -100) warnings.push(`${s.label}: operating losses exceed the initial investment over 5 years.`);
   }
   const density = scenarios.mid.annualRevenue / assumptions.areaSqFt.value.mid, bench = assumptions.revenuePerSqFtYear.value;
   if (density > bench.high * 2.5) warnings.push(`Base revenue implies ₹${Math.round(density).toLocaleString('en-IN')} per sq ft per year, over 2.5× the highest benchmark (₹${bench.high.toLocaleString('en-IN')}). The revenue input may be an area-wide market figure rather than one store.`);
   if (density < bench.low * 0.25) warnings.push(`Base revenue implies ₹${Math.round(density).toLocaleString('en-IN')} per sq ft per year, under a quarter of the lowest benchmark; the store may be oversized for this area.`);
-  const categorySpend = geography.metrics?.apparelExpenditure?.value;
-  if (finite(categorySpend) && categorySpend > 0 && scenarios.mid.annualRevenue > categorySpend * 0.1) warnings.push(`Base revenue would be ${round(scenarios.mid.annualRevenue / categorySpend * 100, 1)}% of the area's annual clothing and footwear spend; check capture.`);
+  const sectorSpend = categoryLabel !== 'apparel' ? geography.metrics?.categoryExpenditure?.value : null;
+  const categorySpend = sectorSpend ?? geography.metrics?.apparelExpenditure?.value;
+  if (finite(categorySpend) && categorySpend > 0 && scenarios.mid.annualRevenue > categorySpend * 0.1) warnings.push(`Base revenue would be ${round(scenarios.mid.annualRevenue / categorySpend * 100, 1)}% of the area's annual ${sectorSpend !== null && sectorSpend !== undefined ? (sector.hcesCategories || []).join(' + ') : 'clothing and footwear'} spend; check capture.`);
+  const band = sector && !sector.builtIn ? sector.store : null, rentMid = assumptions.rentPerSqFtMonth.value.mid;
+  if (finite(band?.rentPerSqFtMonthLow) && finite(band?.rentPerSqFtMonthHigh) && (rentMid < band.rentPerSqFtMonthLow || rentMid > band.rentPerSqFtMonthHigh))
+    warnings.push(`City-tier rent (₹${rentMid}/sq ft/month) is outside the ${sector.name} rent band ₹${band.rentPerSqFtMonthLow}–${band.rentPerSqFtMonthHigh}; rent stays location-based — override it if the format needs a different site type.`);
   const constraints = [...new Set(LEVELS.map(level => scenarios[level].revenueConstraint))];
   if (constraints.includes('store_capacity_limited')) warnings.push(`Area demand exceeds what one ${Math.round(assumptions.areaSqFt.value.mid).toLocaleString('en-IN')} sq ft store can sell in ${LEVELS.filter(l => scenarios[l].revenueConstraint === 'store_capacity_limited').map(l => scenarios[l].label.toLowerCase()).join(', ')} case(s); revenue is capped at store capacity. A larger format or more stores may fit this area.`);
   if (constraints.includes('demand_limited') && base.basis === 'potentialRevenue') warnings.push('Store revenue is limited by area demand (area potential × capture rate); the capture rate is a model assumption.');
   if (base.basis === 'store_capacity_benchmark') warnings.push('No area revenue potential is available, so revenue is the store capacity at benchmark sales density — a supply-side estimate, not demand evidence for this area.');
   warnings.push('Cash flows exclude tax, depreciation, financing and terminal value; the refundable deposit and inventory are not recovered within the 5-year horizon.');
   warnings.push(...incomeTrend.warnings);
+  if (sector && !sector.builtIn) {
+    const fallback = Object.entries(SECTOR_STORE_MAP).filter(([field]) => !finite(sector.store?.[field])).map(([, key]) => assumptions[key].label);
+    if (fallback.length) warnings.push(`${sector.name} has no value for ${fallback.join(', ')}; these use the apparel store benchmarks. Add them to the sector profile.`);
+  }
   const modelAssumptions = Object.entries(assumptions).filter(([, item]) => item.evidenceClass === 'model_assumption').map(([key]) => key);
   if (modelAssumptions.length) warnings.push(`Model assumptions without a sourced benchmark: ${modelAssumptions.map(key => assumptions[key].label).join(', ')}. Replace them with quotes or brand terms.`);
   const evidence = [];
   const add = item => { if (item?.url && !evidence.some(existing => existing.url === item.url)) evidence.push(item); };
   add(tier.evidence); add(incomeTrend.source);
   for (const item of Object.values(assumptions)) for (const s of item.sources || []) add(s);
-  return { modelVersion: MODEL_VERSION, geography: { id: geography.id || null, name: geography.name || null, level: geography.level || null, state: geography.state || null, city: geography.city || null },
+  return { modelVersion: MODEL_VERSION, sector: sector ? { id: sector.id, name: sector.name, version: sector.version ?? 0 } : { id: 'apparel', name: 'Apparel & fashion', version: 0 }, geography: { id: geography.id || null, name: geography.name || null, level: geography.level || null, state: geography.state || null, city: geography.city || null },
     tier: { tierClass: tier.tierClass, tier: tier.tier, classesPresent: tier.classesPresent, levels: tier.levels, matchedCity: tier.matchedCity, basis: tier.basis },
     revenueBasis: { basis: base.basis, label: base.label, annualValue: Math.round(base.value), areaPotential: base.basis === 'potentialRevenue' ? Math.round(base.value) : null, evidenceClass: base.evidenceClass, storeCapacity: Math.round(base.capacity),
       constraint: Object.fromEntries(LEVELS.map(level => [level, scenarios[level].revenueConstraint])) },

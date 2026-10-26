@@ -10,7 +10,7 @@ const { createMarketMapStore } = require('./market-map-store.cjs');
 const { createMarketResearchStore } = require('./market-research-store.cjs');
 const { createMarketResearchService } = require('./market-research.cjs');
 const { normalizeDatabaseUrl } = require('./db-config.cjs');
-const { createSectorRegistry } = require('./market-sectors.cjs');
+const { createSectorRegistry, createSectorStore } = require('./market-sectors.cjs');
 const { createCompetitorService } = require('./market-competitors.cjs');
 
 function createApplicationRuntime({ allowRemote = false, logger = console } = {}) {
@@ -28,7 +28,7 @@ function createApplicationRuntime({ allowRemote = false, logger = console } = {}
   const marketMapStore = createMarketMapStore(pool);
   marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}+${priorityPlacesVersion}`;
   const marketResearchService = createMarketResearchService({ logger });
-  const sectorRegistry = createSectorRegistry();
+  const sectorRegistry = createSectorRegistry({ store: createSectorStore(pool) });
   const competitorService = createCompetitorService({ pool, research: marketResearchService, sectors: sectorRegistry, logger });
   const api = createHandler({
     store: createStore(pool),

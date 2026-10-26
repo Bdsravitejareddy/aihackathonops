@@ -9,6 +9,9 @@ const { createMarketLocationData } = require('./market-location-data.cjs');
 const { calculateCustomerMarket } = require('./customer-market-model.cjs');
 const { analyzeLocation, validateOverrides } = require('./market-analysis.cjs');
 const { buildCeoInsights } = require('./ceo-insights.cjs');
+const { APPAREL, researchSector, validateSectorProfile, profileFields } = require('./market-sectors.cjs');
+const { applySectorDemand, legendScale, itemCatalog } = require('./market-sector-demand.cjs');
+const HCES_ITEM_GROUPS = itemCatalog.itemGroups.map(group => ({ ...group, allIndiaRural: itemCatalog.allIndia.rural[group.key], allIndiaUrban: itemCatalog.allIndia.urban[group.key] }));
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -61,13 +64,29 @@ function compactMetrics(metrics = {}) {
 function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, sectorRegistry = null, competitorService = null, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024, allowRemote = false }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   // One geography loader for the Analysis panel and the CEO cards so both see identical inputs.
-  async function loadAnalysisGeography(geographyId) {
+  async function loadAnalysisGeography(geographyId, sector = null) {
     const pinPlace = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
-    if (pinPlace) return pinPlace;
+    if (pinPlace) return withSector(pinPlace, sector);
     if (!marketMapStore) throw new Error('Map geography catalog is unavailable');
-    try { return await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
+    let geography;
+    try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
     catch { throw new Error('Map geography service unavailable'); }
+    return withSector(geography, sector);
   }
+  // ?sector= (default apparel). A researched sector re-derives potential revenue from its HCES item groups.
+  async function sectorFor(id) {
+    const key = id || 'apparel';
+    if (typeof key !== 'string' || !/^[a-z0-9-]{1,60}$/.test(key)) throw Object.assign(new Error('Invalid sector'), { status: 400 });
+    let sector;
+    try { sector = sectorRegistry ? await sectorRegistry.get(key) : key === 'apparel' ? APPAREL : null; }
+    catch { throw Object.assign(new Error('Sector registry is unavailable'), { status: 503 }); }
+    if (!sector) throw Object.assign(new Error(`Unknown sector: ${key}`), { status: 404 });
+    return sector;
+  }
+  const withSector = (feature, sector) => feature && sector && !sector.builtIn ? applySectorDemand(feature, sector) : feature;
+  const sectorTag = sector => sector.builtIn ? '' : `|sector:${sector.id}@${sector.version}`;
+  const sectorSummary = sector => ({ id: sector.id, name: sector.name, version: sector.version ?? 0 });
+  const researchStatus = code => ({ invalid_name: 400, rate_limited: 429, timeout: 504, missing_api_key: 503, unavailable: 503 })[code] || 502;
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const host = req.headers.host || '';
@@ -87,6 +106,41 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
       catch { return reply(res,503,{error:'Screening lookup unavailable'}); }
     }
 
+    if (url.pathname === '/api/sectors' || url.pathname.startsWith('/api/sectors/')) {
+      if (!sectorRegistry) return reply(res, 503, { error: 'Sector registry is unavailable' });
+      const idMatch = url.pathname.match(/^\/api\/sectors\/([a-z0-9-]{1,60})$/);
+      const json = () => req.headers['content-type']?.toLowerCase().startsWith('application/json');
+      try {
+        if (req.method === 'GET' && url.pathname === '/api/sectors') return reply(res, 200, { sectors: await sectorRegistry.listSectors(), defaultId: 'apparel', hcesItemGroups: HCES_ITEM_GROUPS, hcesSource: { title: itemCatalog.source.title, url: itemCatalog.source.url, unit: itemCatalog.source.unit } });
+        if (url.pathname === '/api/sectors/research') {
+          if (req.method !== 'POST') { res.setHeader('allow', 'POST'); return reply(res, 405, { error: 'Method not allowed' }); }
+          if (!json()) return reply(res, 415, { error: 'Content-Type must be application/json' });
+          const payload = await readBody(req, 10_000);
+          const result = await researchSector({ name: payload?.name, generate: marketResearchService?.generate, parseJson: marketResearchService?.parseJson, clientId: req.socket?.remoteAddress || 'local-client' });
+          if (!result.ok) return reply(res, researchStatus(result.error.code), { error: result.error.message, code: result.error.code, manualEntry: true });
+          const existing = await sectorRegistry.get(result.profile.id);
+          return reply(res, 200, { profile: result.profile, rejected: result.rejected, warnings: result.warnings, saved: false, existing: existing ? sectorSummary(existing) : null });
+        }
+        if (req.method === 'GET' && idMatch) {
+          const sector = await sectorRegistry.get(idMatch[1]);
+          return sector ? reply(res, 200, { sector }) : reply(res, 404, { error: 'Sector not found' });
+        }
+        if (req.method === 'PUT' && idMatch) {
+          if (!json()) return reply(res, 415, { error: 'Content-Type must be application/json' });
+          const payload = await readBody(req, 100_000), previous = await sectorRegistry.get(idMatch[1]);
+          const checked = validateSectorProfile(profileFields(payload?.profile), { mode: 'edit', base: { ...(previous || {}), id: idMatch[1], research: payload?.profile?.research || previous?.research }, retrievedAt: payload?.profile?.research?.retrievedAt || null });
+          if (!checked.ok) return reply(res, 400, { error: checked.error });
+          const sector = await sectorRegistry.saveSector(checked.profile);
+          return reply(res, 200, { sector, previous: previous ? sectorSummary(previous) : null, rejected: checked.rejected, warnings: checked.warnings });
+        }
+        res.setHeader('allow', idMatch ? 'GET, PUT' : 'GET');
+        return reply(res, idMatch || url.pathname === '/api/sectors' ? 405 : 404, { error: idMatch || url.pathname === '/api/sectors' ? 'Method not allowed' : 'Not found' });
+      } catch (error) {
+        if (error.status === 400 || error.status === 413) return reply(res, error.status, { error: error.status === 413 ? 'Payload too large' : 'Invalid JSON' });
+        return reply(res, 503, { error: 'Sector storage is unavailable' });
+      }
+    }
+
     if (url.pathname === '/api/market/competitors') {
       if (req.method !== 'GET') { res.setHeader('allow', 'GET'); return reply(res, 405, { error: 'Method not allowed' }); }
       if (!competitorService) return reply(res, 503, { error: 'Competitor research is unavailable' });
@@ -102,11 +156,13 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
       const stores = url.searchParams.has('stores') ? Number(url.searchParams.get('stores')) : 5;
       if (!Number.isInteger(stores) || stores < 1 || stores > 100) return reply(res, 400, { error: 'stores must be an integer from 1 to 100' });
       if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
+      let sector;
+      try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
       try {
         // Same feature call as the national map layer (/api/market/map/levels).
-        const features = await marketMapStore.listMapGeographies({ parentId: null, level: 'state', metric: 'apparelExpenditure', scenario: { captureRate: null }, includeGeometry: false });
-        const insights = await buildCeoInsights({ features, loadGeography: loadAnalysisGeography, stores });
-        return reply(res, 200, { ...insights, sourceVersion: marketMapStore.sourceVersion || null });
+        const features = (await marketMapStore.listMapGeographies({ parentId: null, level: 'state', metric: 'apparelExpenditure', scenario: { captureRate: null }, includeGeometry: false })).map(feature => withSector(feature, sector));
+        const insights = await buildCeoInsights({ features, loadGeography: id => loadAnalysisGeography(id, sector), stores, sector });
+        return reply(res, 200, { ...insights, sector: sectorSummary(sector), sourceVersion: marketMapStore.sourceVersion || null });
       } catch { return reply(res, 503, { error: 'Insights are unavailable; the map geography service did not respond.' }); }
     }
 
@@ -266,14 +322,20 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             if (!level) return reply(res, 400, { error: 'Unknown map parent geography' });
             const scenario = { captureRate: null };
             const includeGeometry=url.searchParams.get('geometry') !== 'none';
-            const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario, includeGeometry });
+            let sector;
+            try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
+            const features = (await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario, includeGeometry })).map(feature => withSector(feature, sector));
             const missing = features.filter(feature => feature.metrics[metric]?.value === null).length;
             const warnings = features.length ? [] : ['No verified boundaries are available for this area at this level.'];
             if (missing) warnings.push(`${missing} of ${features.length} areas have no ${metric} value; they are shown as unavailable.`);
             if (features.some(feature => feature.level === 'pin')) warnings.push('PIN areas are approximate (built from India Post office locations) and their populations are modelled 2020 estimates constrained to district totals.');
             const version=marketMapStore.sourceVersion || 'india-geography-1.1.2';
-            const values={ level, features:includeGeometry?features:features.map(feature=>({...feature,geometry:null})), sourceVersion:version, legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026, level), warnings };
-            return replyPublic(req,res,values,version,includeGeometry?3600:300);
+            let legend = legendFor(metric, Number(url.searchParams.get('year')) || 2026, level);
+            // Revenue legends are tuned to apparel; rescale them by the sector's national potential.
+            const scale = metric === 'potentialRevenue' && !sector.builtIn ? legendScale(sector, APPAREL) : null;
+            if (legend && scale) legend = { ...legend, thresholds: legend.thresholds.map(value => Number(value * scale).toPrecision(2) * 1), sector: sector.id };
+            const values={ level, features:includeGeometry?features:features.map(feature=>({...feature,geometry:null})), sourceVersion:version, sector: sectorSummary(sector), legend, warnings };
+            return replyPublic(req,res,values,version+sectorTag(sector),includeGeometry?3600:300);
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/search') {
             const q = (url.searchParams.get('q') || '').trim();
@@ -290,8 +352,10 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
           if (req.method === 'GET' && detailMatch) {
             const id = decodeURIComponent(detailMatch[1]);
             const pinPlace = /^pin:\d{6}$/.test(id) ? marketLocationData?.resolvePin(id.slice(4)) : null;
-            if (pinPlace) return reply(res,200,{geography:pinPlace,evidence:pinPlace.evidence,confidence:pinPlace.confidence,sourceVersion:pinPlace.sourceVersion});
-            const geography = await marketMapStore.getMapGeography(id, 'apparelExpenditure', { captureRate: null });
+            let sector;
+            try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
+            if (pinPlace) return reply(res,200,{geography:withSector(pinPlace,sector),evidence:pinPlace.evidence,confidence:pinPlace.confidence,sourceVersion:pinPlace.sourceVersion});
+            const geography = withSector(await marketMapStore.getMapGeography(id, 'apparelExpenditure', { captureRate: null }), sector);
             if (!geography) return reply(res, 404, { error: 'Geography not found' });
             const extra = await marketMapStore.getMapEvidence(id);
             return reply(res, 200, { geography: { ...geography, ...(extra || {}) }, evidence: extra?.evidence || geography.evidence, confidence: geography.confidence, sourceVersion: marketMapStore.sourceVersion || 'india-geography-1.1.2' });
@@ -384,19 +448,21 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
         const geographyId = payload?.geographyId;
         if (typeof geographyId !== 'string' || !/^[\w:.\- ]{1,160}$/.test(geographyId)) return reply(res, 400, { error: 'A valid geographyId is required' });
         try { validateOverrides(payload.overrides); } catch (error) { return reply(res, 400, { error: error.message }); }
-        let geography;
-        try { geography = await loadAnalysisGeography(geographyId); }
+        let geography, sector;
+        try { sector = await sectorFor(url.searchParams.get('sector') || payload.sector); } catch (error) { return reply(res, error.status, { error: error.message }); }
+        try { geography = await loadAnalysisGeography(geographyId, sector); }
         catch (error) { return reply(res, 503, { error: error.message }); }
         if (!geography) return reply(res, 404, { error: 'Geography not found' });
-        return reply(res, 200, analyzeLocation({ geography, overrides: payload.overrides }));
+        return reply(res, 200, analyzeLocation({ geography, overrides: payload.overrides, sector }));
       }
       if (url.pathname === '/api/market/forecast' && req.method === 'POST') {
         if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });
         try {
           const payload = await readBody(req, maxBodyBytes);
           const economics = projectStoreEconomics(payload);
-          const viability = payload.scoreMetrics ? scoreMarketViability(payload.scoreMetrics, payload.scoreWeights, payload.scoreGates) : null;
-          return reply(res, 200, { modelVersion: 'india-fashion-market-v1', economics, viability });
+          const sector = payload.scoreWeights ? null : await sectorFor(url.searchParams.get('sector') || payload.sector);
+          const viability = payload.scoreMetrics ? scoreMarketViability(payload.scoreMetrics, payload.scoreWeights || sector.scoringWeights, payload.scoreGates) : null;
+          return reply(res, 200, { modelVersion: 'india-fashion-market-v1', economics, viability, ...(sector ? { sector: sectorSummary(sector) } : {}) });
         } catch (error) {
           return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : error.status === 400 ? 'Invalid JSON' : error.message });
         }

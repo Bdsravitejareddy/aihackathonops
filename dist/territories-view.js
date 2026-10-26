@@ -71,7 +71,7 @@
     const recommended = apps.filter(a => a.status === 'Recommended').length;
     const orphan = apps.filter(a => !territory.pins.map(String).includes(String(a.pin))).length;
     const noSlots = territory.slots === 0;
-    const slots = noSlots ? '<span class="te-meta-label">Recommended</span><span class="tag gray te-noslots">No open slots</span>' : `<span class="te-meta-label">Recommended</span><span class="te-meta-value">${recommended}<span class="te-of"> / ${escape(territory.slots ?? '?')}</span></span>`;
+    const slots = noSlots ? '<span class="te-meta-label" data-tip-key="slots" tabindex="0">Recommended</span><span class="tag gray te-noslots">No open slots</span>' : `<span class="te-meta-label" data-tip-key="slots" tabindex="0">Recommended</span><span class="te-meta-value">${recommended}<span class="te-of"> / ${escape(territory.slots ?? '?')}</span></span>`;
     const key = `t:${territory.id}`;
     const pins = territory.pins.map(pin => pinBlock(territory, pin, applications)).join('');
     return `<section class="panel territory-card te-card${noSlots ? ' is-full' : ''}" data-territory="${escape(territory.id)}">
@@ -79,8 +79,8 @@
       <div class="te-city">${escape(territory.city)}</div>
       <div class="small-text muted te-place">${escape(territory.tier)} · ${escape(territory.state)}</div>
       ${territory.issues?.length ? `<div class="info-row warning">${territory.issues.map(escape).join('<br>')}</div>` : ''}
-      <div class="te-meta"><div><span class="te-meta-label">Applications</span><span class="te-meta-value">${apps.length}</span></div><div>${slots}</div></div>
-      <div class="te-kpi-holder" data-te-kpis="${escape(territory.id)}"><div class="te-kpis te-kpis--loading" aria-busy="true">${['Catchment population', 'TAM · category spend', 'Investment required', 'Payback · base case'].map(label => `<div class="te-kpi"><span class="te-label">${label}</span><strong class="te-value">…</strong></div>`).join('')}</div></div>
+      <div class="te-meta"><div><span class="te-meta-label" data-tip-key="applications" tabindex="0">Applications</span><span class="te-meta-value">${apps.length}</span></div><div>${slots}</div></div>
+      <div class="te-kpi-holder" data-te-kpis="${escape(territory.id)}"><div class="te-kpis te-kpis--loading" aria-busy="true">${['Residents', 'TAM · category spend', 'Investment required', 'Payback · best PIN'].map(label => `<div class="te-kpi"><span class="te-label">${label}</span><strong class="te-value">…</strong></div>`).join('')}</div></div>
       ${noSlots ? '<p class="te-note-line">This territory has no open slots, so no store investment is counted.</p>' : ''}
       ${orphan ? `<p class="te-note-line">${orphan} application${orphan === 1 ? '' : 's'} list a PIN outside this territory.</p>` : ''}
       ${toggleButton(key, 'PINs in this city', territory.pins.length)}
@@ -99,11 +99,12 @@
 
   function pageHTML(model) {
     const cards = model.territories.map(t => territoryCard(t, model.applications)).join('');
-    const stores = model.stores.map(s => `<tr><td>${escape(s[0])}</td><td>${escape(s[1])}</td><td>${escape(s[2])}</td><td>${escape(s[3])}</td></tr>`).join('');
+    // Stores arrive as {id, city, pin, year}; older callers passed [id, city, pin, year].
+    const stores = model.stores.map(s => Array.isArray(s) ? { id: s[0], city: s[1], pin: s[2], year: s[3] } : s).map(s => `<tr><td>${escape(s.id)}</td><td>${escape(s.city)}</td><td>${escape(s.pin)}</td><td>${escape(s.year)}</td></tr>`).join('');
     const summary = territorySummary(model);
     return `<div class="page-heading"><div><div class="eyebrow">GEO-SELECTION</div><h1>Make room for the right partner.</h1><p>One store per pin code. Recommendations always respect territory capacity.</p></div></div>
       <div class="te-grid">${cards ? cards + summary : '<div class="empty">Upload territories to map your expansion.</div>'}</div>
-      <section class="panel section-gap"><div class="panel-top"><div><h2>Existing store footprint</h2><div class="panel-subtitle">Fixed brand list from the case · these 10 pin codes are unavailable.</div></div></div><div class="table-wrap"><table><thead><tr><th>Store</th><th>City</th><th>Pin code</th><th>Opened</th></tr></thead><tbody>${stores}</tbody></table></div></section>`;
+      <section class="panel section-gap"><div class="panel-top"><div><h2>Existing store footprint</h2><div class="panel-subtitle">Fixed brand list from the case · applications in these ${model.stores.length} pin codes are not accepted.</div></div></div><div class="table-wrap"><table><thead><tr><th>Store</th><th>City</th><th>Pin code</th><th>Opened</th></tr></thead><tbody>${stores}</tbody></table></div></section>`;
   }
 
   function setCollapse(el, open) {

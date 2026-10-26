@@ -5,7 +5,7 @@
 // selected map area. mount() owns the floating launcher, glass drawer, history and accessibility.
 (function (root) {
   const MAX_FACTS = 24, MAX_TEXT = 180, HISTORY_KEY = 'franchiseos-chat-widget-v1', HISTORY_LIMIT = 60;
-  const PAGE_TITLES = { overview: 'Overview', ceo: 'CEO view', applications: 'Applications', review: 'Data review', territories: 'Territories', screening: 'Territory Screening', market: 'Market Intelligence', expansion: 'Expansion Intelligence', onboarding: 'Onboarding', assistant: 'Franchise bot', rules: 'Scoring & rules', upload: 'Upload' };
+  const PAGE_TITLES = { overview: 'Overview', applications: 'Applications', review: 'Data review', territories: 'Territories', screening: 'Simulator', market: 'Market Intelligence', expansion: 'Expansion Intelligence', onboarding: 'Onboarding', assistant: 'Franchise bot', rules: 'Scoring & rules', upload: 'Upload' };
   const GENERIC_FALLBACK = /^I can explain the current workbook/;
   const clean = (value, max = MAX_TEXT) => { const text = String(value ?? '').replace(/\s+/g, ' ').trim(); return text.length > max ? text.slice(0, max - 1) + '…' : text; };
   const textOf = (el, selector) => clean(selector ? el?.querySelector(selector)?.textContent : el?.textContent);
@@ -17,38 +17,31 @@
   const isGap = value => value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value)) || GAP.test(String(value).trim());
   const money = value => isGap(value) ? null : formatMetric({ value: Number(value), unit: 'INR' });
   const people = value => isGap(value) ? null : `${Math.round(Number(value)).toLocaleString('en-IN')} people`;
-  const months = value => isGap(value) ? null : `${value} months`;
+  // Same payback wording as the rest of the app: N months under 2 years, else N.N years.
+  const months = value => isGap(value) ? null : Number(value) < 24 ? `${value} months` : `${(Number(value) / 12).toFixed(1).replace(/\.0$/, '')} years`;
   const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
   const fieldOf = (label, value, note) => isGap(value) ? null : { label: clean(label, 80), value: clean(value, 120), ...(isGap(note) ? {} : { note: clean(note, 140) }) };
   const gapsOf = (...pairs) => pairs.filter(([, value]) => isGap(value)).map(([label]) => label);
 
-  // Overview, applications and CEO view read the workbook state and the cards the page already computed.
+  // Overview and applications read the workbook state and the cards the page already computed.
   function overviewData({ state = {}, results = [] }) {
-    const count = status => results.filter(a => a.status === status).length;
+    const count = status => results.filter(a => a.status === status).length, inCategory = name => results.filter(a => a.category === name).length;
     const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
-    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'),
+    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), futureExpansion: inCategory('Future expansion'), notAccepted: inCategory('Not accepted'),
       territories: (state.territories || []).length, pendingCorrections: (state.apps || []).reduce((n, a) => n + (a.pending?.length || 0), 0), source: state.source || null, slotsTotal, slotsRecommended: count('Recommended') };
-    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Clarification needed', data.clarification),
-      fieldOf('Site needed', data.siteNeeded), fieldOf('Waitlisted', data.waitlisted), fieldOf('Territories uploaded', data.territories),
+    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Data required', data.dataRequired),
+      fieldOf('Future expansion', data.futureExpansion), fieldOf('Not accepted', data.notAccepted), fieldOf('Territories uploaded', data.territories),
       fieldOf('Pending data corrections', data.pendingCorrections), fieldOf('Data source', data.source)].filter(Boolean), gaps: [] };
   }
   function applicationsData({ results = [] }) {
     const byStatus = {};
-    for (const a of results) byStatus[a.status || 'Unscreened'] = (byStatus[a.status || 'Unscreened'] || 0) + 1;
+    for (const a of results) byStatus[a.category || a.status || 'Unscreened'] = (byStatus[a.category || a.status || 'Unscreened'] || 0) + 1;
     const top = [...results].filter(a => Number.isFinite(a.score)).sort((a, b) => b.score - a.score)[0] || null;
     const held = byStatus['Clarification needed'] || 0;
     const data = { total: results.length, byStatus, held, top: top ? { id: top.id, name: clean(top.name || top.id, 60), score: Math.round(top.score), grade: top.grade || null } : null };
     return { data, facts: [fieldOf('Total applications', data.total), ...Object.entries(byStatus).map(([s, n]) => fieldOf(s, n)), top && fieldOf('Highest score', `${top.name || top.id} · ${Math.round(top.score)}`)].filter(Boolean), gaps: [] };
   }
-  function ceoData({ main }) {
-    const cards = [...(main?.querySelectorAll('[data-ceo-card]') || [])].map(card => ({
-      title: clean(card.querySelector('.ceo-title')?.textContent, 80),
-      value: clean(card.querySelector('.ceo-value strong')?.textContent, 40),
-      unit: clean(card.querySelector('.ceo-value span')?.textContent, 40),
-      headline: clean(card.querySelector('.ceo-headline')?.textContent, 160)
-    })).filter(card => card.title && !isGap(card.value));
-    return { data: { cards }, facts: cards.map(c => fieldOf(c.title, `${c.value}${c.unit ? ' ' + c.unit : ''}`, c.headline)).filter(Boolean), gaps: cards.length ? [] : ['CEO insight cards are still loading'] };
-  }
+
   function territoriesData({ state = {}, results = [], economics = null }) {
     const rows = (state.territories || []).map(t => {
       const apps = results.filter(a => a.territory === t.id), econ = economics?.[t.id] || null, agg = econ?.aggregate || null;
@@ -65,11 +58,14 @@
     const slotsTotal = rows.reduce((n, r) => n + (r.slots || 0), 0);
     const data = { territories: rows, total: rows.length, applications: results.length, recommended: results.filter(a => a.status === 'Recommended').length, slotsTotal, economicsLoaded: !!economics };
     const facts = rows.flatMap(r => [fieldOf(`${r.id}${r.city ? ' · ' + r.city : ''}`, `${plural(r.applications, 'applicant')}, ${r.recommended} recommended${r.slots !== null ? `, ${plural(r.slots, 'slot')}` : ''}`),
-      fieldOf(`${r.id} catchment`, people(r.catchment), r.pinsTotal ? `${r.pinsWithData} of ${r.pinsTotal} PINs with data` : null), fieldOf(`${r.id} payback`, months(r.payback))]);
+      fieldOf(`${r.id} residents`, people(r.catchment), r.pinsTotal ? `${r.pinsWithData} of ${r.pinsTotal} PINs with data` : null), fieldOf(`${r.id} payback`, months(r.payback))]);
     const gaps = economics ? [] : ['PIN economics are still loading'];
     return { data, facts: facts.filter(Boolean), gaps };
   }
   function expansionData({ location, main, doc }) {
+    const popupEl = doc?.querySelector?.('.maplibregl-popup-content [data-popup-geography]');
+    const popupId = popupEl?.dataset?.popupGeography;
+    if (popupId && popupId !== String(location?.id || '')) location = { id: popupId, name: clean(popupEl.querySelector('header strong')?.textContent || popupId, 80), level: /^pin:/.test(popupId) ? 'pin' : null, metrics: {} };
     const area = location?.id ? { id: String(location.id), name: clean(location.name || location.id, 80), level: location.level || null,
       metrics: Object.entries(location.metrics || {}).filter(([, m]) => Number.isFinite(m?.value)).slice(0, 12).map(([key, m]) => ({ label: key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(), value: formatMetric(m) })) } : null;
     const popupKpis = [...(doc?.querySelectorAll('.maplibregl-popup-content .expansion-popup-kpi') || [])].map(kpi => ({
@@ -99,7 +95,7 @@
     const main = doc?.querySelector?.('#main') || doc?.body || null;
     const base = { state, results, stores, doc, location, main, economics };
     const built = page === 'overview' ? overviewData(base) : page === 'applications' || page === 'review' || page === 'onboarding' ? applicationsData(base)
-      : page === 'ceo' ? ceoData(base) : page === 'territories' ? territoriesData(base) : page === 'expansion' || page === 'market' || page === 'screening' ? expansionData(base)
+      : page === 'territories' ? territoriesData(base) : page === 'expansion' || page === 'market' || page === 'screening' ? expansionData(base)
       : page === 'rules' ? rulesData(base) : { data: {}, facts: [], gaps: [] };
     const applicant = applicantInView({ results, doc, botContext });
     if (applicant) built.facts.unshift(fieldOf('Applicant in view', `${applicant.id} · ${applicant.status}`));
@@ -114,7 +110,6 @@
     const area = ctx.geography?.name;
     const byPage = {
       overview: ['Summarise this page', 'Who should move forward?', 'What needs my attention?'],
-      ceo: ['Summarise this page', 'Where should we grow next?', 'What is the top insight?'],
       applications: ['Who should move forward?', held && `Why is ${held.id} on hold?`, 'Summarise this page'],
       review: ['What needs my attention?', 'How are scores calculated?', 'Summarise this page'],
       territories: ['Summarise this page', 'Who should move forward?', 'How are territories allocated?'],
@@ -141,7 +136,7 @@
   function bulletsFor(ctx) {
     const d = ctx.data || {}, out = [];
     if (ctx.page === 'overview') {
-      out.push(`${plural(d.applications, 'application')}: ${d.recommended} recommended, ${d.clarification} need clarification, ${d.siteNeeded} need a site`);
+      out.push(`${plural(d.applications, 'application')}: ${d.recommended} recommended, ${d.dataRequired} data required, ${d.futureExpansion} future expansion`);
       if (d.slotsTotal) out.push(`${d.slotsRecommended} of ${d.slotsTotal} territory slots recommended`);
       if (d.pendingCorrections) out.push(`${plural(d.pendingCorrections, 'data correction')} waiting for review`);
       if (d.territories) out.push(`${plural(d.territories, 'territory', 'territories')} loaded${d.source ? ` from ${d.source}` : ''}`);
@@ -150,8 +145,6 @@
       out.push(`${plural(d.total, 'application')}${statuses.length ? `: ${statuses.join(', ')}` : ''}`);
       if (d.top) out.push(`Highest score: ${d.top.name} (${d.top.id}, ${d.top.score}${d.top.grade ? `, grade ${d.top.grade}` : ''})`);
       if (d.held) out.push(`${plural(d.held, 'application')} missing details before scoring can finish`);
-    } else if (ctx.page === 'ceo') {
-      for (const card of (d.cards || []).slice(0, 5)) out.push(`${card.title}: ${card.value}${card.unit ? ` ${card.unit}` : ''}`);
     } else if (ctx.page === 'territories') {
       const rows = d.territories || [];
       if (rows.length) {
@@ -162,7 +155,7 @@
         const top = Object.entries(byCity).sort((a, b) => b[1].applications - a[1].applications)[0];
         if (top && top[1].applications) out.push(`${top[0]} has the most applicants (${top[1].applications})${top[1].recommended ? `, with ${top[1].recommended} recommended` : ' but no recommendation yet'}`);
         const largest = rows.filter(r => r.catchment !== null).sort((a, b) => b.catchment - a.catchment)[0];
-        if (largest) out.push(`Largest catchment: ${largest.id}${largest.city ? ` (${largest.city})` : ''} with ${people(largest.catchment)}${largest.pinsTotal ? `, ${largest.pinsWithData} of ${largest.pinsTotal} PINs with data` : ''}`);
+        if (largest) out.push(`Most residents: ${largest.id}${largest.city ? ` (${largest.city})` : ''} with ${people(largest.catchment)}${largest.pinsTotal ? `, ${largest.pinsWithData} of ${largest.pinsTotal} PINs with data` : ''}`);
         const missing = rows.filter(r => r.economicsLoaded && r.pinsMissing > 0).length;
         if (missing) out.push(`${plural(missing, 'territory', 'territories')} use PINs that are not in the PIN dataset, so ${missing === 1 ? 'its economics are' : 'their economics are'} unavailable`);
       }
@@ -191,12 +184,54 @@
     return `${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}${unit ? ' ' + unit : ''}`;
   };
 
-  // Rule bot first (instant), then page facts, then Gemini for a selected map area.
-  async function answer(question, { ctx, env, bot = root.FranchiseBot, fetch = root.fetch?.bind(root), segment = 'mass-market-family-apparel' } = {}) {
+  const GREETING = /^(?:hi|hello|hey|hiya|namaste|good (?:morning|afternoon|evening)|thanks|thank you|ok(?:ay)?|cool)[\s!.?]*$/i;
+  const HOW = /\b(how|why|what|criteria|method|methodology|calculat|formula|explain|mean|means|work out|derived?)\b/i;
+  // How the app calculates each figure, in plain words. These follow the deterministic models, not web research.
+  const METHODS = [
+    { topic: /\b(pay ?back|break[- ]?even|roi|return on investment)\b/i, text: [
+      'Payback is how many months it takes a store\'s cash flow to cover its opening investment.',
+      '• Sales: one store sells the area\'s potential revenue × a capture rate (10% in the base case), capped at what its floor space can sell.',
+      '• Monthly cash: sales × (gross margin − royalty − marketing), minus rent, staff and utilities.',
+      '• Investment: fit-out, rent deposit, opening stock, franchise fee, pre-opening costs and a cash reserve, priced for the city tier.',
+      '• Payback is the first month the running total turns positive. If that does not happen within 5 years, the app shows "over 5 years".'] },
+    { topic: /\b(potential revenue|organi[sz]ed (?:store )?demand)\b/i, text: [
+      'Potential revenue is the yearly apparel spend that organised physical stores can win in an area.',
+      '• Population (modelled 2020) × monthly clothing and footwear spend per person (HCES 2023–24, rural and urban) × 12.',
+      '• × the organised physical-store share: 41% organised × 78% offline (CareEdge FY25).',
+      '• It is demand for the whole area, not one store\'s sales.'] },
+    { topic: /\b(tam|total addressable|market size|category spend)\b/i, text: [
+      'TAM is everything residents spend on clothing and footwear in a year.',
+      '• Population × monthly spend per person (HCES 2023–24, rural and urban weighted) × 12.',
+      '• It covers every channel, online included, so it is larger than potential revenue.'] },
+    { topic: /\b(investment|capex|set ?up cost|cost to open)\b/i, text: [
+      'Investment required is the cost to open one store in the base case:',
+      '• fit-out per sq ft, a rent deposit, opening stock, the franchise fee, pre-opening costs and a few months of fixed costs as a reserve.',
+      '• Rent and wages follow the city tier (HRA class X, Y or Z). The range runs from the cheapest to the most expensive end of each cost.'] },
+    { topic: /\b(categor(?:y|ies)|classif\w*|data required|future expansion|not accepted)\b/i, text: [
+      'Every application falls into one of three categories:',
+      '• Recommended: meets the requirements and has a territory slot.',
+      '• Data required: something is missing, conflicting or below a requirement (funding, area, site, floor, launch timing).',
+      '• Future expansion: a good application where the location does not fit right now (a higher-ranked applicant has the slot, or the brand is not opening in that pin code).',
+      '• Not accepted: a store already trades in that pin code, and the brand never opens two stores in one pin code.'] }
+  ];
+  function methodAnswer(text, ctx, doc) {
+    // A question about a named application belongs to the rule bot, which knows that applicant's reasons.
+    if (!HOW.test(text) || /\b[A-Z]{2,}-\d{2,}\b/i.test(text)) return null;
+    const method = METHODS.find(item => item.topic.test(text));
+    if (!method) return null;
+    const steps = /\b(pay ?back|break[- ]?even|roi)\b/i.test(text) ? [...(doc?.querySelectorAll?.('.analysis-why li') || [])].map(li => `• ${clean(li.textContent, 400)}`) : [];
+    return method.text.join('\n') + (steps.length ? `\n\nFor ${ctx.geography?.name || 'this area'}:\n${steps.join('\n')}` : '');
+  }
+
+  // Greetings and method questions first (instant), then the rule bot, page facts, and Gemini for a selected map area.
+  async function answer(question, { ctx, env, bot = root.FranchiseBot, fetch = root.fetch?.bind(root), segment = 'mass-market-family-apparel', doc = root.document } = {}) {
     const text = String(question || '').trim();
     if (!text) return null;
+    if (GREETING.test(text)) return { text: `Hi! I answer from the page you are on.${ctx.suggestions?.length ? ` Try: ${ctx.suggestions.slice(0, 2).map(item => `"${item}"`).join(' or ')}.` : ''}`, source: 'page' };
     if (/\bsummar|\boverview of (?:this|the) page\b|\bwhat am i (?:looking at|seeing)\b|\b(?:on|about) this page\b/i.test(text)) return { text: summary(ctx), source: 'page' };
-    const mapPage = ['expansion', 'market', 'ceo', 'screening'].includes(ctx.page);
+    const method = methodAnswer(text, ctx, doc);
+    if (method) return { text: method, source: 'page' };
+    const mapPage = ['expansion', 'market', 'screening'].includes(ctx.page);
     const facts = matchFacts(text, ctx);
     if (mapPage && facts.length && LOOKUP.test(text) && !/\b(why|should|good|best|compare|risk)\b/i.test(text)) return { text: `From this page:\n${factLines(facts)}`, source: 'page' };
     let ruled = null;
@@ -285,7 +320,7 @@
       const log = $('[data-fc-log]'), thinking = doc.createElement('div');
       thinking.className = 'fc-msg fc-thinking'; thinking.innerHTML = '<span class="fc-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fc-sr">Thinking…</span>'; log.append(thinking); scroll();
       let reply;
-      try { reply = await answer(text, { ctx, env, fetch }); } catch (error) { reply = { text: `Something went wrong: ${error.message}`, source: 'notice' }; }
+      try { reply = await answer(text, { ctx, env, fetch, doc }); } catch (error) { reply = { text: `Something went wrong: ${error.message}`, source: 'notice' }; }
       if (reply?.contextKey !== undefined) app.setBotContext?.(reply.contextKey);
       pending = reply?.proposal || null;
       const message = { role: 'bot', page: ctx.page, ...reply };

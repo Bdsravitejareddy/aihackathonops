@@ -83,8 +83,8 @@
       "newScore": 95,
       "newHigh": 95,
       "grade": "A",
-      "newStatus": "Recommended",
-      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
+      "newStatus": "Waitlisted",
+      "reason": "All available slots in this territory have provisional recommendations."
     },
     {
       "id": "APP-106",
@@ -252,31 +252,31 @@
       "newHigh": 80,
       "grade": "U",
       "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "reason": "No site identified yet. Add the premises and its usable area."
     },
     {
       "id": "APP-208",
       "name": "Synthetic Partner 20",
       "oldScore": 39.2,
       "oldHigh": 49.2,
-      "oldStatus": "Site needed",
+      "oldStatus": "Waitlisted",
       "newScore": 95,
       "newHigh": 95,
       "grade": "A",
-      "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "newStatus": "Recommended",
+      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
     },
     {
       "id": "APP-209",
       "name": "Synthetic Partner 21",
       "oldScore": 39.2,
       "oldHigh": 49.2,
-      "oldStatus": "Site needed",
+      "oldStatus": "Waitlisted",
       "newScore": 95,
       "newHigh": 95,
       "grade": "A",
-      "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "newStatus": "Recommended",
+      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
     },
     {
       "id": "APP-210",
@@ -491,8 +491,8 @@
       "newScore": 95,
       "newHigh": 95,
       "grade": "A",
-      "newStatus": "Recommended",
-      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
+      "newStatus": "Waitlisted",
+      "reason": "All available slots in this territory have provisional recommendations."
     }
   ]
 }

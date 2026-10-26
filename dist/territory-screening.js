@@ -101,12 +101,12 @@
     }
     return idOf(a).localeCompare(idOf(b),undefined,{numeric:true,sensitivity:'base'});
   });
-  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, onRunScenario = async () => { throw new Error('Forecast API is not connected'); }, tieBreakFields = []} = {}) {
+  function mount({root, location = null, marketContext = null, applicants = [], territories = [], onOpenApplicant = () => {}, onLocationChange = () => {}, onFilterChange = () => {}, onRunScenario = async () => { throw new Error('Forecast API is not connected'); }, tieBreakFields = [], storeAnalysis = null} = {}) {
     if (!root) throw new Error('Territory Screening root is required');
     const doc = root.ownerDocument, win = doc.defaultView;
     let selected = location, market = marketContext, records = list(applicants), workspaceTerritories=list(territories), filter = 'all', scenarioResult = null, scenarioBusy = false;
-    const shell = doc.createElement('section'); shell.className = 'territory-screening'; shell.setAttribute('aria-label','Territory screening');
-    shell.innerHTML = `<header class="ts-heading"><div><p class="ts-eyebrow">TERRITORY SCREENING</p><h1>One territory. A clear next step.</h1><p>Review supported market evidence and compare applicants for the selected postal area.</p></div><span class="ts-separation">Eligibility is not franchise approval</span></header>
+    const shell = doc.createElement('section'); shell.className = 'territory-screening'; shell.setAttribute('aria-label','Simulator');
+    shell.innerHTML = `<header class="ts-heading"><div><p class="ts-eyebrow">SIMULATOR</p><h1>One territory. A clear next step.</h1><p>Review supported market evidence and compare applicants for the selected postal area.</p></div><span class="ts-separation">Eligibility is not franchise approval</span></header>
       <form class="ts-pin-form" data-pin-form><label for="ts-pin">Six-digit PIN code</label><div class="ts-pin-controls"><input id="ts-pin" name="pin" inputmode="numeric" autocomplete="postal-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter PIN code" aria-describedby="ts-pin-message"><button type="submit">View territory</button></div><p class="ts-message" id="ts-pin-message" data-pin-message aria-live="polite"></p></form>
       <details class="ts-cascade"><summary>Browse uploaded territories · State → City → PIN</summary><div class="ts-cascade-grid"><label>State<select data-cascade-state><option value="">Select state</option></select></label><label>City<select data-cascade-city disabled><option value="">Select city</option></select></label><label>PIN code<select data-cascade-pin disabled><option value="">Select PIN</option></select></label></div><p class="ts-message">Options come from the workspace territory list. This identifies an uploaded territory; it does not supply population or economic data.</p></details>
       <div class="ts-location" data-location aria-live="polite"></div><div class="ts-market" data-market></div>
@@ -124,8 +124,16 @@
       <section class="ts-applicants"><div class="ts-applicants-heading"><div><p class="ts-eyebrow">PARTNER PIPELINE</p><h2>Applicants for this territory</h2><p class="ts-subtitle">Rank is a screening order only. Confirmed funds, premises and due diligence remain separate checks.</p></div><div class="ts-filters" role="group" aria-label="Applicant filter"><button type="button" data-filter="all" aria-pressed="true">All Ranked</button><button type="button" data-filter="actionable" aria-pressed="false">Actionable</button></div></div><div class="ts-applicant-list" data-applicants></div></section>`;
     root.replaceChildren(shell);
     const q = selector => shell.querySelector(selector);
-    function renderFinancial(){const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax','monthlyFixedCosts'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
-    q('[data-financial-scenario]').addEventListener('submit',async event=>{
+    // With storeAnalysis (the Expansion Intelligence Analysis panel), the Simulator uses the same store model as the
+    // map instead of the illustrative calculator, and reloads it for each PIN.
+    let analysis = null;
+    if (typeof storeAnalysis === 'function') {
+      q('.ts-financial').innerHTML = '<div class="ts-financial-head"><div><p class="ts-eyebrow">STORE ECONOMICS</p><h2 id="ts-financial-title">One store at this PIN</h2><p>The same model as Expansion Intelligence: the brand’s 400 sq ft format, the 3 km catchment and city-tier costs. Use Edit assumptions to simulate changes.</p></div></div><div data-store-analysis><p class="ts-scenario-empty">Select a PIN code to see store costs, sales, break-even and payback.</p></div>';
+      analysis = storeAnalysis(q('[data-store-analysis]'));
+    }
+    const loadAnalysis = () => { const pin = selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; if (analysis && pin) analysis.load(`pin:${pin}`); };
+    function renderFinancial(){if(!q('[data-financial-results]'))return;const form=q('[data-financial-scenario]');const values=form?Object.fromEntries(['budgetMin','initialInvestment','budgetMax','monthlyFixedCosts'].map(name=>[name,Number(form.elements[name].value)])):{};q('[data-financial-results]').innerHTML=renderScenarioResult(scenarioResult,market,doc,values);}
+    q('[data-financial-scenario]')?.addEventListener('submit',async event=>{
       event.preventDefault();if(scenarioBusy)return;
       const form=event.currentTarget, number=name=>{const value=form.elements[name]?.value;return value===''||value===undefined?NaN:Number(value);};
       const names=['budgetMin','initialInvestment','budgetMax','workingCapital','areaSqFt','monthlyFixedCosts','grossMargin','royaltyRate','aov','conversionRate','monthlyPassingPedestrianTraffic','entryRate','salesRampMonths','initialRampFraction','annualNominalGrowth','annualInflation','discountRate'];
@@ -156,7 +164,7 @@
     function metricCard(key, raw) {
       const conf=TEXT[key]||[key.replace(/([a-z])([A-Z])/g,'$1 $2'), ''];
       const val=metricValue(raw), card=doc.createElement('article'); card.className='ts-metric';
-      const h=doc.createElement('span'); h.textContent=conf[0]; const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1],doc.defaultView?.FranchiseDisplay);
+      const h=doc.createElement('span'); h.textContent=conf[0]; const tipKey={population:'residents',tam:'tam',apparelExpenditure:'tam',monthlyPerCapitaSpend:'spend'}[key]; if(tipKey){h.dataset.tipKey=tipKey;h.tabIndex=0;} const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1],doc.defaultView?.FranchiseDisplay);
       const evidence=doc.createElement('small'); evidence.textContent=(raw?.evidenceClass || (val===null?'Missing evidence':'Evidence class not supplied')).replace(/_/g,' ').replace(/\bmodeled\b/gi,'modelled');
       card.append(h,strong,evidence);
       if(raw?.referenceYear || raw?.referencePeriod){const year=doc.createElement('small');year.textContent=`Reference: ${raw.referenceYear || raw.referencePeriod}`;card.append(year);}
@@ -174,7 +182,9 @@
       section.append(title);
       const cards=doc.createElement('div');cards.className='ts-market-grid';
       const order=['population','targetPopulation','monthlyPerCapitaSpend','annualPerCapitaSpend','tam','apparelExpenditure','sam','som','incomeProxy','competitorCount','saturation','storeRevenueLow','storeRevenueBase','storeRevenueHigh'];
-      for(const key of order) cards.append(metricCard(key,metrics[key]));
+      // Only derived figures are shown; a metric with no value at this geography is left out, and TAM appears once.
+      const shown=order.filter(key=>metricValue(metrics[key])!==null&&!(key==='apparelExpenditure'&&metricValue(metrics.tam)!==null));
+      for(const key of shown) cards.append(metricCard(key,metrics[key]));
       if(metricValue(metrics.population)===null){const empty=doc.createElement('p');empty.className='ts-empty';empty.textContent='PIN-level population is unavailable. No substitute city or regional population has been applied.';section.append(empty);}
       section.append(cards);
       const explanation=doc.createElement('p'); explanation.className='ts-explanation';
@@ -205,20 +215,12 @@
       }
       return sorted;
     }
+    // Declared funds against the brand's investment requirement. Funds are as declared; they are not verified.
     function fundingText(applicant) {
-      const requirement=market?.investment || market?.investmentRange;
-      const target=numeric(requirement?.recommended)?requirement.recommended:numeric(requirement?.minimum)?requirement.minimum:null;
-      const supplied=[applicant.declaredInvestment,applicant.verifiedFunds,applicant.availableFunds,applicant.conditionalLoan].filter(numeric);
-      if(target===null || !supplied.length)return 'Funding compatibility unavailable · no comparable supplied figures';
-      const secured=Math.max(numeric(applicant.verifiedFunds)?applicant.verifiedFunds:0,numeric(applicant.availableFunds)?applicant.availableFunds:0);
-      const declared=numeric(applicant.declaredInvestment)?applicant.declaredInvestment:0;
-      const conditional=numeric(applicant.conditionalLoan)?applicant.conditionalLoan:0;
-      const basis=secured+conditional;
-      const hasVerified=numeric(applicant.verifiedFunds)||numeric(applicant.availableFunds), hasLoan=numeric(applicant.conditionalLoan);
-      const gap=hasVerified&&hasLoan?Math.max(0,target-basis):null;
-      const declaredFit=numeric(applicant.declaredInvestment)?(declared>=target?'declared capacity is above the supplied recommended investment':'declared capacity is below the supplied recommended investment'):'declared capacity comparison unavailable';
-      const display=doc.defaultView?.FranchiseDisplay;
-      return `Market reference ${fmt(target,'₹',display)} · declared capacity ${numeric(applicant.declaredInvestment)?fmt(declared,'₹',display):'unavailable'} · verified funds ${hasVerified?fmt(secured,'₹',display):'unavailable'} · conditional loan ${hasLoan?fmt(conditional,'₹',display):'unavailable'} · estimated funding gap ${gap===null?'unavailable':fmt(gap,'₹',display)} · ${declaredFit}; verify funds and loan conditions`;
+      const display=doc.defaultView?.FranchiseDisplay, declared=applicant.declaredInvestment, required=applicant.requiredInvestment;
+      if(!numeric(declared))return 'Not stated on the application';
+      if(!numeric(required))return `${fmt(declared,'₹',display)} declared`;
+      return `${fmt(declared,'₹',display)} declared · the brand needs ${fmt(required,'₹',display)}${declared>=required?' · enough':' · short by '+fmt(required-declared,'₹',display)}`;
     }
     function renderApplicants() {
       const target=q('[data-applicants]'), rows=applicantsForPin(); target.replaceChildren();
@@ -227,16 +229,16 @@
       rows.forEach((a,index)=>{
         const row=doc.createElement('article');row.className='ts-applicant';row.dataset.applicantId=idOf(a);
         const head=doc.createElement('div');head.className='ts-applicant-main';const rank=doc.createElement('span');rank.className='ts-rank';rank.textContent=`${index+1}`;
-        const identity=doc.createElement('div');identity.className='ts-identity';const name=doc.createElement('h3');name.textContent=a.name||idOf(a)||'Applicant';const meta=doc.createElement('p');meta.textContent=`Application ${idOf(a)||'ID unavailable'} · ${a.verificationStatus || a.verification?.status || 'Verification status unavailable'}`;identity.append(name,meta);
-        const score=doc.createElement('div');score.className='ts-score';const confirmed=confirmedScore(a);const scoreLabel=doc.createElement('strong');scoreLabel.textContent=scoreRange(a);const scoreKind=doc.createElement('small');scoreKind.textContent=confirmed===undefined?'No confirmed eligibility score':'Confirmed eligibility';score.append(scoreLabel,scoreKind);head.append(rank,identity,score);row.append(head);
-        const status=doc.createElement('div');status.className='ts-applicant-meta';for(const [label,value] of [['Screening status',a.status||'Unavailable'],['Territory allocation',a.allocationStatus||a.territoryAllocationStatus||'Unavailable'],['Funding fit',fundingText(a)]]){const item=doc.createElement('p');const b=doc.createElement('b');b.textContent=`${label}: `;item.append(b,doc.createTextNode(value));status.append(item);}row.append(status);
+        const identity=doc.createElement('div');identity.className='ts-identity';const name=doc.createElement('h3');name.textContent=a.name||idOf(a)||'Applicant';const meta=doc.createElement('p');meta.textContent=`Application ${idOf(a)||'ID unavailable'}${a.city?` · ${a.city}`:''}`;identity.append(name,meta);
+        const score=doc.createElement('div');score.className='ts-score';const confirmed=confirmedScore(a);const scoreLabel=doc.createElement('strong');scoreLabel.textContent=scoreRange(a);const scoreKind=doc.createElement('small');scoreKind.textContent=confirmed===undefined?'No fit score yet':'Fit score';scoreKind.dataset.tipKey='score';scoreKind.tabIndex=0;score.append(scoreLabel,scoreKind);head.append(rank,identity,score);row.append(head);
+        const status=doc.createElement('div');status.className='ts-applicant-meta';for(const [label,value] of [['Category',a.category?`${a.category}${a.status&&a.status!==a.category?` (${a.status})`:''}`:a.status||'Not screened'],['Territory',a.territory||'Not in a territory the brand is expanding into'],['Funding',fundingText(a)]]){const item=doc.createElement('p');const b=doc.createElement('b');b.textContent=`${label}: `;item.append(b,doc.createTextNode(value));status.append(item);}row.append(status);
         const blockers=list(a.blockingConditions||a.blockers);if(blockers.length){const ul=doc.createElement('ul');ul.className='ts-blockers';for(const blocker of blockers){const li=doc.createElement('li');li.textContent=typeof blocker==='string'?blocker:blocker.description||blocker.label||'Verification required';ul.append(li);}row.append(ul);}
-        const action=doc.createElement('p');action.className='ts-next-action';action.textContent=`Next action: ${a.nextAction||a.nextActionLabel|| (blockers.length?String(blockers[0]):'Continue verification and site review')}`;row.append(action);
+        const action=doc.createElement('p');action.className='ts-next-action';action.textContent=`Next action: ${a.nextAction||a.nextActionLabel|| (blockers.length?String(blockers[0]):'Review the application')}`;row.append(action);
         const open=doc.createElement('button');open.type='button';open.className='ts-open';open.dataset.openApplicant=idOf(a);open.textContent='Open detailed assessment ↗';open.addEventListener('click',()=>onOpenApplicant(a,{location:selected,marketContext:market}));row.append(open);
         const caution=doc.createElement('small');caution.className='ts-caution';caution.textContent='This ranking is not an approval; recommended status is not final approval.';row.append(caution);target.append(row);
       });
     }
-    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin){market=selected?.marketContext || null;scenarioResult=null;} q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();renderFinancial();if(notify)onLocationChange(selected); }
+    function updateLocation(value, notify=false) { const previousPin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0]; selected=value||null; const pin=selected?.pin || selected?.id?.match(/\b\d{6}\b/)?.[0] || ''; if(previousPin!==pin){market=selected?.marketContext || null;scenarioResult=null;} q('[data-location]').textContent=locationLabel(selected); q('[name="pin"]').value=pin; renderMarket();renderApplicants();renderFinancial();if(previousPin!==pin)loadAnalysis();if(notify)onLocationChange(selected); }
     q('[data-pin-form]').addEventListener('submit',event=>{event.preventDefault();const pin=q('[name="pin"]').value.trim();if(!/^\d{6}$/.test(pin)){q('[data-pin-message]').textContent='Enter a valid six-digit PIN code.';return;}q('[data-pin-message]').textContent='PIN selected. Geographic and market evidence will appear only when supplied.';const detail={id:`pin:${pin}`,name:pin,level:'pin',pin};updateLocation(detail,true);win?.dispatchEvent(new win.CustomEvent('franchiseos:location-selected',{detail}));});
     q('[data-cascade-state]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value;const cities=[...new Set(workspaceTerritories.filter(row=>row.state===state).map(row=>row.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));fillSelect(q('[data-cascade-city]'),'Select city',cities);fillSelect(q('[data-cascade-pin]'),'Select PIN',[]);q('[data-cascade-city]').disabled=!cities.length;q('[data-cascade-pin]').disabled=true;});
     q('[data-cascade-city]').addEventListener('change',()=>{const state=q('[data-cascade-state]').value,city=q('[data-cascade-city]').value;const pins=[...new Set(workspaceTerritories.filter(row=>row.state===state&&row.city===city).flatMap(row=>list(row.pins).map(String)).filter(pin=>/^\d{6}$/.test(pin)))].sort();fillSelect(q('[data-cascade-pin]'),'Select PIN',pins);q('[data-cascade-pin]').disabled=!pins.length;});
@@ -244,8 +246,8 @@
     shell.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter; shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));onFilterChange(filter);renderApplicants();}));
     const sharedLocation=event=>{const detail=event.detail;if(detail && typeof detail==='object')updateLocation(detail);};
     win?.addEventListener('franchiseos:location-selected',sharedLocation);
-    updateLocation(location);renderMarket();renderApplicants();
-    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, refreshDisplay(){renderMarket();renderFinancial();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
+    updateLocation(location);renderMarket();renderApplicants();loadAnalysis();
+    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, refreshDisplay(){renderMarket();renderFinancial();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);analysis?.destroy?.();shell.remove();} };
   }
   return {mount,sortApplicants};
 });

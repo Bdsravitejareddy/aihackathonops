@@ -22,7 +22,9 @@
     return abs >= 1e7 ? `${sign}₹${(abs / 1e7).toFixed(2)} Cr` : abs >= 1e5 ? `${sign}₹${(abs / 1e5).toFixed(1)} L` : `${sign}₹${Math.round(abs).toLocaleString('en-IN')}`;
   }
   const pct = (value, digits = 1) => value === null || value === undefined || !Number.isFinite(value) ? '—' : `${value.toFixed(digits)}%`;
-  const months = value => value === null || value === undefined ? '> 60 mo' : `${value} mo`;
+  const months = value => value === null || value === undefined ? 'over 5 years' : value < 24 ? `${value} months` : `${(value / 12).toFixed(1).replace(/\.0$/, '')} years`;
+  const numeric = value => typeof value === 'number' && Number.isFinite(value);
+  const moneyRounded = value => money(typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : value);
   const chip = cls => `<span class="analysis-chip analysis-chip--${escape(cls || 'unknown')}">${escape(CLASS_LABEL[cls] || cls || 'Unclassified')}</span>`;
 
   function sparkline(trend) {
@@ -50,14 +52,36 @@
 
   function rangeHTML(result) {
     const s = result.scenarios, rows = [
-      ['Investment', k => money(s[k].investment)], ['Annual revenue (yr 1 run-rate)', k => money(s[k].annualRevenue)],
+      ['Investment', k => money(s[k].investment)], ['Annual sales (full rate, after ramp-up)', k => money(s[k].annualRevenue)],
       ['Revenue limited by', k => ({ demand_limited: 'Area demand', store_capacity_limited: 'Store size', no_demand_data: 'Store size*', user_input: 'Your input' }[s[k].revenueConstraint] || '—')],
       ['ROI · 5-year cumulative', k => pct(s[k].roi5YearPercent)], ['ROI · annual (year 2)', k => pct(s[k].annualRoiPercent)],
-      ['Payback', k => months(s[k].paybackMonths)], ['Break-even revenue / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]
+      ['Payback', k => months(s[k].paybackMonths)], ['Break-even sales / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]
     ];
     return `<table class="analysis-range"><thead><tr><th scope="col"></th>${LEVELS.map(k => `<th scope="col" title="${escape(s[k].pairing)}">${escape(s[k].label)}</th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, fn]) => `<tr><th scope="row">${escape(label)}</th>${LEVELS.map(k => `<td class="${k === 'mid' ? 'is-base' : ''}">${fn(k)}</td>`).join('')}</tr>`).join('')}</tbody></table>
       <p class="hint">Downside pairs low revenue with high costs; upside pairs high revenue with low costs. Revenue basis: ${escape(result.revenueBasis.label)} ${chip(result.revenueBasis.evidenceClass)}${result.revenueBasis.areaPotential ? ` Area potential ${money(result.revenueBasis.areaPotential)} a year; store capacity ${money(s.mid.capacityRevenue)} (base).` : ''}${result.revenueBasis.basis === 'store_capacity_benchmark' ? ' *No area demand data: revenue is the store-capacity benchmark.' : ''}</p>`;
+  }
+
+  // Plain-language breakdown, one step per line: demand, store sales, running costs, margin, break-even, payback.
+  function paybackHTML(result) {
+    const money = value => moneyRounded(value);
+    const mid = result.scenarios?.mid, a = result.assumptions || {}, basis = result.revenueBasis || {};
+    if (!mid) return '';
+    const area = a.areaSqFt?.value?.mid, density = a.revenuePerSqFtYear?.value?.mid, capture = a.captureRate?.value?.mid;
+    const gm = a.grossMargin?.value?.mid, royalty = a.royaltyRate?.value?.mid, marketing = a.marketingRate?.value?.mid;
+    const monthly = Object.fromEntries((result.costRange?.monthlyFixedCosts || []).map(row => [row.item, row.mid]));
+    const staff = result.costRange?.headcount?.mid, c = basis.catchment;
+    const steps = [];
+    if (numeric(basis.areaPotential)) steps.push(`<strong>Area demand:</strong> ${c ? `${c.pins} PIN${c.pins === 1 ? '' : 's'} within ${c.radiusKm} km (${Number(c.population).toLocaleString('en-IN')} people)` : 'this area'} could spend ${money(basis.areaPotential)} a year in organised apparel stores${numeric(capture) ? `; one store might win ${Math.round(capture * 100)}% of that, ${money(mid.demandRevenue)}` : ''}.`);
+    if (numeric(area) && numeric(density)) steps.push(`<strong>Store sales:</strong> a ${Math.round(area).toLocaleString('en-IN')} sq ft store can sell up to ${money(mid.capacityRevenue)} a year (${Math.round(area).toLocaleString('en-IN')} sq ft × ₹${Math.round(density).toLocaleString('en-IN')} per sq ft, a value-retail benchmark). Expected sales are the smaller of the two: <strong>${money(mid.annualRevenue)}</strong>${mid.revenueConstraint === 'store_capacity_limited' ? ', limited by the store’s size' : mid.revenueConstraint === 'demand_limited' ? ', limited by local demand' : ''}.`);
+    if (numeric(monthly.fixedMonthly)) steps.push(`<strong>Running costs:</strong> rent ${money(monthly.rentMonthly * 12)}, ${numeric(staff) ? `${staff} staff ` : 'staff '}${money(monthly.staffMonthly * 12)} and utilities ${money(monthly.utilitiesMonthly * 12)}: <strong>${money(monthly.fixedMonthly * 12)} a year</strong>.`);
+    if (numeric(mid.contributionMargin)) steps.push(`<strong>What each sale leaves:</strong> ${numeric(gm) ? `${Math.round(gm * 1000) / 10}% gross margin − ${Math.round(royalty * 1000) / 10}% royalty − ${Math.round(marketing * 1000) / 10}% marketing = ` : ''}₹${(mid.contributionMargin * 100).toFixed(1)} of every ₹100 sold.`);
+    if (numeric(mid.breakEvenRevenueAnnual)) steps.push(`<strong>Break-even:</strong> the store must sell ${money(mid.breakEvenRevenueAnnual)} a year just to cover running costs (running costs ÷ what each sale leaves). This is a sales target, not a cost, so it can be larger than the investment.`);
+    const verdict = numeric(mid.paybackMonths) ? `Selling ${money(mid.annualRevenue)} leaves cash each year that recovers the ${money(mid.investment)} investment in <strong>${months(mid.paybackMonths)}</strong>.`
+      : mid.annualRevenue < (mid.breakEvenRevenueAnnual ?? Infinity) ? `Expected sales of ${money(mid.annualRevenue)} are below break-even, so the store loses money each year and <strong>never recovers</strong> the ${money(mid.investment)} investment.`
+      : `Expected sales are only ${money(mid.annualRevenue - mid.breakEvenRevenueAnnual)} above break-even, leaving about ${money((mid.annualRevenue - mid.breakEvenRevenueAnnual) * mid.contributionMargin)} of cash a year: <strong>not enough to recover</strong> the ${money(mid.investment)} investment within 5 years.`;
+    steps.push(`<strong>Payback:</strong> ${verdict}${numeric(result.scenarios.high?.paybackMonths) ? ` In the upside case (higher sales per sq ft and margin, lower costs) it pays back in ${months(result.scenarios.high.paybackMonths)}.` : ''}`);
+    return `<div class="analysis-why"><strong class="analysis-why-title">How the payback is worked out</strong><ol>${steps.map(step => `<li>${step}</li>`).join('')}</ol></div>`;
   }
 
   function projectionHTML(result) {
@@ -99,7 +123,7 @@
   function resultHTML(result, overrides) {
     const edited = Object.keys(overrides).length;
     return `<div class="analysis-head"><span class="analysis-tier">${result.tier.tierClass === 'mixed' ? `Mixed city tiers · ${escape(result.tier.classesPresent.join('/'))}` : `${escape(result.tier.tier)} · HRA ${escape(result.tier.tierClass)}`}</span>${edited ? `<span class="analysis-chip analysis-chip--user_assumption">${edited} assumption${edited > 1 ? 's' : ''} edited</span>` : '<span class="hint">Automatic estimate · no inputs required</span>'}</div>
-      ${rangeHTML(result)}
+      ${rangeHTML(result)}${paybackHTML(result)}
       <h3 class="analysis-h">Household income trend <span class="hint">estimate</span></h3>${incomeHTML(result.incomeTrend)}
       <details class="analysis-sub"><summary>5-year projection (base case)</summary>${projectionHTML(result)}</details>
       <details class="analysis-sub"><summary>Cost range breakdown</summary>${costsHTML(result)}</details>

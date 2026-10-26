@@ -62,14 +62,10 @@ function resolveTier(geography = {}) {
   if (!match && stateKey === 'delhi') { match = tierCatalog.cities.find(city => city.printedName === 'Delhi (UA)'); matchedOn = 'NCT of Delhi'; }
   if (match) {
     const inherited = level === 'pin' || level === 'catchment', warnings = match.note ? [match.note] : [];
-    const urbanShare = geography.demographics?.urbanShare;
-    let cls = match.class, basis = `${inherited ? 'PIN inherits its district class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`;
-    // A largely rural PIN inside a metro district should not carry metro costs: step down one class.
-    if (inherited && finite(urbanShare) && urbanShare < 0.3 && cls !== 'Z') {
-      cls = cls === 'X' ? 'Y' : 'Z';
-      basis += ` Urban share ${Math.round(urbanShare * 100)}% (< 30%), so costs step down to class ${cls}.`;
-      warnings.push(`This PIN is mostly rural (${Math.round(urbanShare * 100)}% urban) within ${match.printedName}; costs use class ${cls} instead of ${match.class}.`);
-    }
+    // A PIN takes its city's class, as the case assigns tiers by city. A rural step-down was dropped: modelled
+    // PIN urban shares are unreliable (central Bengaluru 560048 shows 19%), and it priced PINs in one
+    // territory at different tiers.
+    const cls = match.class, basis = `${inherited ? 'PIN inherits its district class: ' : ''}${match.printedName}, ${match.state} — HRA class ${match.class}.`;
     return { tierClass: cls, tier: tierLabel(cls), classesPresent: [cls], levels: { low: cls, mid: cls, high: cls }, matchedCity: match.printedName, matchedOn, basis, evidence, warnings };
   }
   if (!candidates.length && stateKey) {
@@ -190,7 +186,7 @@ function scenarioLevel(assumption, scenario) {
 
 function costsAt(a, pick) {
   const area = pick(a.areaSqFt), rentMonthly = area * pick(a.rentPerSqFtMonth);
-  const headcount = Math.max(1, Math.ceil(area / pick(a.sqFtPerEmployee)));
+  const headcount = Math.max(Math.ceil(pick(a.minimumStaff)), Math.ceil(area / pick(a.sqFtPerEmployee)));
   const staffMonthly = headcount * pick(a.staffMonthlyWage) * (1 + pick(a.employerOnCostRate));
   const utilitiesMonthly = area * pick(a.utilitiesPerSqFtMonth);
   const fixedMonthly = rentMonthly + staffMonthly + utilitiesMonthly;
@@ -229,11 +225,15 @@ function estimateCostRange(assumptions) {
     evidenceClass: weakestClass(components.map(row => row.evidenceClass)) };
 }
 
-// Store revenue = min(store capacity, area demand). Area demand is potentialRevenue × capture rate (an
-// area-wide figure), else SOM × scenario factor; without either, the store-capacity benchmark is used.
+// Store revenue = min(store capacity, area demand). Area demand is the catchment's potential revenue (all PINs
+// within 3 km) × capture rate, else the area's own potentialRevenue, else SOM × scenario factor; without any,
+// the store-capacity benchmark is used.
 function revenueBase(geography, assumptions, override) {
   const metrics = geography.metrics || {}, capacity = assumptions.areaSqFt.value.mid * assumptions.revenuePerSqFtYear.value.mid;
   if (override) return { value: override.mid ?? override.low ?? override.high, levels: override, basis: 'user_override', evidenceClass: 'user_assumption', label: 'User-entered annual revenue', capacity };
+  const catchment = geography.catchment;
+  if (finite(catchment?.potentialRevenue) && catchment.potentialRevenue > 0) return { value: catchment.potentialRevenue, basis: 'potentialRevenue', evidenceClass: 'derived_estimate',
+    label: `Catchment revenue potential (${catchment.pins} PIN${catchment.pins === 1 ? '' : 's'} within ${catchment.radiusKm} km) × store capture rate, capped at store capacity`, capacity, catchment };
   const potential = metrics.potentialRevenue, som = metrics.som;
   if (finite(potential?.value) && potential.value > 0) return { value: potential.value, basis: 'potentialRevenue', evidenceClass: potential.evidenceClass || 'derived_estimate',
     label: 'Area revenue potential × store capture rate, capped at store capacity', capacity, evidence: potential.evidence || [] };
@@ -340,7 +340,7 @@ function analyzeLocation({ geography, overrides, sector = null } = {}) {
   for (const item of Object.values(assumptions)) for (const s of item.sources || []) add(s);
   return { modelVersion: MODEL_VERSION, sector: sector ? { id: sector.id, name: sector.name, version: sector.version ?? 0 } : { id: 'apparel', name: 'Apparel & fashion', version: 0 }, geography: { id: geography.id || null, name: geography.name || null, level: geography.level || null, state: geography.state || null, city: geography.city || null },
     tier: { tierClass: tier.tierClass, tier: tier.tier, classesPresent: tier.classesPresent, levels: tier.levels, matchedCity: tier.matchedCity, basis: tier.basis },
-    revenueBasis: { basis: base.basis, label: base.label, annualValue: Math.round(base.value), areaPotential: base.basis === 'potentialRevenue' ? Math.round(base.value) : null, evidenceClass: base.evidenceClass, storeCapacity: Math.round(base.capacity),
+    revenueBasis: { basis: base.basis, label: base.label, annualValue: Math.round(base.value), areaPotential: base.basis === 'potentialRevenue' ? Math.round(base.value) : null, catchment: base.catchment || null, evidenceClass: base.evidenceClass, storeCapacity: Math.round(base.capacity),
       constraint: Object.fromEntries(LEVELS.map(level => [level, scenarios[level].revenueConstraint])) },
     assumptions, costRange, scenarios, incomeTrend, warnings: [...new Set(warnings)], evidence };
 }

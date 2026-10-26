@@ -10,9 +10,9 @@ const Chat = require('../dist/chat-widget.js');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 const results = [
-  { key: 'a', id: 'APP-001', name: 'Asha', status: 'Recommended', score: 81, high: 84, grade: 'A', territory: 'T1', reasons: ['Strong capital'] },
-  { key: 'b', id: 'APP-002', name: 'Ben', status: 'Clarification needed', score: 52, high: 70, grade: 'C', territory: 'T1', reasons: ['Missing area'] },
-  { key: 'c', id: 'APP-003', name: 'Chen', status: 'Site needed', score: 66, high: 66, grade: 'B', territory: 'T2', reasons: [] }
+  { key: 'a', id: 'APP-001', name: 'Asha', status: 'Recommended', category: 'Recommended', score: 81, high: 84, grade: 'A', territory: 'T1', reasons: ['Strong capital'] },
+  { key: 'b', id: 'APP-002', name: 'Ben', status: 'Clarification needed', category: 'Data required', score: 52, high: 70, grade: 'C', territory: 'T1', reasons: ['Missing area'] },
+  { key: 'c', id: 'APP-003', name: 'Chen', status: 'Site needed', category: 'Data required', score: 66, high: 66, grade: 'B', territory: 'T2', reasons: [] }
 ];
 const state = { apps: [{ key: 'a', pending: [] }, { key: 'b', pending: [{ field: 'area' }] }], territories: [{ id: 'T1' }, { id: 'T2' }], settings: { model: 'industry-v2', minInvestment: 50, minArea: 800, minLaunch: 6, targetLaunch: 12, sectorName: 'Apparel' }, source: 'Synthetic demo · 3 applicants' };
 const location = { id: 'pin:560058', name: '560058', level: 'pin', metrics: { potentialRevenue: { value: 176172949, unit: 'INR/year', evidenceClass: 'derived_estimate' }, population: { value: 120000, unit: 'people' } } };
@@ -28,7 +28,7 @@ test('overview snapshot carries pipeline counts and the workbook source, not the
   assert.equal(ctx.page, 'overview');
   assert.equal(byLabel['Total applications'], '3');
   assert.equal(byLabel['Recommended partners'], '1');
-  assert.equal(byLabel['Clarification needed'], '1');
+  assert.equal(byLabel['Data required'], '2');
   assert.equal(byLabel['Pending data corrections'], '1');
   assert.equal(byLabel['Data source'], 'Synthetic demo · 3 applicants');
   assert.ok(ctx.facts.length <= 24, 'snapshot stays compact');
@@ -183,12 +183,6 @@ test('overview, applications, rules and map summaries are clean bullets with no 
   }
 });
 
-test('CEO view summary reads each card as title and value', () => {
-  const doc = dom('<div data-ceo-card="a"><span class="ceo-title">Grow in Bengaluru</span><div class="ceo-value"><strong>12</strong><span>stores</span></div><p class="ceo-headline">Strong demand</p></div>');
-  const out = bulletsOf(Chat.summarise(Chat.buildPageContext({ tab: 'ceo', state: terrState, results: [], doc })));
-  assert.deepEqual(out, ['Grow in Bengaluru: 12 stores']);
-});
-
 test('map summary lists popup KPIs as title and value and reports missing KPIs once', () => {
   const doc = dom(`<div data-map-place-title>560058</div><div class="maplibregl-popup-content"><div class="expansion-popup"><header><strong>560058</strong></header>
     <div class="expansion-popup-grid"><div class="expansion-popup-kpi"><span>Annual TAM</span><strong>₹55Cr /year</strong><small>x</small></div><div class="expansion-popup-kpi"><span>Ideal investment</span><strong>Not estimated</strong><small>y</small></div><div class="expansion-popup-kpi"><span>Revenue growth</span><strong>—</strong><small>z</small></div></div>
@@ -198,4 +192,23 @@ test('map summary lists popup KPIs as title and value and reports missing KPIs o
   assert.match(text, /Not available: Ideal investment, Revenue growth not estimated for this area/);
   assert.equal((text.match(/Not available/g) || []).length, 1);
   assert.doesNotMatch(text, /—|Not estimated/);
+});
+
+test('greetings and method questions are answered instantly without Gemini', async () => {
+  const fetched = [];
+  const fetch = async (...args) => { fetched.push(args); return { ok: true, json: async () => ({ answer: 'remote' }) }; };
+  const doc = dom('<div class="analysis-why"><strong>How the payback is worked out</strong><ol><li>Store sales are below break-even.</li></ol></div>');
+  const ctx = { ...Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location }), geography: { id: 'pin:524003', name: 'PIN 524003' } };
+  const hi = await Chat.answer('hi', { ctx, fetch, doc });
+  assert.equal(hi.source, 'page'); assert.match(hi.text, /^Hi!/);
+  const payback = await Chat.answer("What's the criteria and methodology to calculate payback period", { ctx, fetch, doc });
+  assert.equal(payback.source, 'page');
+  assert.match(payback.text, /capture rate/); assert.match(payback.text, /For PIN 524003:\n• Store sales are below break-even/);
+  assert.equal(fetched.length, 0);
+});
+
+test('the open PIN popup is the area in context, not an older map selection', () => {
+  const doc = dom('<div class="maplibregl-popup-content"><div class="expansion-popup is-pin" data-popup-geography="pin:524003"><header><strong>PIN 524003</strong></header></div></div>');
+  const ctx = Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location: { id: 'state:IN-TN', name: 'Tamil Nadu', level: 'state', metrics: {} } });
+  assert.equal(ctx.geography.id, 'pin:524003'); assert.equal(ctx.geography.name, 'PIN 524003');
 });

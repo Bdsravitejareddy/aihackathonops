@@ -869,16 +869,18 @@
     },
     {
       "id": "APP-208",
-      "scenario": "Upper is not necessarily first floor",
+      "scenario": "Upper floor is an identified site",
       "expected": [
-        "Site needed"
+        "Waitlisted",
+        "Recommended"
       ]
     },
     {
       "id": "APP-209",
-      "scenario": "Mall floor needs confirmation",
+      "scenario": "Mall unit is an identified site",
       "expected": [
-        "Site needed"
+        "Waitlisted",
+        "Recommended"
       ]
     },
     {

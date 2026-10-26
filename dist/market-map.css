@@ -305,3 +305,21 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
 
 /* Tiles with no reliable figure are hidden rather than shown as Unavailable. */
 .market-kpi[hidden]{display:none}
+
+/* Pin wrapper: MapLibre positions it (absolute + transform); the pin inside can scale on hover without moving. */
+.expansion-pin-anchor{width:30px;height:30px;display:grid;place-items:center;pointer-events:none}
+.expansion-pin-anchor>.expansion-pin{pointer-events:auto}
+.expansion-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px;border:1px solid rgba(255,255,255,.5)}
+.expansion-legend-sub{display:block;margin-top:8px}
+
+/* Full-screen map: the footer would push the page past the viewport and let it scroll, hiding the toolbar. */
+body.expansion-fullscreen .main>footer{display:none}
+html:has(body.expansion-fullscreen){overflow:hidden}
+
+/* Pin hover card: small, above the pin, does not take clicks or cover the pin. */
+.expansion-hover-popup{pointer-events:none}
+.expansion-hover-popup .maplibregl-popup-content{padding:8px 11px;border-radius:12px;background:rgba(20,18,38,.92);color:#f4f2ff;box-shadow:0 10px 24px -12px rgba(6,4,20,.7)}
+.expansion-hover-popup .maplibregl-popup-tip{border-top-color:rgba(20,18,38,.92)}
+.expansion-hover{display:grid;gap:2px;font-size:12px;line-height:1.35}
+.expansion-hover strong{font-size:13px}
+.expansion-hover small{opacity:.7}

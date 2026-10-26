@@ -7,7 +7,8 @@
   const display = () => root.FranchiseDisplay;
   const money = value => Number.isFinite(value) ? (display()?.money ? display().money(value, 'INR') : `₹${Math.round(value).toLocaleString('en-IN')}`) : '—';
   const people = value => Number.isFinite(value) ? (display()?.count ? display().count(value) : Math.round(value).toLocaleString('en-IN')) : '—';
-  const months = value => value === null || value === undefined ? '> 60 mo' : `${value} mo`;
+  // Same payback wording as the Analysis panel and map popup.
+  const months = value => value === null || value === undefined ? 'over 5 years' : value < 24 ? `${value} months` : `${(value / 12).toFixed(1).replace(/\.0$/, '')} years`;
   const coverage = part => part && part.pinsTotal > 1 ? `${part.pinsWithData} of ${part.pinsTotal} PINs with data` : part?.pinsWithData ? 'Modelled' : 'No data for this PIN';
   const LIMIT = { demand_limited: 'revenue limited by area demand', store_capacity_limited: 'revenue limited by store size', no_demand_data: 'no area demand data' };
 
@@ -22,7 +23,8 @@
   }
 
   function kpi(label, value, note, extra = '') {
-    return `<div class="te-kpi"><span class="te-label">${escape(label)}</span><strong class="te-value">${value}</strong><small class="te-note">${note}</small>${extra}</div>`;
+    const tipKey={'Residents':'territoryResidents','TAM · category spend':'territoryTam','Investment required':'territoryInvestment','Payback · best PIN':'territoryPayback'}[label]||'';
+    return `<div class="te-kpi"><span class="te-label"${tipKey?` data-tip-key="${tipKey}" tabindex="0"`:''}>${escape(label)}</span><strong class="te-value">${value}</strong><small class="te-note">${note}</small>${extra}</div>`;
   }
 
   /** Four equal KPI cards for a territory aggregate (or a single-PIN territory). */
@@ -33,10 +35,10 @@
     const paybackNote = noSlots ? 'No open slots'
       : pay ? `Range ${months(pay.best.downside)} – ${months(pay.best.upside)} · PIN ${escape(pay.best.pin)}` : 'No PIN with data';
     return `<div class="te-kpis${compact ? ' te-kpis--compact' : ''}">
-      ${kpi('Catchment population', people(a.catchmentPopulation?.value), escape(coverage(a.catchmentPopulation)))}
+      ${kpi('Residents', people(a.catchmentPopulation?.value), escape(coverage(a.catchmentPopulation)))}
       ${kpi('TAM · category spend', `${money(a.tam?.value)}<span class="te-unit">/yr</span>`, escape(coverage(a.tam)))}
       ${kpi('Investment required', noSlots ? '—' : money(inv?.mid), investNote)}
-      ${kpi('Payback · base case', noSlots || !pay ? '—' : months(pay.best.base), paybackNote)}
+      ${kpi('Payback · best PIN', noSlots || !pay ? '—' : months(pay.best.base), paybackNote)}
     </div>`;
   }
 

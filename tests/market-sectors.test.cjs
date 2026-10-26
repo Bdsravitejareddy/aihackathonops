@@ -28,9 +28,11 @@ const RESEARCH = {
   scoringWeights: { demand: 30, purchasingPower: 25, competition: 25, accessibility: 10, financial: 5, growth: 5, rationale: 'footfall-led' },
   partnerRequirements: { minInvestmentLakh: { value: 45, assumption: true }, minAreaSqFt: { value: 800, sourceUrl: 'https://www.example-coffee.in/franchise' }, minLaunchMonths: { value: 4, assumption: true }, targetLaunchMonths: null }
 };
-const mockGenerate = (payload = RESEARCH, extra = {}) => async ({ prompt }) => {
-  assert.match(prompt, /HCES 2023-24 item groups/);
-  return { ok: true, text: '```json\n' + JSON.stringify(payload) + '\n```', citations: CITATIONS, retrievedAt: '2026-10-26T10:00:00.000Z', ...extra };
+// Research runs in two steps: searched prose notes (with citations), then a no-search JSON conversion.
+const mockGenerate = (payload = RESEARCH, extra = {}) => async ({ prompt, search = true }) => {
+  if (search) { assert.match(prompt, /Use Google Search/); return { ok: true, text: 'Notes: organised share and store economics from the cited pages.', citations: CITATIONS, retrievedAt: '2026-10-26T10:00:00.000Z', ...extra }; }
+  assert.match(prompt, /HCES 2023-24 item groups/); assert.match(prompt, /Retrieved pages:/);
+  return { ok: true, text: '```json\n' + JSON.stringify(payload) + '\n```', citations: [], retrievedAt: '2026-10-26T10:00:05.000Z' };
 };
 
 test('research validator keeps cited or labelled values and rejects uncited, unretrieved and implausible numbers', async () => {

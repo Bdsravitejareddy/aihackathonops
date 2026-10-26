@@ -73,7 +73,24 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
     try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
     catch { if (pinPlace) return withSector(pinPlace, sector); throw new Error('Map geography service unavailable'); }
     if (geography && pinPlace) geography = { ...geography, city: geography.city || pinPlace.city || null, postalCity: pinPlace.postalCity || null, postOffices: pinPlace.postOffices };
-    return withSector(geography || pinPlace || null, sector);
+    const shaped = withSector(geography || pinPlace || null, sector);
+    return shaped?.level === 'pin' ? { ...shaped, catchment: await pinCatchment(shaped, sector) } : shaped;
+  }
+  // A store's shoppers come from nearby PINs too: its catchment is every PIN whose anchor lies within 3 km
+  // (the same spacing the next-best ranking uses). Null when anchors are unavailable.
+  const CATCHMENT_KM = 3;
+  async function pinCatchment(pin, sector) {
+    if (!Array.isArray(pin?.anchor) || !marketMapStore?.listMapGeographies) return null;
+    const [lng, lat] = pin.anchor, dLat = CATCHMENT_KM / 111, dLng = CATCHMENT_KM / (111 * Math.cos(lat * Math.PI / 180));
+    try {
+      const nearby = (await marketMapStore.listMapGeographies({ level: 'pin', bbox: [lng - dLng, lat - dLat, lng + dLng, lat + dLat], metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false }))
+        .map(feature => withSector(feature, sector)).filter(feature => Array.isArray(feature.anchor) && Number.isFinite(feature.metrics?.potentialRevenue?.value));
+      const km = (a, b) => { const r = Math.PI / 180, x = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), y = (b[1] - a[1]) * r; return 6371 * Math.hypot(x, y); };
+      const inside = nearby.filter(feature => km(pin.anchor, feature.anchor) <= CATCHMENT_KM);
+      if (!inside.some(feature => String(feature.pin) === String(pin.pin))) return null;
+      const sum = key => inside.reduce((total, feature) => total + (feature.metrics?.[key]?.value || 0), 0);
+      return { radiusKm: CATCHMENT_KM, pins: inside.length, pinCodes: inside.map(feature => String(feature.pin)), population: Math.round(sum('population')), potentialRevenue: Math.round(sum('potentialRevenue')), evidenceClass: 'derived_estimate' };
+    } catch { return null; }
   }
   // ?sector= (default apparel). A researched sector re-derives potential revenue from its HCES item groups.
   async function sectorFor(id) {
@@ -263,6 +280,18 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
                 scenarios:Object.fromEntries(Object.entries(forecast.scenarios || {}).map(([key,value])=>[key,{roiPercent:value.roiPercent,paybackMonths:value.paybackMonths,annualRevenue:value.years?.[0]?.nominalRevenue ?? null,year5Revenue:value.years?.at(-1)?.nominalRevenue ?? null,npv:value.npv}])) };
             } catch { return { error:{ status:400, message:'Financial assumptions are invalid.' } }; }
           }
+          // The store cost model's base case (what the Analysis panel shows), so answers about payback use the same figures.
+          let storeEconomics = null;
+          try {
+            const analysisGeography = await loadAnalysisGeography(geographyId);
+            if (analysisGeography) {
+              const analysis = analyzeLocation({ geography: analysisGeography }), mid = analysis.scenarios.mid, high = analysis.scenarios.high;
+              storeEconomics = { model: 'base case, one store', storeArea: { value: analysis.assumptions.areaSqFt.value.mid, unit: 'sq ft' },
+                investment: { value: mid.investment, unit: 'INR' }, storeSales: { value: mid.annualRevenue, unit: 'INR/year' }, breakEvenSales: { value: mid.breakEvenRevenueAnnual, unit: 'INR/year' },
+                fixedCosts: { value: mid.monthlyFixedCosts * 12, unit: 'INR/year' }, payback: mid.paybackMonths === null ? 'does not pay back within 5 years' : { value: mid.paybackMonths, unit: 'months' },
+                upsidePayback: high.paybackMonths === null ? 'does not pay back within 5 years' : { value: high.paybackMonths, unit: 'months' } };
+            }
+          } catch { /* Answers fall back to market metrics when the cost model cannot run for this area. */ }
           let extra = null;
           try { extra = await marketMapStore.getMapEvidence?.(geographyId); }
           catch { /* The location catalog's own evidence remains valid when supplemental PostGIS evidence is unavailable. */ }
@@ -270,7 +299,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
           const context = {
             location:{ id:geography.id, name:geography.name, level:geography.level, pin:geography.pin || null, city:geography.city || null, state:geography.state || null, sourceVersion:geography.sourceVersion || marketMapStore.sourceVersion || 'india-geography-1.1.2' },
             targetApparelSegment:segmentOf(payload.segment),
-            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:compactMetrics(geography.metrics), demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
+            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:compactMetrics(geography.metrics), demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storeEconomics, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
             assumptions:scenario,
             sourceEvidence:[...(geography.evidence || []), ...(extra?.evidence || [])].filter((item, index, all) => all.findIndex(candidate => candidate.sourceId === item.sourceId && candidate.url === item.url) === index).slice(0,20),
             dataWarnings:[...(geography.warnings || []), ...(extra?.warnings || [])]
@@ -329,19 +358,24 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const storePins = new Set((url.searchParams.get('storePins') || '').split(',').map(pin => pin.trim()).filter(pin => /^[1-9]\d{5}$/.test(pin)));
             let sector;
             try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
-            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000, largestFirst: true })).map(feature => withSector(feature, sector));
+            // ?state= limits the ranking to the states the brand operates in (Karnataka in the case).
+            const stateFilter = (url.searchParams.get('state') || '').trim().toLowerCase();
+            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000, largestFirst: true }))
+              .filter(feature => !stateFilter || String(feature.state || '').toLowerCase() === stateFilter).map(feature => withSector(feature, sector));
             const km = (a, b) => { const r = Math.PI / 180, x = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), y = (b[1] - a[1]) * r; return 6371 * Math.hypot(x, y); };
-            const stores = features.filter(f => storePins.has(String(f.pin)) && f.anchor).map(f => f.anchor);
+            // Every store's anchor, looked up directly when the ranked rows do not include it, so the 3 km rule covers all stores.
+            const storeRows = await Promise.all([...storePins].map(async pin => features.find(f => String(f.pin) === pin) || await marketMapStore.getMapGeography(`pin:${pin}`, 'potentialRevenue', { captureRate: null }).catch(() => null)));
+            const stores = storeRows.filter(f => f?.anchor).map(f => f.anchor);
             const ranked = features.filter(f => f.anchor && Number.isFinite(f.metrics.potentialRevenue?.value) && !storePins.has(String(f.pin)) && !stores.some(s => km(s, f.anchor) < spacingKm))
               .sort((a, b) => b.metrics.potentialRevenue.value - a.metrics.potentialRevenue.value);
             const chosen = [];
             for (const f of ranked) { if (chosen.length >= limit) break; if (!chosen.some(c => km(c.anchor, f.anchor) < spacingKm)) chosen.push(f); }
             const value = key => f => f.metrics[key]?.value ?? null;
             return reply(res, 200, { sector: sectorSummary(sector), spacingKm, considered: features.length, truncated: features.length >= 6000,
-              stores: features.filter(f => storePins.has(String(f.pin))).map(f => ({ pin: f.pin, id: f.id, anchor: f.anchor, district: f.district, state: f.state })),
+              stores: storeRows.filter(f => f?.anchor).map(f => ({ pin: f.pin, id: f.id, anchor: f.anchor, district: f.district, state: f.state })),
               opportunities: chosen.map((f, index) => ({ rank: index + 1, id: f.id, pin: f.pin, anchor: f.anchor, district: f.district, state: f.state,
                 potentialRevenue: value('potentialRevenue')(f), tam: value('apparelExpenditure')(f), population: value('population')(f), spendPerPersonMonthly: value('monthlyPerCapitaSpend')(f) })),
-              method: `Top PINs by potential revenue in the view, excluding PINs with a store and anything within ${spacingKm} km of a store or of a higher-ranked pick.` });
+              method: `Top PINs by potential revenue${stateFilter ? ` in ${url.searchParams.get('state').trim()}` : ' in the view'}, excluding PINs with a store and anything within ${spacingKm} km of a store or of a higher-ranked pick.` });
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/levels') {
             const metric = url.searchParams.get('metric') || 'apparelExpenditure';

@@ -265,7 +265,7 @@ test('Franchise bot approval-stage answer offers safe navigation to onboarding',
   const action=w.document.querySelector('[data-bot-navigation]');assert.ok(action,'bot answer includes a navigation action');
   action.click();
   assert.equal(w.document.querySelector('#crumb').textContent,'Onboarding');
-  assert.match(w.document.querySelector('#main').textContent,/Partner onboarding/);
+  assert.match(w.document.querySelector('#main').textContent,/Recommended partners/);
   w.document.querySelector('[data-tab="assistant"]').click();
   const next=w.document.querySelector('#chat-text');next.value='Show me TAM for Bengaluru';
   w.document.querySelector('#chat-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));

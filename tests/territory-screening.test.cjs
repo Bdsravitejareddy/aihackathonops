@@ -14,7 +14,7 @@ function harness(options = {}) {
   return { dom, root, controller, events, opened };
 }
 
-test('renders supplied market evidence and explicit missing values without deriving unsupported figures', t => {
+test('renders supplied market evidence, leaves out metrics with no value and derives no unsupported figures', t => {
   const h = harness({ location: { id:'pin:560001', name:'Bengaluru · 560001', level:'pin', pin:'560001' }, marketContext: {
     metrics: { population:{value:12000,evidenceClass:'modeled_estimate',referenceYear:2011}, monthlyPerCapitaSpend:{value:340,evidenceClass:'survey_estimate',referenceYear:2024}, tam:{value:48960000,evidenceClass:'derived_estimate'}, som:null },
     spend: { rural:{value:240,referenceYear:2024}, urban:{value:340,referenceYear:2024}, incomeAdjustment:{formula:'regional spend × (local proxy / regional proxy)^1',evidenceClass:'modelled_estimate'} },
@@ -24,7 +24,7 @@ test('renders supplied market evidence and explicit missing values without deriv
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /₹4,89,60,000/);
   assert.match(h.root.textContent, /modelled estimate/i);
-  assert.match(h.root.textContent, /Unavailable/);
+  assert.doesNotMatch(h.root.querySelector('[data-market]').textContent, /Unavailable|Capturable market/);
   assert.match(h.root.textContent, /scenario/i);
   assert.match(h.root.textContent, /HCES/);
   h.root.querySelector('.ts-details summary').click();
@@ -63,16 +63,15 @@ test('ranks applicants by confirmed score then supplied tie-break fields and ID'
   assert.deepEqual(ids, ['D','A','C','B']);
 });
 
-test('preserves incomplete score ranges and marks verification, allocation and funding without approval language', t => {
+test('preserves incomplete score ranges and shows category and declared funding against the requirement without approval language', t => {
   const h = harness({ location:{pin:'560001'}, marketContext:{ investment:{minimum:1000000,recommended:1500000,maximum:2000000} }, applicants:[
-    {id:'INCOMPLETE',pin:'560001',name:'Incomplete',confirmedEligibilityScore:52,possibleEligibilityScore:87,scoreRange:{low:52,high:87},status:'Clarification needed',verificationStatus:'Pending',allocationStatus:'Unassigned',declaredInvestment:800000,verifiedFunds:600000,conditionalLoan:200000,blockingConditions:['Verify funds']}
+    {id:'INCOMPLETE',pin:'560001',name:'Incomplete',confirmedEligibilityScore:52,possibleEligibilityScore:87,scoreRange:{low:52,high:87},status:'Clarification needed',category:'Data required',verificationStatus:'Pending',allocationStatus:'Unassigned',declaredInvestment:800000,requiredInvestment:1500000,verifiedFunds:600000,conditionalLoan:200000,blockingConditions:['Verify funds']}
   ] });
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /52–87/);
-  assert.match(h.root.textContent, /Pending/);
-  assert.match(h.root.textContent, /Unassigned/);
-  assert.match(h.root.textContent, /funding gap/i);
-  assert.match(h.root.textContent, /₹7,00,000/);
+  assert.match(h.root.textContent, /Data required \(Clarification needed\)/);
+  assert.match(h.root.textContent, /short by ₹7,00,000/);
+  assert.doesNotMatch(h.root.textContent, /Verification status|funding gap/i);
   assert.match(h.root.textContent, /not an approval/i);
   assert.equal(h.root.querySelector('[data-applicant-id]').dataset.applicantId, 'INCOMPLETE');
 });
@@ -121,12 +120,12 @@ test('uploaded State to City to PIN selectors cascade to a sourced workspace ter
 
 test('existing-store restriction and funding compatibility are informational only', t => {
   const h = harness({ location:{pin:'560001'}, marketContext:{existingStore:{present:true,description:'Brand store on this PIN'},investment:{recommended:1000000}}, applicants:[
-    {id:'A1',pin:'560001',confirmedEligibilityScore:90,status:'Recommended',declaredInvestment:1200000}
+    {id:'A1',pin:'560001',confirmedEligibilityScore:90,status:'Recommended',declaredInvestment:1200000,requiredInvestment:1000000}
   ] });
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /existing franchise store/i);
   assert.match(h.root.textContent, /Recommended status is not final approval/i);
-  assert.match(h.root.textContent, /above the supplied recommended investment/i);
+  assert.match(h.root.textContent, /the brand needs ₹10,00,000 · enough/);
 });
 
 test('does not rank applicants without an explicit matching PIN', t => {
@@ -185,4 +184,15 @@ test('illustrative financial scenario sends editable assumptions to the determin
   assert.deepEqual([...breakEvenCells].map(cell=>cell.textContent),['₹2,00,000','₹2,00,000','₹2,00,000']);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/assumes 30,000 passing pedestrians\/month/);
   assert.match(h.root.querySelector('[data-financial-results]').textContent,/cash flow excludes taxes, debt service, depreciation, lease accounting and terminal value/i);
+});
+
+test('with the shared store analysis, the Simulator shows it instead of the illustrative calculator and reloads it per PIN', t => {
+  const loads = [];
+  const h = harness({ location: { id: 'pin:560001', pin: '560001' }, storeAnalysis: container => { container.dataset.mounted = 'yes'; return { load: id => loads.push(id) }; } });
+  t.after(() => h.dom.window.close());
+  assert.equal(h.root.querySelector('[data-financial-scenario]'), null);
+  assert.equal(h.root.querySelector('[data-store-analysis]').dataset.mounted, 'yes');
+  assert.match(h.root.textContent, /same model as Expansion Intelligence/);
+  h.controller.updateLocation({ id: 'pin:577002', pin: '577002' });
+  assert.deepEqual(loads, ['pin:560001', 'pin:577002']);
 });

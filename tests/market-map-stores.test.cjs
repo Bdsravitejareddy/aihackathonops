@@ -61,7 +61,7 @@ function mapDouble() {
 }
 
 // Direct map-adapter harness: the adapter returned by MarketMap.mount, which owns PIN markers and popups.
-function mountAdapter({ responder = () => levels([], 'state'), storePins = [] } = {}) {
+function mountAdapter({ responder = () => levels([], 'state'), storePins = [], rankRegion = undefined } = {}) {
   const dom = new JSDOM('<main id="host"></main>', { url: 'http://localhost/', runScripts: 'outside-only' });
   const { window } = dom;
   const lib = mapDouble(), requests = [];
@@ -75,7 +75,7 @@ function mountAdapter({ responder = () => levels([], 'state'), storePins = [] } 
   window.eval(read('dist/market-color-scale.js'));
   window.eval(read('dist/market-map.js'));
   const container = window.document.getElementById('host');
-  const adapter = window.MarketMap.mount({ container, options: { opportunityDebounceMs: 0, storePins } });
+  const adapter = window.MarketMap.mount({ container, options: { opportunityDebounceMs: 0, storePins, rankRegion } });
   const map = lib.Map.instances[0];
   map.fire('load');
   return { dom, window, lib, container, adapter, map, requests };
@@ -111,9 +111,10 @@ test('PIN popup loads competitors once on click and shows the store note and KPI
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
   await loadPins();
   h.container.querySelector('[data-map-pin="pin:560058"]').dispatchEvent(new h.window.Event('mouseenter'));
-  const hover = popupOf(h);
-  assert.ok(hover, 'popup is rendered on hover');
-  for (const text of ['Annual category spend', 'Potential revenue', 'Consumer spend', 'You have a store here']) assert.match(hover.textContent, new RegExp(text));
+  const hover = h.container.querySelector('.expansion-hover');
+  assert.ok(hover, 'a small hover card is rendered on hover');
+  assert.match(hover.textContent, /You have a store here/); assert.match(hover.textContent, /Click for full details/);
+  assert.equal(popupOf(h), null, 'the full popup waits for a click');
   assert.equal(competitorRequests(h).length, 0, 'no competitor request on hover before click');
 
   await clickPin(h, 'pin:560058');
@@ -153,11 +154,11 @@ test('a next-best PIN shows no store note on hover and is not a store', async t 
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
   await loadPins();
   h.container.querySelector('[data-map-pin="pin:560059"]').dispatchEvent(new h.window.Event('mouseenter'));
-  const popup = popupOf(h);
-  assert.ok(popup, 'popup is rendered');
-  assert.match(popup.textContent, /Potential revenue/);
-  assert.match(popup.textContent, /#1 next-best PIN to open/);
-  assert.doesNotMatch(popup.textContent, /You have a store here/);
+  const card = h.container.querySelector('.expansion-hover');
+  assert.ok(card, 'hover card is rendered');
+  assert.match(card.textContent, /Potential revenue/);
+  assert.match(card.textContent, /#1 next-best PIN to open/);
+  assert.doesNotMatch(card.textContent, /You have a store here/);
   assert.equal(h.adapter.hasStore('560059'), false);
 });
 
@@ -181,26 +182,26 @@ test('clicking a PIN marker opens a popup with reliable figures only', async t =
   await loadPins();
   await clickPin(h, 'pin:560059');
   const popup = popupOf(h);
-  for (const text of ['Annual category spend', 'Potential revenue', 'Catchment', 'Consumer spend']) assert.match(popup.textContent, new RegExp(text));
+  for (const text of ['Annual category spend', 'Potential revenue', 'Residents', 'Consumer spend']) assert.match(popup.textContent, new RegExp(text));
   for (const text of ['Serviceable', 'Competitor intensity', 'Relevant customers', 'Market opportunity', 'Unavailable']) assert.doesNotMatch(popup.textContent, new RegExp(text));
   assert.match(popup.textContent, /#1 next-best PIN to open/);
 });
 
-test('PIN popup shows investment and payback from the cost model, and "> 5 yrs" when payback is unknown', async t => {
+test('PIN popup shows investment and payback from the cost model, and "over 5 years" when payback is unknown', async t => {
   const known = mountAdapter({ responder: pinApi({ analysis: economics(30) }) });
   t.after(() => { known.adapter.destroy(); known.dom.window.close(); });
   await loadPins();
   await clickPin(known, 'pin:560059');
   assert.match(popupOf(known).textContent, /Investment required/);
   assert.match(popupOf(known).textContent, /Payback/);
-  assert.match(popupOf(known).textContent, /2\.5 yrs/);
+  assert.match(popupOf(known).textContent, /2\.5 years/);
 
   const unknown = mountAdapter({ responder: pinApi({ analysis: economics(null) }) });
   t.after(() => { unknown.adapter.destroy(); unknown.dom.window.close(); });
   await loadPins();
   await clickPin(unknown, 'pin:560059');
   assert.match(popupOf(unknown).textContent, /Payback/);
-  assert.match(popupOf(unknown).textContent, /> 5 yrs/);
+  assert.match(popupOf(unknown).textContent, /over 5 years/);
 });
 
 test('storePins option marks listed PINs as stores and is sent with the opportunity request', async t => {
@@ -215,4 +216,33 @@ test('storePins option marks listed PINs as stores and is sent with the opportun
   h.adapter.setStorePins(['560059']);
   assert.equal(h.adapter.hasStore('560059'), true);
   assert.equal(h.adapter.hasStore('560058'), false);
+});
+
+test('pins sit inside a wrapper MapLibre positions, so pin styles cannot move them', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const elements = h.lib.Marker.instances.filter(marker => !marker.removed).map(marker => marker.options.element);
+  assert.ok(elements.length > 0);
+  for (const el of elements) { assert.equal(el.className, 'expansion-pin-anchor'); assert.ok(el.querySelector('.expansion-pin')); }
+});
+
+test('next-best PINs are ranked once across India and stay fixed when the map moves', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const ranking = () => h.requests.filter(url => url.includes('/api/market/map/opportunities'));
+  assert.equal(ranking().length, 1);
+  assert.equal(new URL(ranking()[0], 'http://localhost').searchParams.get('bbox'), '60,5,100,38');
+  h.map.fire('moveend'); await loadPins();
+  assert.equal(ranking().length, 1);
+  assert.deepEqual([...h.container.querySelectorAll('.expansion-pin--next')].map(el => el.dataset.mapPin), ['pin:560059', 'pin:560060']);
+});
+
+test('the ranking is limited to the brand region when one is given', async t => {
+  const h = mountAdapter({ responder: pinApi(), rankRegion: { name: 'Karnataka', state: 'Karnataka', bbox: [74, 11.5, 78.6, 18.5] } });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const query = new URL(h.requests.find(url => url.includes('/api/market/map/opportunities')), 'http://localhost').searchParams;
+  assert.equal(query.get('bbox'), '74,11.5,78.6,18.5'); assert.equal(query.get('state'), 'Karnataka');
 });

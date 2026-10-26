@@ -27,7 +27,7 @@ test('approval stages resolve to the applicant onboarding checklist rather than 
  const r=ask('Where do I find approval stages?');
  assert.equal(r.navigation.route,'onboarding');
  assert.equal(r.navigation.execute,false);
- assert.match(r.text,/select the applicant.*checklist/i);
+ assert.match(r.text,/select the applicant.*onboarding/i);
 });
 test('navigation registry documents context and caution metadata for sensitive routes',()=>{
  const applicant=Bot.routes.find(route=>route.id==='applications');
@@ -41,7 +41,7 @@ test('training completion navigates to the existing applicant checklist',()=>{
  const r=ask('Where do I complete training?');
  assert.equal(r.navigation.type,'navigate');
  assert.equal(r.navigation.route,'onboarding');
- assert.match(r.text,/select the applicant.*checklist/i);
+ assert.match(r.text,/select the applicant.*onboarding/i);
 });
 test('approval and deletion requests can only return navigation, never execute actions',()=>{
  for(const prompt of ['How do I approve an application?','Where can I delete an application?']){

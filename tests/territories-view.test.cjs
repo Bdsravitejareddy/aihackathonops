@@ -58,7 +58,7 @@ test('KPI cards fill from the endpoint: catchment, TAM, investment and payback p
   const { doc, view } = setup(metricsBody);
   await tick();
   const kpis = doc.querySelector('[data-te-kpis="TER-01"]');
-  assert.match(kpis.textContent, /Catchment population/);
+  assert.match(kpis.textContent, /Residents/);
   assert.match(kpis.textContent, /120K|1\.2 ?L|120,000/);
   assert.match(kpis.textContent, /Investment required/);
   assert.match(kpis.textContent, /₹8M/);

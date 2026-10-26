@@ -212,13 +212,23 @@ Return ONLY JSON:
 FIELD is {"value":number,"sourceUrl":"URL of a page you retrieved","quote":"short supporting passage"} or, when no source states it, {"value":number,"assumption":true,"rationale":"why"}; use null when you cannot estimate it.
 Units: shares and margins as fractions 0-1 (organisedShare = organised share of the category's retail sales; onlineShareOfOrganised = online share within organised); money in INR; investment in lakh; rent per sq ft per month; sales per sq ft per year; durations in months. Never invent a citation or a number; label every unsourced estimate as an assumption.`;
 
+const NOTES_PROMPT = name => `Use Google Search (two or three targeted searches) to research the Indian franchise retail sector "${name}". Prefer official statistics, industry reports, listed-company investor presentations and franchise disclosure pages. In plain prose (no JSON), report what the sources state about: the organised share of the category's retail sales and the online share within organised; typical store size in sq ft; sales per sq ft per year; fit-out cost per sq ft; shop rent per sq ft per month; gross margin; franchise royalty; staff per sq ft; typical franchise investment (₹ lakh), minimum area and time to launch; and the major brands with stores in India. Give each figure with the name of the page it came from. Say plainly when no source states a figure.`;
+
 /** Grounded research for a sector, validated before anything is returned. */
 async function researchSector({ name, generate, parseJson, clientId }) {
   const clean = text(name, 80);
   if (!clean || !slug(clean)) return { ok: false, error: { code: 'invalid_name', message: 'Enter a sector name of up to 80 characters.' } };
   if (typeof generate !== 'function') return { ok: false, error: { code: 'unavailable', message: 'Research is unavailable — enter values manually or retry later.' } };
-  const result = await generate({ prompt: RESEARCH_PROMPT(clean.replace(/"/g, "'")), clientId });
-  if (!result?.ok) return { ok: false, error: result?.error || { code: 'upstream_error', message: 'Research provider request failed.' } };
+  // Two steps, as for location research: a searched prose write-up (Gemini skips search when asked for JSON),
+  // then a no-search conversion to JSON that may only cite the pages the first step retrieved.
+  // 30 s + 20 s keeps both inside the 60 s serverless limit.
+  const notes = await generate({ prompt: NOTES_PROMPT(clean.replace(/"/g, "'")), clientId, retryForCitations: false, timeoutMs: 30000 });
+  if (!notes?.ok) return { ok: false, error: notes?.error || { code: 'upstream_error', message: 'Research provider request failed.' } };
+  const pages = (notes.citations || []).slice(0, 20).map(c => `${c.url} — ${c.title || 'untitled'}`).join('\n') || 'none';
+  const formatted = await generate({ search: false, clientId, retryForCitations: false, timeoutMs: 20000,
+    prompt: `Convert the research notes below into the JSON described next. Use only facts stated in the notes. A FIELD may use sourceUrl only if that exact URL is in the retrieved pages list, with a quote copied from the notes; otherwise mark it as an assumption with a rationale.\nRetrieved pages:\n${pages}\n\n${RESEARCH_PROMPT(clean.replace(/"/g, "'"))}\n\nResearch notes:\n${notes.text}` });
+  if (!formatted?.ok) return { ok: false, error: formatted?.error || { code: 'upstream_error', message: 'Research provider request failed.' } };
+  const result = { ...formatted, citations: notes.citations || [], retrievedAt: notes.retrievedAt };
   const parsed = parseJson(result.text);
   if (!parsed || typeof parsed !== 'object') return { ok: false, error: { code: 'invalid_response', message: 'Research response was not valid JSON.' } };
   const checked = validateSectorProfile({ ...parsed, name: clean }, { citations: result.citations || [], mode: 'research', retrievedAt: result.retrievedAt });

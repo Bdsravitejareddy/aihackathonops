@@ -23,6 +23,7 @@
   }
   const pct = (value, digits = 1) => value === null || value === undefined || !Number.isFinite(value) ? '—' : `${value.toFixed(digits)}%`;
   const months = value => value === null || value === undefined ? '> 60 mo' : `${value} mo`;
+  const numeric = value => typeof value === 'number' && Number.isFinite(value);
   const chip = cls => `<span class="analysis-chip analysis-chip--${escape(cls || 'unknown')}">${escape(CLASS_LABEL[cls] || cls || 'Unclassified')}</span>`;
 
   function sparkline(trend) {
@@ -58,6 +59,19 @@
     return `<table class="analysis-range"><thead><tr><th scope="col"></th>${LEVELS.map(k => `<th scope="col" title="${escape(s[k].pairing)}">${escape(s[k].label)}</th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, fn]) => `<tr><th scope="row">${escape(label)}</th>${LEVELS.map(k => `<td class="${k === 'mid' ? 'is-base' : ''}">${fn(k)}</td>`).join('')}</tr>`).join('')}</tbody></table>
       <p class="hint">Downside pairs low revenue with high costs; upside pairs high revenue with low costs. Revenue basis: ${escape(result.revenueBasis.label)} ${chip(result.revenueBasis.evidenceClass)}${result.revenueBasis.areaPotential ? ` Area potential ${money(result.revenueBasis.areaPotential)} a year; store capacity ${money(s.mid.capacityRevenue)} (base).` : ''}${result.revenueBasis.basis === 'store_capacity_benchmark' ? ' *No area demand data: revenue is the store-capacity benchmark.' : ''}</p>`;
+  }
+
+  // Plain-language payback: what one store sells, what it must sell to cover fixed costs, and the store format behind both.
+  function paybackHTML(result) {
+    const mid = result.scenarios?.mid, area = result.assumptions?.areaSqFt?.value?.mid, capture = result.assumptions?.captureRate?.value?.mid;
+    if (!mid) return '';
+    const fixedYear = numeric(mid.monthlyFixedCosts) ? mid.monthlyFixedCosts * 12 : null;
+    const sales = result.revenueBasis?.basis === 'potentialRevenue' && numeric(capture) && mid.revenueConstraint === 'demand_limited'
+      ? `${money(mid.annualRevenue)} a year (${Math.round(capture * 100)}% of the area's ${money(result.revenueBasis.areaPotential)} potential revenue)` : `${money(mid.annualRevenue)} a year`;
+    const verdict = numeric(mid.paybackMonths) ? `It recovers the ${money(mid.investment)} investment in ${months(mid.paybackMonths)}.`
+      : numeric(mid.breakEvenRevenueAnnual) && mid.annualRevenue < mid.breakEvenRevenueAnnual ? `That is below the ${money(mid.breakEvenRevenueAnnual)} a year it needs to break even, so it does not pay back.`
+      : 'Cash flow is positive but does not recover the investment within 5 years.';
+    return `<p class="analysis-why"><strong>Why this payback?</strong> In the base case one ${numeric(area) ? `${Math.round(area).toLocaleString('en-IN')} sq ft ` : ''}store sells ${sales}. After margin, royalty and marketing it must cover ${fixedYear === null ? 'its fixed costs' : `${money(fixedYear)} a year of rent, staff and utilities`}. ${verdict}</p>`;
   }
 
   function projectionHTML(result) {
@@ -99,7 +113,7 @@
   function resultHTML(result, overrides) {
     const edited = Object.keys(overrides).length;
     return `<div class="analysis-head"><span class="analysis-tier">${result.tier.tierClass === 'mixed' ? `Mixed city tiers · ${escape(result.tier.classesPresent.join('/'))}` : `${escape(result.tier.tier)} · HRA ${escape(result.tier.tierClass)}`}</span>${edited ? `<span class="analysis-chip analysis-chip--user_assumption">${edited} assumption${edited > 1 ? 's' : ''} edited</span>` : '<span class="hint">Automatic estimate · no inputs required</span>'}</div>
-      ${rangeHTML(result)}
+      ${rangeHTML(result)}${paybackHTML(result)}
       <h3 class="analysis-h">Household income trend <span class="hint">estimate</span></h3>${incomeHTML(result.incomeTrend)}
       <details class="analysis-sub"><summary>5-year projection (base case)</summary>${projectionHTML(result)}</details>
       <details class="analysis-sub"><summary>Cost range breakdown</summary>${costsHTML(result)}</details>

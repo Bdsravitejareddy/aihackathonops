@@ -87,3 +87,4 @@
   .expansion-side .analysis-sub>summary::after{transition:none}
 }
 /* ==== end liquid glass ==== */
+.analysis-why{margin:10px 0 0;font-size:12px;line-height:1.5}.analysis-why strong{display:block;margin-bottom:2px}

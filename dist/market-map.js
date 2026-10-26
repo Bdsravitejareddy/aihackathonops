@@ -160,6 +160,11 @@
     potentialRevenue: metrics.potentialRevenue, spending: metrics.monthlyPerCapitaSpend
   });
   const formatMonths = months => !numeric(months) ? '> 5 yrs' : months < 12 ? `${months} mo` : `${(months / 12).toFixed(1).replace(/\.0$/, '')} yrs`;
+  // Why the base case does or does not pay back within the 5-year horizon, in one short clause.
+  function paybackReason(mid, money) {
+    if (numeric(mid?.paybackMonths) || !numeric(mid?.annualRevenue) || !numeric(mid?.breakEvenRevenueAnnual)) return '';
+    return mid.annualRevenue < mid.breakEvenRevenueAnnual ? `Store sales ${money(mid.annualRevenue)}/yr are below the ${money(mid.breakEvenRevenueAnnual)}/yr break-even · ` : 'Recovers the investment after year 5 · ';
+  }
   // Investment and payback from the cost model: the base case, with the downside–upside range.
   function storeEconomics(result) {
     const s = result?.scenarios; if (!s?.mid) return null;
@@ -171,7 +176,7 @@
       investment: numeric(s.mid.investment) ? money(s.mid.investment) : null,
       investmentRange: investments.length > 1 ? `${money(Math.min(...investments))} – ${money(Math.max(...investments))}` : '',
       payback: formatMonths(s.mid.paybackMonths),
-      paybackRange: `Upside ${formatMonths(known.length ? Math.min(...known) : null)} · downside ${formatMonths(paybacks.some(v => !numeric(v)) ? null : Math.max(...known))}`
+      paybackRange: `${paybackReason(s.mid, money)}Upside ${formatMonths(known.length ? Math.min(...known) : null)} · downside ${formatMonths(paybacks.some(v => !numeric(v)) ? null : Math.max(...known))}`
     };
   }
 
@@ -223,7 +228,15 @@
     const setVisibility = (id, visible) => { if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',visible?'visible':'none'); };
     const highlight = () => { if (ready && !destroyed) map.setFilter('market-selected', ['==', ['get','id'], selected === null ? '' : String(selected)]); };
     const update = () => { if (ready && !destroyed) { map.getSource('market-geographies').setData(collection(features)); highlight(); } };
-    const findGeo = id => features.find(f=>String(f.id)===String(id));
+    const findGeo = id => features.find(f=>String(f.id)===String(id)) || pinAreas.find(f=>String(f.id)===String(id));
+    // PIN view: polygons for the PINs in view, coloured on the legend's potential-revenue steps; grey when unavailable.
+    let pinAreas = [], pinLegend = null;
+    const pinAreaCollection = () => ({ type: 'FeatureCollection', features: pinAreas.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
+      properties: { id: String(f.id), name: f.name, level: 'pin', value: metricValue(f.metrics?.potentialRevenue) ?? -1 } })) });
+    function pinAreaColor() {
+      const steps = pinLegend?.thresholds?.length && pinLegend.colors?.length === pinLegend.thresholds.length + 1 ? pinLegend : { thresholds: [25e6, 45e6, 70e6, 120e6], colors: ['#8dbdd2', '#f1da5b', '#f28e2b', '#b4232b', '#7a0019'] };
+      return ['case', ['<', ['get','value'], 0], '#6b7280', ['step', ['get','value'], steps.colors[0], ...steps.thresholds.flatMap((t, i) => [t, steps.colors[i + 1]])]];
+    }
     const storeAnchors = new Map();
     const allStores = () => {
       const byPin = new Map();
@@ -357,25 +370,27 @@
     function renderMarkers() {
       markers.forEach(marker => marker.remove()); markers = [];
       if (!lib.Marker || destroyed) return;
-      const add = (kind, item) => { if (hasAnchor(item)) markers.push(new lib.Marker({ element: pinElement(kind, item), anchor: 'bottom' }).setLngLat(item.anchor).addTo(map)); };
+      // MapLibre positions the wrapper with an absolute transform; the pin's own position and hover scale stay inside it.
+      const add = (kind, item) => { if (!hasAnchor(item)) return; const anchor = doc.createElement('div'); anchor.className = 'expansion-pin-anchor'; anchor.append(pinElement(kind, item));
+        markers.push(new lib.Marker({ element: anchor, anchor: 'center' }).setLngLat(item.anchor).addTo(map)); };
       opportunities.forEach(item => add('next', item)); allStores().forEach(item => add('store', item));
     }
     const shapePin = (item, extra = {}) => ({ ...item, ...extra, id: String(item.id || `pin:${item.pin}`), pin: String(item.pin || pinCode(item.id)) });
     function setOpportunityState(state, message = '') {
       oppState = state;
-      options.onOpportunities?.({ state, stores: allStores().length, opportunities: opportunities.length, message });
+      options.onOpportunities?.({ state, stores: storePins.length || allStores().length, opportunities: opportunities.length, message });
     }
     function requestOpportunities() {
       clearTimeout(oppTimer);
       if (!ready || destroyed || !fetcher) return;
       oppTimer = setTimeout(loadOpportunities, debounceMs);
     }
-    // The ranking covers the PINs in view, spaced apart so pins do not pile up on one neighbourhood.
+    // One ranking across India, spaced apart so pins do not pile up on one neighbourhood. It does not follow the
+    // viewport, so the next-best PINs stay fixed while the user zooms and pans.
+    const INDIA_BBOX = [60, 5, 100, 38];
     async function loadOpportunities() {
       oppTimer = null;
-      const [[west, south], [east, north]] = map.getBounds().toArray();
-      const bbox = [Math.max(west, 60), Math.max(south, 5), Math.min(east, 100), Math.min(north, 38)].map(v => Number(v.toFixed(2)));
-      if (!(bbox[0] < bbox[2] && bbox[1] < bbox[3])) return;
+      const bbox = INDIA_BBOX;
       const query = new URLSearchParams({ bbox: bbox.join(','), limit: String(OPPORTUNITY_LIMIT), spacingKm: String(OPPORTUNITY_SPACING_KM), sector: sectorId() });
       if (storePins.length) query.set('storePins', storePins.join(','));
       const key = query.toString(); if (key === oppKey) return;
@@ -403,6 +418,9 @@
       map.addLayer({ id: 'market-outline', type: 'line', source: 'market-geographies', paint: { 'line-color': '#ffffff', 'line-width': ['interpolate',['linear'],['zoom'],3,0.5,10,1.2], 'line-opacity': 0.5 } });
       map.addLayer({ id: 'market-points', type: 'circle', source: 'market-geographies', filter: ['==',['geometry-type'],'Point'], paint: { 'circle-color': '#ffffff', 'circle-opacity': 0.6, 'circle-radius': 4 } });
       map.addLayer({ id: 'market-selected', type: 'line', source: 'market-geographies', paint: { 'line-color': '#cfe043', 'line-width': 2.5 }, filter: ['==',['get','id'],''] });
+      map.addSource('pin-areas', { type: 'geojson', data: pinAreaCollection() });
+      map.addLayer({ id: 'pin-area-fill', type: 'fill', source: 'pin-areas', paint: { 'fill-color': pinAreaColor(), 'fill-opacity': 0.5 } }, 'market-selected');
+      map.addLayer({ id: 'pin-area-line', type: 'line', source: 'pin-areas', paint: { 'line-color': '#ffffff', 'line-width': ['interpolate',['linear'],['zoom'],8,0.4,13,1.2], 'line-opacity': 0.7 } }, 'market-selected');
       ready = true;
       update();
       // Fly in from the globe to India unless the view already moved; reduced motion starts there instead.
@@ -411,7 +429,7 @@
       requestOpportunities();
     });
     map.on('click', event => {
-      const hit = event.features?.[0] || map.queryRenderedFeatures?.(event.point, { layers: ['market-fill','market-points'].filter(id => map.getLayer(id)) })?.[0];
+      const hit = event.features?.[0] || map.queryRenderedFeatures?.(event.point, { layers: ['pin-area-fill','market-fill','market-points'].filter(id => map.getLayer(id)) })?.[0];
       const id = hit?.properties?.id ?? hit?.id;
       if (id === undefined) return;
       selected = String(id); highlight(); markSelected(); showPopup(String(id), event.lngLat, false);
@@ -419,8 +437,10 @@
       onSelect(String(id));
     });
     map.on('mouseenter', 'market-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseenter', 'pin-area-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'pin-area-fill', () => { map.getCanvas().style.cursor = ''; });
     map.on('mouseleave', 'market-fill', () => { map.getCanvas().style.cursor = ''; });
-    map.on('moveend', () => { if (destroyed) return; requestOpportunities(); onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
+    map.on('moveend', () => { if (destroyed) return; onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
     return {
       // The heatmap is gone; these stay as no-ops so callers need not branch.
@@ -443,6 +463,15 @@
       getOpportunities() { return { state: oppState, stores: [...stores], opportunities: [...opportunities] }; },
       loadCompetitors, loadAnalysis, storeEconomics,
       resize(){map.resize?.();},
+      setPinAreas(items, legend) {
+        pinAreas = Array.isArray(items) ? items : []; if (legend) pinLegend = legend;
+        if (!ready || destroyed) return;
+        map.getSource('pin-areas')?.setData(pinAreaCollection());
+        if (map.getLayer('pin-area-fill')) map.setPaintProperty('pin-area-fill', 'fill-color', pinAreaColor());
+      },
+      getPinAreas() { return [...pinAreas]; },
+      flyTo(center, zoom) { map.flyTo({ center, zoom, duration: motion(800) }); },
+      getView() { return { zoom: map.getZoom(), bounds: map.getBounds().toArray(), center: map.getCenter?.()?.toArray?.() || null }; },
       setFeatures(value,meta) {
         features = Array.isArray(value) ? value : [];
         const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>f.id)]) : null;
@@ -483,6 +512,7 @@
         <div class="expansion-map-tools" aria-label="Map controls">
           <label>Sector<select class="input" name="sector" data-map-sector aria-label="Sector"></select></label>
           <label>Basemap<select class="input" data-map-basemap><option value="satellite" selected>Satellite imagery</option><option value="street">Street</option><option value="terrain">Terrain</option></select></label>
+          <label>View<select class="input" data-map-view aria-label="Map view"><option value="areas" selected>States &amp; districts</option><option value="pins">PIN codes</option></select></label>
           <button class="button small" type="button" data-map-tilt aria-pressed="false">3D tilt</button><button class="button small" type="button" data-map-national>India</button>
           <label class="map-year">Year<input class="input" name="year" type="number" min="2011" max="2100" value="${year}"></label>
         </div>
@@ -603,8 +633,39 @@
       section.hidden=false; box.innerHTML=majorHtml+observedHtml+warnings;
     }
     function renderLegend() {
-      $('[data-map-legend]').innerHTML=`<strong>Expansion pins</strong><div class="expansion-legend-items"><span><i class="expansion-dot expansion-dot--store" aria-hidden="true"></i>Existing store</span><span><i class="expansion-dot expansion-dot--next" aria-hidden="true"></i>Next-best PIN to open, ranked</span></div><small>Ranked by potential revenue, spaced 3 km apart. Refreshes as you pan.</small>`;
+      const legend=pinLegend||{thresholds:[25e6,45e6,70e6,120e6],colors:['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019']};
+      const money=value=>display({value,unit:'INR'});
+      const scale=pinView?`<strong class="expansion-legend-sub">PIN potential revenue / year</strong><div class="expansion-legend-items">${legend.colors.map((color,i)=>`<span><i class="expansion-swatch" style="background:${escape(color)}" aria-hidden="true"></i>${i===0?`Under ${money(legend.thresholds[0])}`:i===legend.colors.length-1?`${money(legend.thresholds[i-1])}+`:`${money(legend.thresholds[i-1])} – ${money(legend.thresholds[i])}`}</span>`).join('')}<span><i class="expansion-swatch" style="background:#6b7280" aria-hidden="true"></i>Not available</span></div>`:'';
+      $('[data-map-legend]').innerHTML=`<strong>Expansion pins</strong><div class="expansion-legend-items"><span><i class="expansion-dot expansion-dot--store" aria-hidden="true"></i>Existing store</span><span><i class="expansion-dot expansion-dot--next" aria-hidden="true"></i>Next-best PIN to open, ranked</span></div><small>Top PINs across India by potential revenue, spaced 3 km apart. Fixed while you zoom and pan.</small>${scale}`;
     }
+    // PIN view: loads the PIN polygons in view once the map is close enough to read them.
+    const PIN_VIEW_MIN_ZOOM=8.5;
+    let pinView=false,pinLegend=null,pinTimer=null,pinRevision=0;
+    function schedulePinAreas(){clearTimeout(pinTimer);if(pinView)pinTimer=setTimeout(loadPinAreas,350);}
+    async function loadPinAreas(){
+      if(!pinView||destroyed||!map)return;
+      const revision=++pinRevision,view=map.getView();
+      if(view.zoom<PIN_VIEW_MIN_ZOOM){map.setPinAreas([]);status('PIN view: zoom in to a city to see its PIN codes.');return;}
+      const bbox=view.bounds.flat().map((v,i)=>Number(v.toFixed(2))+(i<2?-0.01:0.01));
+      status('Loading PIN codes in view…');
+      try{
+        const query=new URLSearchParams({level:'pin',bbox:bbox.join(','),metric:'potentialRevenue',zoom:String(Math.round(view.zoom)),year:String(year),sector:sectorId()});
+        const result=await request('pins','/api/market/map/levels?'+query);
+        if(destroyed||!pinView||revision!==pinRevision)return;
+        if(result.legend?.thresholds)pinLegend=result.legend;
+        map.setPinAreas(result.features,result.legend);renderLegend();
+        status(`${result.features.length} PIN codes in view · coloured by potential revenue. PIN areas are approximate.`);
+      }catch(error){if(!destroyed&&error.name!=='AbortError')status(`PIN codes unavailable: ${error.message}`);}
+    }
+    function setPinView(active){
+      pinView=active;const select=$('[data-map-view]');if(select)select.value=active?'pins':'areas';renderLegend();
+      if(!active){clearTimeout(pinTimer);pinRevision++;map?.setPinAreas([]);status('States and districts view.');return;}
+      const view=map?.getView();
+      // Start somewhere with PINs to read: the selected PIN, else the first existing store.
+      if(view&&view.zoom<PIN_VIEW_MIN_ZOOM){const anchor=Array.isArray(selectedDetail?.anchor)?selectedDetail.anchor:[77.5946,12.9716];map.flyTo(anchor,10);status('PIN view: moving to a city…');return;}
+      loadPinAreas();
+    }
+    $('[data-map-view]')?.addEventListener('change',event=>setPinView(event.target.value==='pins'));
     function metricNote(metric, fallback) {
       if(!metric||metricValue(metric)===null)return metric?.missing?.nextAction||fallback;
       const source=list(metric.evidence)[0]||{};
@@ -838,8 +899,8 @@
         let changed = false;
         while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
         if (changed) { selected = null; invalidate(); }
-        loadLevels(); options.onViewport?.(view);
-      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onOpportunities(info){ if(destroyed)return; status(info.state==='loading'?'Ranking next-best PINs…':info.state==='error'?`Next-best PINs unavailable: ${info.message}`:`${info.opportunities} next-best PINs · ${info.stores} existing stores in view`); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+        loadLevels(); schedulePinAreas(); options.onViewport?.(view);
+      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onOpportunities(info){ if(destroyed)return; status(info.state==='loading'?'Ranking next-best PINs…':info.state==='error'?`Next-best PINs unavailable: ${info.message}`:`${info.opportunities} next-best PINs across India · ${info.stores} existing stores`); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
     container.addEventListener('click', onClick);
     function onClick(event) {
@@ -848,7 +909,7 @@
       if('mapPopupDetail'in d){const id=String(d.mapPopupDetail);if(selected!==id)void selectGeography(id);const side=container.querySelector('.expansion-side'),toggle=container.querySelector('[data-map-sidebar-toggle]');if(side?.classList.contains('is-collapsed')){side.classList.remove('is-collapsed');if(toggle){toggle.textContent='Hide insights';toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Collapse market insights');}setTimeout(()=>map?.resize(),180);}const details=container.querySelector('[data-map-detail]')?.closest('details');if(details){details.open=true;setTimeout(()=>details.scrollIntoView?.({behavior:'smooth',block:'nearest'}),0);}return;}
       if('mapExit'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'overview',label:'Workspace overview',execute:false,permission:'read'}}));return;}
       if('mapOpenMarket'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'market',sectionId:'market-form',label:'Market Intelligence',execute:false,permission:'read'}}));return;}
-      if('mapScreenPin'in d&&selectedDetail?.level==='pin'){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'screening',sectionId:'territory-screening-root',label:'Territory Screening',execute:false,permission:'read'}}));return;}
+      if('mapScreenPin'in d&&selectedDetail?.level==='pin'){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'screening',sectionId:'territory-screening-root',label:'Simulator',execute:false,permission:'read'}}));return;}
       if('mapSidebarToggle'in d||'mapSidebarClose'in d){const side=$('.expansion-side'),hide=!side.classList.contains('is-collapsed');side.classList.toggle('is-collapsed',hide);const toggle=$('[data-map-sidebar-toggle]');if(toggle){toggle.textContent=hide?'Show insights':'Hide insights';toggle.setAttribute('aria-expanded',String(!hide));toggle.setAttribute('aria-label',hide?'Show market insights':'Collapse market insights');}setTimeout(()=>map?.resize(),180);return;}
       if('mapTilt'in d){const active=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(active));button.textContent=active?'2D view':'3D tilt';map?.setTilt(active);return;}
       if ('mapGlobalResult' in d) {
@@ -928,7 +989,7 @@
     return { setMetric, setYear, setScenario, selectGeography, resize(){map?.resize();},
       refreshDisplay,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; toolsObserver?.disconnect(); analysisPanel?.destroy(); contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; clearTimeout(pinTimer); toolsObserver?.disconnect(); analysisPanel?.destroy(); contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

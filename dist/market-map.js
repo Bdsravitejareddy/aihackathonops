@@ -470,6 +470,7 @@
             ${[['tam','Annual category-spend TAM'],['sam','Serviceable market · SAM'],['som','Capturable market · SOM'],['customers','Relevant customers'],['population','Population'],['spending','Annual spend / person'],['competition','Competitor intensity'],['opportunity','Market opportunity']].map(([key,title])=>`<article class="market-kpi" data-market-metric="${key}"><span>${title}</span><strong data-value>${key==='tam'?'Loading…':'—'}</strong><small data-note>${key==='customers'?'Not estimated without category participation evidence':key==='sam'||key==='som'?'Requires a supported serviceable share and capture benchmark':'Selecting sourced geography…'}</small></article>`).join('')}
           </div>
           <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
+          <section class="analysis-section" aria-label="Store cost and return analysis"><h2 class="analysis-title">Analysis <span>store costs, ROI &amp; payback</span></h2><div data-map-analysis aria-live="polite"></div></section>
           <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add comparison</button></div>
           <details class="expansion-drawer"><summary>Detailed evidence & methodology</summary><div data-map-detail aria-live="polite"><p class="hint">Select a state or city.</p></div></details>
           <details class="expansion-drawer"><summary>Compare locations <span data-map-compare-count></span></summary><p class="hint">Compare 2–4 places. Overlapping catchments can double-count residents.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></details>
@@ -489,6 +490,7 @@
     const legends = new Map(), compared = new Map(), aborters = new Map();
     let selectedRecord=null, comparisonResult=null, scenarioResult=null;
     container.innerHTML = pageHTML(year);
+    const analysisPanel = root.MarketAnalysisPanel?.create({ container: container.querySelector('[data-map-analysis]'), fetch: options.fetch || root.fetch?.bind(root) });
     const $ = selector => container.querySelector(selector);
     const status = text => { $('[data-map-status]').textContent = text; };
     const clearResults = () => { comparisonResult=null; scenarioResult=null; $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
@@ -686,7 +688,7 @@
     async function selectGeography(id) {
       selected = String(id); selectedDetail = null; selectedRecord=null; selectedEstimate=null; const revision = ++detailRevision, context = contextRevision;
       map?.setPopupContext(selected,{geography:features.find(feature=>String(feature.id)===selected)||null});
-      map?.selectGeography(selected); renderAreas();
+      map?.selectGeography(selected); renderAreas(); analysisPanel?.load(selected);
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
       $('[data-map-research]').innerHTML = '<p>Loading location context…</p>'; $('[data-map-answer]').innerHTML = '';
@@ -810,7 +812,7 @@
         $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
         zoom = ZOOMS[childIndex()]; map?.focusGeography(geo,zoom); loadLevels();
       }
-      if ('mapNational' in d) { path = []; selected = null; zoom = ZOOMS[0]; bounds = undefined; invalidate(); map?.selectGeography(null); map?.reset(); $('[data-map-detail]').innerHTML = '<h2>Select an area</h2>'; $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true; loadLevels(); }
+      if ('mapNational' in d) { analysisPanel?.clear(); path = []; selected = null; zoom = ZOOMS[0]; bounds = undefined; invalidate(); map?.selectGeography(null); map?.reset(); $('[data-map-detail]').innerHTML = '<h2>Select an area</h2>'; $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true; loadLevels(); }
       if ('mapAddCompare' in d && selectedDetail && compared.size < 4) { compared.set(selected,selectedDetail); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); button.disabled = true; }
       if ('mapRemove' in d) { compared.delete(d.mapRemove); compareRevision++; $('[data-map-comparison]').innerHTML = ''; renderCompared(); $('[data-map-add-compare]').disabled = !selectedDetail || compared.has(selected) || compared.size>=4; }
       if ('mapCompare' in d) compare();
@@ -856,6 +858,7 @@
     $('[data-map-scenario-form]').addEventListener('submit', applyScenario);
     renderLegend(); renderCompared(); loadLevels();
     function refreshDisplay(){
+      analysisPanel?.refresh();
       renderLegend(); renderAreas(); renderCompared(); renderComparison(); renderForecast(); map?.refreshDisplay();
       if(selectedDetail)renderOverview(selectedDetail,selectedEstimate);
       else if(!path.length&&!selected)renderNationalOverview();
@@ -867,7 +870,7 @@
     return { setMetric, setYear, setScenario, selectGeography, resize(){map?.resize();},
       refreshDisplay,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; analysisPanel?.destroy(); contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); root.removeEventListener?.('franchiseos:expansion-resize',onExpansionResize); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

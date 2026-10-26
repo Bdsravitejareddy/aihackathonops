@@ -7,6 +7,7 @@ const { validatePin, calculateMarketAssessment } = require('./market-engine.cjs'
 const { projectStoreEconomics, scoreMarketViability } = require('./market-forecast.cjs');
 const { createMarketLocationData } = require('./market-location-data.cjs');
 const { calculateCustomerMarket } = require('./customer-market-model.cjs');
+const { analyzeLocation, validateOverrides } = require('./market-analysis.cjs');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -321,6 +322,26 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
         } catch (error) {
           return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : 'Invalid JSON' });
         }
+      }
+      if (url.pathname === '/api/market/analysis') {
+        if (req.method !== 'GET' && req.method !== 'POST') { res.setHeader('allow', 'GET, POST'); return reply(res, 405, { error: 'Method not allowed' }); }
+        if (req.method === 'POST' && !req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });
+        let payload;
+        try {
+          payload = req.method === 'POST' ? await readBody(req, Math.min(maxBodyBytes, 50_000))
+            : { geographyId: url.searchParams.get('geographyId'), overrides: url.searchParams.has('overrides') ? JSON.parse(url.searchParams.get('overrides')) : undefined };
+        } catch (error) { return reply(res, error.status || 400, { error: error.status === 413 ? 'Payload too large' : 'Invalid JSON' }); }
+        const geographyId = payload?.geographyId;
+        if (typeof geographyId !== 'string' || !/^[\w:.\- ]{1,160}$/.test(geographyId)) return reply(res, 400, { error: 'A valid geographyId is required' });
+        try { validateOverrides(payload.overrides); } catch (error) { return reply(res, 400, { error: error.message }); }
+        let geography = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
+        if (!geography) {
+          if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
+          try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
+          catch { return reply(res, 503, { error: 'Map geography service unavailable' }); }
+        }
+        if (!geography) return reply(res, 404, { error: 'Geography not found' });
+        return reply(res, 200, analyzeLocation({ geography, overrides: payload.overrides }));
       }
       if (url.pathname === '/api/market/forecast' && req.method === 'POST') {
         if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) return reply(res, 415, { error: 'Content-Type must be application/json' });

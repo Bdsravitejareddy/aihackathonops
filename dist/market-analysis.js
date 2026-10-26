@@ -97,7 +97,7 @@
 
   function resultHTML(result, overrides) {
     const edited = Object.keys(overrides).length;
-    return `<div class="analysis-head"><span class="analysis-tier">${escape(result.tier.tier)} · HRA ${escape(result.tier.tierClass)}</span>${edited ? `<span class="analysis-chip analysis-chip--user_assumption">${edited} assumption${edited > 1 ? 's' : ''} edited</span>` : '<span class="hint">Automatic estimate · no inputs required</span>'}</div>
+    return `<div class="analysis-head"><span class="analysis-tier">${result.tier.tierClass === 'mixed' ? `Mixed city tiers · ${escape(result.tier.classesPresent.join('/'))}` : `${escape(result.tier.tier)} · HRA ${escape(result.tier.tierClass)}`}</span>${edited ? `<span class="analysis-chip analysis-chip--user_assumption">${edited} assumption${edited > 1 ? 's' : ''} edited</span>` : '<span class="hint">Automatic estimate · no inputs required</span>'}</div>
       ${rangeHTML(result)}
       <h3 class="analysis-h">Household income trend <span class="hint">estimate</span></h3>${incomeHTML(result.incomeTrend)}
       <details class="analysis-sub"><summary>5-year projection (base case)</summary>${projectionHTML(result)}</details>

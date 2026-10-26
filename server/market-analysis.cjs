@@ -196,13 +196,17 @@ function estimateCostRange(assumptions) {
 }
 
 function revenueBase(geography, assumptions, override) {
-  const metrics = geography.metrics || {}, capacity = assumptions.areaSqFt.value.mid * assumptions.revenuePerSqFtYear.value.mid;
-  if (override) return { value: override.mid ?? override.low ?? override.high, levels: override, basis: 'user_override', evidenceClass: 'user_assumption', label: 'User-entered annual revenue', capacity };
+  const metrics = geography.metrics || {}, area = assumptions.areaSqFt.value.mid, capacity = area * assumptions.revenuePerSqFtYear.value.mid;
+  const storeCeiling = area * assumptions.revenuePerSqFtYear.value.high * 2.5, skipped = [];
+  if (override) return { value: override.mid ?? override.low ?? override.high, levels: override, basis: 'user_override', evidenceClass: 'user_assumption', label: 'User-entered annual revenue', capacity, skipped };
+  // Map metrics may describe the whole area's market; use one only when it is plausible for a single store.
   for (const [key, label] of [['potentialRevenue', 'Potential revenue for this area (map model)'], ['som', 'Serviceable obtainable market (SOM)']]) {
     const metric = metrics[key];
-    if (finite(metric?.value) && metric.value > 0) return { value: metric.value, basis: key, evidenceClass: metric.evidenceClass || 'derived_estimate', label, capacity, evidence: metric.evidence || [] };
+    if (!finite(metric?.value) || metric.value <= 0) continue;
+    if (metric.value > storeCeiling) { skipped.push({ metric: key, value: metric.value }); continue; }
+    return { value: metric.value, basis: key, evidenceClass: metric.evidenceClass || 'derived_estimate', label, capacity, evidence: metric.evidence || [], skipped };
   }
-  return { value: capacity, basis: 'store_capacity_benchmark', evidenceClass: 'derived_estimate', label: 'Store capacity at benchmark sales density (area × sales per sq ft)', capacity };
+  return { value: capacity, basis: 'store_capacity_benchmark', evidenceClass: 'derived_estimate', label: 'Store capacity at benchmark sales density (area × sales per sq ft)', capacity, skipped };
 }
 
 function projectScenario({ investment, annualRevenue, fixedMonthly, contributionMargin, growth, inflation, discountRate, initialRamp, rampMonths }) {
@@ -271,6 +275,7 @@ function analyzeLocation({ geography, overrides } = {}) {
   if (density < bench.low * 0.25) warnings.push(`Base revenue implies ₹${Math.round(density).toLocaleString('en-IN')} per sq ft per year, under a quarter of the lowest benchmark; the store may be oversized for this area.`);
   const categorySpend = geography.metrics?.apparelExpenditure?.value;
   if (finite(categorySpend) && categorySpend > 0 && scenarios.mid.annualRevenue > categorySpend * 0.1) warnings.push(`Base revenue would be ${round(scenarios.mid.annualRevenue / categorySpend * 100, 1)}% of the area's annual clothing and footwear spend; check capture.`);
+  for (const item of base.skipped) warnings.push(`${item.metric === 'potentialRevenue' ? 'Potential revenue' : 'SOM'} for this area (₹${Math.round(item.value).toLocaleString('en-IN')} a year) is too large for one store, so it is treated as the area's market rather than store sales.`);
   if (base.basis === 'store_capacity_benchmark') warnings.push('No area revenue potential is available, so revenue is the store capacity at benchmark sales density — a supply-side estimate, not demand evidence for this area.');
   warnings.push('Cash flows exclude tax, depreciation, financing and terminal value; the refundable deposit and inventory are not recovered within the 5-year horizon.');
   warnings.push(...incomeTrend.warnings);

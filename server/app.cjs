@@ -8,6 +8,7 @@ const { projectStoreEconomics, scoreMarketViability } = require('./market-foreca
 const { createMarketLocationData } = require('./market-location-data.cjs');
 const { calculateCustomerMarket } = require('./customer-market-model.cjs');
 const { analyzeLocation, validateOverrides } = require('./market-analysis.cjs');
+const { buildCeoInsights } = require('./ceo-insights.cjs');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -51,6 +52,14 @@ async function readBody(req, maxBytes) {
 
 function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024, allowRemote = false }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
+  // One geography loader for the Analysis panel and the CEO cards so both see identical inputs.
+  async function loadAnalysisGeography(geographyId) {
+    const pinPlace = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
+    if (pinPlace) return pinPlace;
+    if (!marketMapStore) throw new Error('Map geography catalog is unavailable');
+    try { return await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
+    catch { throw new Error('Map geography service unavailable'); }
+  }
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const host = req.headers.host || '';
@@ -68,6 +77,19 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
       if (typeof store.listApplicationsByPin !== 'function') return reply(res,503,{error:'Screening lookup unavailable'});
       try { return reply(res,200,{applications:await store.listApplicationsByPin(workspaceId,pin)}); }
       catch { return reply(res,503,{error:'Screening lookup unavailable'}); }
+    }
+
+    if (url.pathname === '/api/insights/ceo') {
+      if (req.method !== 'GET') { res.setHeader('allow', 'GET'); return reply(res, 405, { error: 'Method not allowed' }); }
+      const stores = url.searchParams.has('stores') ? Number(url.searchParams.get('stores')) : 5;
+      if (!Number.isInteger(stores) || stores < 1 || stores > 100) return reply(res, 400, { error: 'stores must be an integer from 1 to 100' });
+      if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
+      try {
+        // Same feature call as the national map layer (/api/market/map/levels).
+        const features = await marketMapStore.listMapGeographies({ parentId: null, level: 'state', metric: 'apparelExpenditure', scenario: { captureRate: null }, includeGeometry: false });
+        const insights = await buildCeoInsights({ features, loadGeography: loadAnalysisGeography, stores });
+        return reply(res, 200, { ...insights, sourceVersion: marketMapStore.sourceVersion || null });
+      } catch { return reply(res, 503, { error: 'Insights are unavailable; the map geography service did not respond.' }); }
     }
 
     if (url.pathname.startsWith('/api/market/')) {
@@ -334,12 +356,9 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
         const geographyId = payload?.geographyId;
         if (typeof geographyId !== 'string' || !/^[\w:.\- ]{1,160}$/.test(geographyId)) return reply(res, 400, { error: 'A valid geographyId is required' });
         try { validateOverrides(payload.overrides); } catch (error) { return reply(res, 400, { error: error.message }); }
-        let geography = /^pin:\d{6}$/.test(geographyId) ? marketLocationData?.resolvePin(geographyId.slice(4)) : null;
-        if (!geography) {
-          if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
-          try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
-          catch { return reply(res, 503, { error: 'Map geography service unavailable' }); }
-        }
+        let geography;
+        try { geography = await loadAnalysisGeography(geographyId); }
+        catch (error) { return reply(res, 503, { error: error.message }); }
         if (!geography) return reply(res, 404, { error: 'Geography not found' });
         return reply(res, 200, analyzeLocation({ geography, overrides: payload.overrides }));
       }

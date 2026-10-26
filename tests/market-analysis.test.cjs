@@ -76,6 +76,10 @@ test('scenarios pair downside revenue with high costs and carry a 5-year project
   assert.equal(high.annualRevenue, 112500000);
   assert.ok(low.investment >= mid.investment && mid.investment >= high.investment);
   assert.ok(low.roi5YearPercent <= mid.roi5YearPercent && mid.roi5YearPercent <= high.roi5YearPercent);
+  // An area-wide market figure is not used as one store's sales.
+  const areaWide = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 5e11, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
+  assert.equal(areaWide.revenueBasis.basis, 'store_capacity_benchmark');
+  assert.ok(areaWide.warnings.some(w => /too large for one store/.test(w)));
   for (const s of [low, mid, high]) { assert.equal(s.projection.length, 5); assert.ok(s.paybackMonths === null || s.paybackMonths >= 1); }
 });
 

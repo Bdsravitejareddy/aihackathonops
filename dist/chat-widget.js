@@ -12,68 +12,99 @@
   const fact = (label, value, note) => { const item = { label: clean(label, 80), value: clean(value, 120) }; if (note) item.note = clean(note); return item; };
   const count = (results, status) => results.filter(a => a.status === status).length;
 
-  function geographyFrom(location) {
-    if (!location?.id) return null;
-    const metrics = Object.entries(location.metrics || {}).filter(([, m]) => m && typeof m === 'object' && Number.isFinite(m.value)).slice(0, 12)
-      .map(([key, m]) => fact(key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(), formatMetric(m), m.evidenceClass));
-    return { id: String(location.id), name: clean(location.name || location.id, 80), level: location.level || null, metrics };
+  // Gaps are values the page could not supply. They never become text in a summary; they are reported once.
+  const GAP = /^(?:—|–|-|n\/a|not estimated|unavailable|not available|no data|not in the pin dataset|missing|none|undefined|null|nan|)$/i;
+  const isGap = value => value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value)) || GAP.test(String(value).trim());
+  const money = value => isGap(value) ? null : formatMetric({ value: Number(value), unit: 'INR' });
+  const people = value => isGap(value) ? null : `${Math.round(Number(value)).toLocaleString('en-IN')} people`;
+  const months = value => isGap(value) ? null : `${value} months`;
+  const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+  const fieldOf = (label, value, note) => isGap(value) ? null : { label: clean(label, 80), value: clean(value, 120), ...(isGap(note) ? {} : { note: clean(note, 140) }) };
+  const gapsOf = (...pairs) => pairs.filter(([, value]) => isGap(value)).map(([label]) => label);
+
+  // Overview, applications and CEO view read the workbook state and the cards the page already computed.
+  function overviewData({ state = {}, results = [] }) {
+    const count = status => results.filter(a => a.status === status).length;
+    const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
+    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'),
+      territories: (state.territories || []).length, pendingCorrections: (state.apps || []).reduce((n, a) => n + (a.pending?.length || 0), 0), source: state.source || null, slotsTotal, slotsRecommended: count('Recommended') };
+    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Clarification needed', data.clarification),
+      fieldOf('Site needed', data.siteNeeded), fieldOf('Waitlisted', data.waitlisted), fieldOf('Territories uploaded', data.territories),
+      fieldOf('Pending data corrections', data.pendingCorrections), fieldOf('Data source', data.source)].filter(Boolean), gaps: [] };
   }
-  function formatMetric(metric) {
-    const unit = String(metric.unit || '');
-    if (/^(?:INR|₹)/i.test(unit)) return root.FranchiseDisplay ? root.FranchiseDisplay.money(metric.value, unit) : `₹${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 0 })} ${unit.replace(/^(?:INR|₹)\s*/i, '/') || ''}`.trim();
-    return `${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}${unit ? ' ' + unit : ''}`;
+  function applicationsData({ results = [] }) {
+    const byStatus = {};
+    for (const a of results) byStatus[a.status || 'Unscreened'] = (byStatus[a.status || 'Unscreened'] || 0) + 1;
+    const top = [...results].filter(a => Number.isFinite(a.score)).sort((a, b) => b.score - a.score)[0] || null;
+    const held = byStatus['Clarification needed'] || 0;
+    const data = { total: results.length, byStatus, held, top: top ? { id: top.id, name: clean(top.name || top.id, 60), score: Math.round(top.score), grade: top.grade || null } : null };
+    return { data, facts: [fieldOf('Total applications', data.total), ...Object.entries(byStatus).map(([s, n]) => fieldOf(s, n)), top && fieldOf('Highest score', `${top.name || top.id} · ${Math.round(top.score)}`)].filter(Boolean), gaps: [] };
+  }
+  function ceoData({ main }) {
+    const cards = [...(main?.querySelectorAll('[data-ceo-card]') || [])].map(card => ({
+      title: clean(card.querySelector('.ceo-title')?.textContent, 80),
+      value: clean(card.querySelector('.ceo-value strong')?.textContent, 40),
+      unit: clean(card.querySelector('.ceo-value span')?.textContent, 40),
+      headline: clean(card.querySelector('.ceo-headline')?.textContent, 160)
+    })).filter(card => card.title && !isGap(card.value));
+    return { data: { cards }, facts: cards.map(c => fieldOf(c.title, `${c.value}${c.unit ? ' ' + c.unit : ''}`, c.headline)).filter(Boolean), gaps: cards.length ? [] : ['CEO insight cards are still loading'] };
+  }
+  function territoriesData({ state = {}, results = [], economics = null }) {
+    const rows = (state.territories || []).map(t => {
+      const apps = results.filter(a => a.territory === t.id), econ = economics?.[t.id] || null, agg = econ?.aggregate || null;
+      const pins = econ?.pins || [];
+      return { id: t.id, city: clean(t.city || '', 60) || null, tier: t.tier || null, priority: t.priority || null,
+        applications: apps.length, recommended: apps.filter(a => a.status === 'Recommended').length, slots: Number.isInteger(t.slots) ? t.slots : null,
+        catchment: Number.isFinite(agg?.catchmentPopulation?.value) ? agg.catchmentPopulation.value : null,
+        tam: Number.isFinite(agg?.tam?.value) ? agg.tam.value : null,
+        investment: Number.isFinite(agg?.investment?.mid) ? agg.investment.mid : null,
+        payback: Number.isFinite(agg?.payback?.best?.base) ? agg.payback.best.base : null,
+        pinsWithData: agg?.catchmentPopulation?.pinsWithData ?? null, pinsTotal: agg?.catchmentPopulation?.pinsTotal ?? (Array.isArray(t.pins) ? t.pins.length : null),
+        pinsMissing: econ ? pins.filter(r => r.status !== 'available').length : null, economicsLoaded: !!econ };
+    });
+    const slotsTotal = rows.reduce((n, r) => n + (r.slots || 0), 0);
+    const data = { territories: rows, total: rows.length, applications: results.length, recommended: results.filter(a => a.status === 'Recommended').length, slotsTotal, economicsLoaded: !!economics };
+    const facts = rows.flatMap(r => [fieldOf(`${r.id}${r.city ? ' · ' + r.city : ''}`, `${plural(r.applications, 'applicant')}, ${r.recommended} recommended${r.slots !== null ? `, ${plural(r.slots, 'slot')}` : ''}`),
+      fieldOf(`${r.id} catchment`, people(r.catchment), r.pinsTotal ? `${r.pinsWithData} of ${r.pinsTotal} PINs with data` : null), fieldOf(`${r.id} payback`, months(r.payback))]);
+    const gaps = economics ? [] : ['PIN economics are still loading'];
+    return { data, facts: facts.filter(Boolean), gaps };
+  }
+  function expansionData({ location, main, doc }) {
+    const area = location?.id ? { id: String(location.id), name: clean(location.name || location.id, 80), level: location.level || null,
+      metrics: Object.entries(location.metrics || {}).filter(([, m]) => Number.isFinite(m?.value)).slice(0, 12).map(([key, m]) => ({ label: key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(), value: formatMetric(m) })) } : null;
+    const popupKpis = [...(doc?.querySelectorAll('.maplibregl-popup-content .expansion-popup-kpi') || [])].map(kpi => ({
+      title: clean(kpi.querySelector('span')?.textContent, 60), value: clean(kpi.querySelector('strong')?.textContent, 60), note: clean(kpi.querySelector('small')?.textContent, 100) }));
+    const status = clean(doc?.querySelector('.maplibregl-popup-content .expansion-popup-status span')?.textContent, 60) || null;
+    const popup = popupKpis.length ? { kpis: popupKpis.filter(k => !isGap(k.value)), missing: popupKpis.filter(k => isGap(k.value)).map(k => k.title), status } : null;
+    const place = clean(main?.querySelector('[data-map-place-title]')?.textContent, 80) || null;
+    return { data: { area, popup, place }, facts: [area && fieldOf('Selected area', area.name), ...(area?.metrics || []).map(m => fieldOf(m.label, m.value)),
+      ...(popup?.kpis || []).map(k => fieldOf(k.title, k.value, k.note))].filter(Boolean), gaps: popup?.missing?.length ? [`${popup.missing.join(', ')} not estimated for this area`] : [] };
+  }
+  function rulesData({ state = {} }) {
+    const s = state.settings || {};
+    const data = { model: s.model || null, sector: s.sectorName || null, minInvestment: s.minInvestment ?? null, minArea: s.minArea ?? null, minLaunch: s.minLaunch ?? null, targetLaunch: s.targetLaunch ?? null };
+    return { data, facts: [fieldOf('Scoring model', data.model), fieldOf('Sector', data.sector), fieldOf('Minimum investment', data.minInvestment && `₹${data.minInvestment} lakh`),
+      fieldOf('Minimum area', data.minArea && `${data.minArea} sq ft`), fieldOf('Launch window', data.minLaunch && `${data.minLaunch}–${data.targetLaunch} months`)].filter(Boolean), gaps: [] };
+  }
+  // The open application drawer names its applicant; that applicant is the context for follow-up questions.
+  function applicantInView({ results = [], doc, botContext }) {
+    const drawerId = clean(doc?.querySelector('#overlay:not([hidden]) .drawer .eyebrow')?.textContent, 80).split(' · ')[0];
+    const a = (drawerId && results.find(item => item.id === drawerId)) || results.find(item => item.key === botContext);
+    return a ? { id: a.id, name: clean(a.name || 'Name missing', 80), status: a.status, score: a.score, high: a.high, grade: a.grade, territory: a.territory || null, reasons: (a.reasons || []).slice(0, 4).map(r => clean(r)) } : null;
   }
 
-  // Compact, size-capped snapshot of what the user is looking at. Pure apart from reading `doc`.
-  function buildPageContext({ tab = 'overview', state = {}, results = [], stores = [], botContext = null, doc = root.document, location = null } = {}) {
+  // Builds the snapshot for the page the user is on: structured data, labelled facts and gaps.
+  function buildPageContext({ tab = 'overview', state = {}, results = [], stores = [], botContext = null, doc = root.document, location = null, economics = null } = {}) {
     const page = PAGE_TITLES[tab] ? tab : 'overview';
-    const ctx = { page, title: PAGE_TITLES[page], heading: '', facts: [], geography: null, applicant: null, suggestions: [] };
-    const main = doc?.querySelector('#main') || doc?.body;
-    ctx.heading = textOf(main, '.page-heading h1') || textOf(main, 'h1');
-    const add = (...items) => { for (const item of items) if (item.value && ctx.facts.length < MAX_FACTS) ctx.facts.push(item); };
-    const apps = state.apps || [];
-    // The application open in the detail drawer, else the one the bot is already discussing.
-    const drawerId = textOf(doc?.querySelector('#overlay:not([hidden]) .drawer'), '.eyebrow').split(' · ')[0];
-    const inView = (drawerId && results.find(a => a.id === drawerId)) || results.find(a => a.key === botContext);
-    if (inView) ctx.applicant = { id: inView.id, name: clean(inView.name || 'Name missing', 80), status: inView.status, score: inView.score, high: inView.high, grade: inView.grade, territory: inView.territory || null, reasons: (inView.reasons || []).slice(0, 4).map(r => clean(r)) };
-
-    if (page === 'overview' || page === 'applications' || page === 'review' || page === 'onboarding') {
-      add(fact('Total applications', results.length), fact('Recommended partners', count(results, 'Recommended')),
-        fact('Clarification needed', count(results, 'Clarification needed')), fact('Site needed', count(results, 'Site needed')),
-        fact('Waitlisted', count(results, 'Waitlisted')), fact('Territories uploaded', (state.territories || []).length),
-        fact('Pending data corrections', apps.reduce((n, a) => n + (a.pending?.length || 0), 0)), fact('Data source', state.source));
-      if (page === 'applications') {
-        const visible = [...(main?.querySelectorAll('tr[data-detail]') || [])].slice(0, 6).map(row => clean(row.textContent, 90));
-        if (visible.length) add(fact('Rows in view', visible.join(' | ')));
-      }
-    }
-    if (page === 'ceo') {
-      for (const card of main?.querySelectorAll('.ceo-card') || []) add(fact(textOf(card, '.ceo-title'), textOf(card, '.ceo-value'), [textOf(card, '.ceo-headline'), textOf(card, '.ceo-action')].filter(Boolean).join(' ')));
-    }
-    if (page === 'expansion' || page === 'market' || page === 'screening') {
-      ctx.geography = geographyFrom(location);
-      const place = textOf(main, '[data-map-place-title]');
-      if (place) add(fact('Selected area', place, textOf(main, '[data-map-place-path]')));
-      for (const card of main?.querySelectorAll('.market-kpi, .mi-card .metric, .ma-kpi') || []) add(fact(textOf(card, 'span'), textOf(card, 'strong'), textOf(card, 'small')));
-      for (const row of main?.querySelectorAll('[data-analysis-metric], .ma-row') || []) add(fact(textOf(row, 'span, dt'), textOf(row, 'strong, dd')));
-      // An open map popup (PIN or area) carries the potential revenue and TAM shown to the user.
-      const popup = doc?.querySelector('.maplibregl-popup-content .expansion-popup');
-      if (popup) add(fact('Map popup · ' + textOf(popup, 'header strong'), clean(popup.querySelector('.expansion-popup-grid')?.textContent, 320), textOf(popup, '.expansion-popup-status')));
-      const narrative = textOf(main, '[data-map-narrative]');
-      if (narrative) add(fact('Narrative', narrative));
-      if (ctx.geography) for (const item of ctx.geography.metrics) add(item);
-    }
-    if (page === 'territories') {
-      add(fact('Territories uploaded', (state.territories || []).length), fact('Existing stores', stores.length), fact('Recommended partners', count(results, 'Recommended')));
-      for (const card of [...(main?.querySelectorAll('.te-card') || [])].slice(0, 8)) add(fact(textOf(card, '.te-city, .eyebrow') || 'Territory', clean(card.textContent, 160)));
-      for (const pin of [...(main?.querySelectorAll('.te-pin') || [])].slice(0, 6)) add(fact(textOf(pin, '.te-pin-name') || 'PIN', clean(pin.querySelector('.te-pin-kpis')?.textContent || pin.textContent, 160)));
-    }
-    if (page === 'rules') {
-      const s = state.settings || {};
-      add(fact('Scoring model', s.model), fact('Sector', s.sectorName), fact('Minimum investment', s.minInvestment ? `₹${s.minInvestment} lakh` : ''),
-        fact('Minimum area', s.minArea ? `${s.minArea} sq ft` : ''), fact('Launch window', s.minLaunch ? `${s.minLaunch}–${s.targetLaunch} months` : ''));
-    }
-    if (!ctx.facts.length) for (const stat of [...(main?.querySelectorAll('.stat') || [])].slice(0, 8)) add(fact(textOf(stat, '.stat-label'), textOf(stat, '.stat-value'), textOf(stat, '.stat-note')));
+    const main = doc?.querySelector?.('#main') || doc?.body || null;
+    const base = { state, results, stores, doc, location, main, economics };
+    const built = page === 'overview' ? overviewData(base) : page === 'applications' || page === 'review' || page === 'onboarding' ? applicationsData(base)
+      : page === 'ceo' ? ceoData(base) : page === 'territories' ? territoriesData(base) : page === 'expansion' || page === 'market' || page === 'screening' ? expansionData(base)
+      : page === 'rules' ? rulesData(base) : { data: {}, facts: [], gaps: [] };
+    const applicant = applicantInView({ results, doc, botContext });
+    if (applicant) built.facts.unshift(fieldOf('Applicant in view', `${applicant.id} · ${applicant.status}`));
+    const ctx = { page, title: PAGE_TITLES[page], heading: clean(main?.querySelector?.('.page-heading h1, h1')?.textContent, 80), data: built.data, facts: built.facts.slice(0, MAX_FACTS),
+      gaps: built.gaps, geography: built.data.area || null, applicant };
     ctx.suggestions = suggestionsFor(ctx, results);
     return ctx;
   }
@@ -106,11 +137,59 @@
     return ctx.facts.filter(item => { const label = words(item.label); return asked.some(w => label.has(w) || label.has(w.replace(/s$/, ''))); });
   }
   const factLines = facts => facts.map(f => `• ${f.label}: ${f.value}${f.note ? ` (${f.note})` : ''}`).join('\n');
-  function summary(ctx) {
-    const head = `${ctx.title}${ctx.heading && ctx.heading !== ctx.title ? ` · ${ctx.heading}` : ''}`;
-    const who = ctx.applicant ? `\nIn view: ${ctx.applicant.id} (${ctx.applicant.name}) · ${ctx.applicant.status} · score ${ctx.applicant.score}${ctx.applicant.high !== ctx.applicant.score ? `–${ctx.applicant.high}` : ''}.` : '';
-    return ctx.facts.length ? `Here is what this page shows — ${head.replace(/[.:]+$/, '')}:\n${factLines(ctx.facts.slice(0, 12))}${who}` : `This page (${head}) has no figures loaded yet.${who}`;
+  // Three to five short bullets from the structured data. Gaps are one line, not repeated per field.
+  function bulletsFor(ctx) {
+    const d = ctx.data || {}, out = [];
+    if (ctx.page === 'overview') {
+      out.push(`${plural(d.applications, 'application')}: ${d.recommended} recommended, ${d.clarification} need clarification, ${d.siteNeeded} need a site`);
+      if (d.slotsTotal) out.push(`${d.slotsRecommended} of ${d.slotsTotal} territory slots recommended`);
+      if (d.pendingCorrections) out.push(`${plural(d.pendingCorrections, 'data correction')} waiting for review`);
+      if (d.territories) out.push(`${plural(d.territories, 'territory', 'territories')} loaded${d.source ? ` from ${d.source}` : ''}`);
+    } else if (ctx.page === 'applications' || ctx.page === 'review' || ctx.page === 'onboarding') {
+      const statuses = Object.entries(d.byStatus || {}).filter(([, n]) => n).map(([s, n]) => `${n} ${s.toLowerCase()}`);
+      out.push(`${plural(d.total, 'application')}${statuses.length ? `: ${statuses.join(', ')}` : ''}`);
+      if (d.top) out.push(`Highest score: ${d.top.name} (${d.top.id}, ${d.top.score}${d.top.grade ? `, grade ${d.top.grade}` : ''})`);
+      if (d.held) out.push(`${plural(d.held, 'application')} missing details before scoring can finish`);
+    } else if (ctx.page === 'ceo') {
+      for (const card of (d.cards || []).slice(0, 5)) out.push(`${card.title}: ${card.value}${card.unit ? ` ${card.unit}` : ''}`);
+    } else if (ctx.page === 'territories') {
+      const rows = d.territories || [];
+      if (rows.length) {
+        const headline = `${plural(d.total, 'territory', 'territories')}, ${plural(d.applications, 'application')}`;
+        out.push(d.slotsTotal ? `${headline}, ${d.recommended} of ${d.slotsTotal} slots recommended` : `${headline}, ${d.recommended} recommended`);
+        const byCity = {};
+        for (const r of rows) if (r.city) { byCity[r.city] = byCity[r.city] || { applications: 0, recommended: 0 }; byCity[r.city].applications += r.applications; byCity[r.city].recommended += r.recommended; }
+        const top = Object.entries(byCity).sort((a, b) => b[1].applications - a[1].applications)[0];
+        if (top && top[1].applications) out.push(`${top[0]} has the most applicants (${top[1].applications})${top[1].recommended ? `, with ${top[1].recommended} recommended` : ' but no recommendation yet'}`);
+        const largest = rows.filter(r => r.catchment !== null).sort((a, b) => b.catchment - a.catchment)[0];
+        if (largest) out.push(`Largest catchment: ${largest.id}${largest.city ? ` (${largest.city})` : ''} with ${people(largest.catchment)}${largest.pinsTotal ? `, ${largest.pinsWithData} of ${largest.pinsTotal} PINs with data` : ''}`);
+        const missing = rows.filter(r => r.economicsLoaded && r.pinsMissing > 0).length;
+        if (missing) out.push(`${plural(missing, 'territory', 'territories')} use PINs that are not in the PIN dataset, so ${missing === 1 ? 'its economics are' : 'their economics are'} unavailable`);
+      }
+    } else if (ctx.page === 'expansion' || ctx.page === 'market' || ctx.page === 'screening') {
+      if (d.area) {
+        const m = d.area.metrics.find(x => /potential revenue/.test(x.label)) || d.area.metrics[0];
+        out.push(m ? `${d.area.name}: ${m.label} ${m.value}` : `${d.area.name} is selected`);
+        for (const k of (d.popup?.kpis || []).slice(0, 2)) out.push(`${k.title}: ${k.value}`);
+        if (d.popup?.status) out.push(`Estimate status: ${d.popup.status}`);
+      } else out.push('No area is selected. Select an area on the map to see its potential revenue, TAM and population.');
+    } else if (ctx.page === 'rules') {
+      out.push(`Scoring model: ${d.model || 'not set'}${d.sector ? ` · sector ${d.sector}` : ''}`);
+      if (d.minInvestment) out.push(`Minimum investment ₹${d.minInvestment} lakh, minimum area ${d.minArea || '?'} sq ft`);
+      if (d.minLaunch) out.push(`Launch window ${d.minLaunch}–${d.targetLaunch} months`);
+    }
+    if (!out.length) out.push(`${ctx.title} has no figures loaded yet.`);
+    if (ctx.gaps?.length && out.length < 5) out.push(`Not available: ${ctx.gaps.join('; ')}`);
+    return out.slice(0, 5);
   }
+  function summary(ctx) {
+    return `${ctx.title}${ctx.heading && ctx.heading !== ctx.title ? ` · ${ctx.heading}` : ''}\n${bulletsFor(ctx).map(b => `• ${b}`).join('\n')}`;
+  }
+  const formatMetric = metric => {
+    const unit = String(metric.unit || '');
+    if (/^(?:INR|₹)/i.test(unit)) return root.FranchiseDisplay ? root.FranchiseDisplay.money(metric.value, unit) : `₹${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 0 })} ${unit.replace(/^(?:INR|₹)\s*/i, '/') || ''}`.trim();
+    return `${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}${unit ? ' ' + unit : ''}`;
+  };
 
   // Rule bot first (instant), then page facts, then Gemini for a selected map area.
   async function answer(question, { ctx, env, bot = root.FranchiseBot, fetch = root.fetch?.bind(root), segment = 'mass-market-family-apparel' } = {}) {
@@ -156,15 +235,32 @@
     doc.body.append(drawer);
     const $ = selector => drawer.querySelector(selector);
     if (launcher) { launcher.setAttribute('aria-haspopup', 'dialog'); launcher.setAttribute('aria-controls', drawer.id); launcher.setAttribute('aria-expanded', 'false'); }
-    const context = () => { const p = provider?.() || {}; return { ctx: buildPageContext({ ...p, doc, location: lastLocation }), env: p.state ? { state: p.state, results: p.results || [], stores: p.stores || [], contextKey: p.botContext || null } : null }; };
+    // PIN economics for the territories snapshot come from the same endpoint the page uses, cached per territory.
+    const economicsCache = new Map();
+    async function economicsFor(p) {
+      if (!root.TerritoryEconomics || !p.state?.territories) return null;
+      const rows = await Promise.all(p.state.territories.map(async t => {
+        const pins = (t.pins || []).map(String), key = [t.id, pins.join(','), t.slots ?? ''].join('|');
+        if (!economicsCache.has(key)) economicsCache.set(key, root.TerritoryEconomics.load(pins, { slots: Number.isInteger(t.slots) ? t.slots : null, fetch }).catch(() => null));
+        return [t.id, await economicsCache.get(key)];
+      }));
+      return Object.fromEntries(rows.filter(([, value]) => value));
+    }
+    const context = async () => {
+      const p = provider?.() || {};
+      const economics = p.tab === 'territories' ? await economicsFor(p) : null;
+      return { ctx: buildPageContext({ ...p, doc, location: lastLocation, economics }), env: p.state ? { state: p.state, results: p.results || [], stores: p.stores || [], contextKey: p.botContext || null } : null };
+    };
 
     function bubble(message) {
       const cites = (message.citations || []).map(c => `<a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(c.title || c.url)} ↗</a>`).join('');
       const tag = { rules: 'Workbook rules', page: 'From this page', gemini: 'Gemini · grounded', notice: 'Fallback' }[message.source] || '';
       return `<div class="fc-msg ${message.role === 'user' ? 'is-user' : ''}" data-fc-msg>${message.role === 'user' ? '' : `<span class="fc-tag">${esc(tag)}${message.page ? ` · ${esc(PAGE_TITLES[message.page] || message.page)}` : ''}</span>`}<div class="fc-text">${esc(message.text)}</div>${cites ? `<div class="fc-cites">${cites}</div>` : ''}${message.proposal ? `<div class="fc-actions"><button type="button" class="fc-chip is-primary" data-fc-confirm>Confirm & reassess</button><button type="button" class="fc-chip" data-fc-cancel>Cancel</button></div>` : ''}${message.navigation ? `<div class="fc-actions"><button type="button" class="fc-chip" data-fc-nav="${esc(message.navigation.route)}">Open ${esc(message.navigation.label || 'section')} ↗</button></div>` : ''}</div>`;
     }
+    // Header and suggestions do not need PIN economics, so they render from the synchronous snapshot.
+    const quickContext = () => buildPageContext({ ...(provider?.() || {}), doc, location: lastLocation });
     function renderLog() {
-      const { ctx } = context();
+      const ctx = quickContext();
       $('[data-fc-context]').textContent = `Answering from ${ctx.title}${ctx.geography ? ` · ${ctx.geography.name}` : ctx.applicant ? ` · ${ctx.applicant.id}` : ''}`;
       const intro = { role: 'bot', source: 'page', text: 'Ask about what you are looking at. I answer from this page and your workbook; open questions about a selected map area use Gemini research with sources.' };
       $('[data-fc-log]').innerHTML = [intro, ...history].map(bubble).join('');
@@ -184,7 +280,7 @@
       const text = String(question || '').trim();
       if (!text || busy) return;
       busy = true; drawer.setAttribute('aria-busy', 'true');
-      const { ctx, env } = context();
+      const { ctx, env } = await context();
       history.push({ role: 'user', text, page: ctx.page }); renderLog();
       const log = $('[data-fc-log]'), thinking = doc.createElement('div');
       thinking.className = 'fc-msg fc-thinking'; thinking.innerHTML = '<span class="fc-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fc-sr">Thinking…</span>'; log.append(thinking); scroll();
@@ -238,7 +334,7 @@
       destroy() { close(); launcher?.removeEventListener('click', onLauncher); doc.removeEventListener('keydown', onKey); root.removeEventListener?.('franchiseos:location-selected', onLocation); root.removeEventListener?.('hashchange', onHash); drawer.remove(); } };
   }
 
-  const api = { buildPageContext, answer, mount, matchFacts, PAGE_TITLES };
+  const api = { buildPageContext, answer, mount, matchFacts, bulletsFor, summarise: summary, PAGE_TITLES };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.FranchiseChat = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

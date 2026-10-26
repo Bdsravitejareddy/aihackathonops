@@ -44,30 +44,8 @@ test('an application open in the drawer becomes the applicant in view with its r
   assert.ok(ctx.suggestions.some(q => /APP-002/.test(q)), 'suggested questions change with the applicant in view');
 });
 
-test('territories page snapshot lists PIN economics shown on the page', () => {
-  const doc = dom('<div class="te-card"><span class="te-city">Bengaluru</span><div class="te-card-top">T1</div></div><div class="te-pin"><span class="te-pin-name">560058</span><div class="te-pin-kpis">Potential revenue ₹17.6Cr</div></div>');
-  const ctx = Chat.buildPageContext({ tab: 'territories', state, results, stores: [{}], doc });
-  assert.ok(ctx.facts.some(f => f.label === '560058' && /₹17\.6Cr/.test(f.value)));
-  assert.ok(ctx.facts.some(f => f.label === 'Bengaluru'));
-});
 
-test('expansion snapshot includes the selected area and an open map popup, and suggests area questions', () => {
-  const doc = dom(`<div data-map-place-title>Karnataka</div><p data-map-place-path>state · evidence 2011</p><div class="market-kpi"><span>Population</span><strong>111.3Cr people</strong><small>derived</small></div>
-    <div class="maplibregl-popup-content"><div class="expansion-popup"><header><strong>560058</strong></header><div class="expansion-popup-grid">Potential revenue ₹17.6Cr /year</div><div class="expansion-popup-status"><span>Modelled estimate</span></div></div></div>`);
-  const ctx = Chat.buildPageContext({ tab: 'expansion', state, results, doc, location });
-  assert.equal(ctx.geography.id, 'pin:560058');
-  assert.ok(ctx.geography.metrics.some(m => m.label === 'potential revenue' && /₹/.test(m.value)));
-  assert.ok(ctx.facts.some(f => /Map popup/.test(f.label) && /Potential revenue/.test(f.value)));
-  assert.ok(ctx.facts.some(f => f.label === 'Selected area' && f.value === 'Karnataka'));
-  assert.ok(ctx.suggestions.some(q => /560058/.test(q)));
-});
 
-test('snapshot text is trimmed to a fixed length and never leaks raw HTML', () => {
-  const long = 'x'.repeat(400);
-  const doc = dom(`<div class="stat"><span class="stat-label">${long}</span><span class="stat-value"><b>5</b></span></div>`);
-  const ctx = Chat.buildPageContext({ tab: 'review', state, results, doc });
-  for (const f of ctx.facts) { assert.ok(f.label.length <= 80); assert.ok(!/[<>]/.test(f.label + f.value)); }
-});
 
 test('rule answer is used first when it is specific', async () => {
   const ctx = Chat.buildPageContext({ tab: 'overview', state, results, doc: dom('') });
@@ -84,11 +62,6 @@ test('a generic rule fallback falls through to what the page shows', async () =>
   assert.equal(reply.source, 'page'); assert.match(reply.text, /Total applications: 3/);
 });
 
-test('"summarise this page" is answered from the page snapshot', async () => {
-  const ctx = Chat.buildPageContext({ tab: 'overview', state, results, doc: dom('<h1>Overview</h1>') });
-  const reply = await Chat.answer('Summarise this page', { ctx, env: null, bot: null });
-  assert.equal(reply.source, 'page'); assert.match(reply.text, /Total applications: 3/);
-});
 
 test('open questions about a selected map area call the grounded /ask route with the area id and sources', async () => {
   const doc = dom('<div data-map-place-title>560058</div>');
@@ -153,4 +126,76 @@ test('drawer and launcher stay wired to the bot route in the app shell', () => {
   assert.match(html, /chat-widget\.js/);
   assert.match(app, /FranchiseChat\.mount\(\{launcher:\$\('\.bot-launcher'\)/);
   assert.doesNotMatch(app, /bot-launcher[^\n]{0,80}data-tab/);
+});
+
+// Structured snapshots: summaries are short bullets built from fields, never from page text.
+const terrState = { apps: [], territories: [
+  { id: 'TER-04', city: 'Hubballi-Dharwad', tier: 'Tier 2', priority: 'High', pins: ['580020', '580021'], slots: 2 },
+  { id: 'TER-02', city: 'Bengaluru', tier: 'Tier 1', priority: 'High', pins: ['560058'], slots: 0 },
+  { id: 'TER-03', city: 'Bengaluru', tier: 'Tier 1', priority: 'Medium', pins: ['560066'], slots: 1 }], settings: {}, source: 'Synthetic demo' };
+const terrResults = [
+  { key: 'x1', id: 'APP-101', name: 'Ravi', status: 'Recommended', score: 90, grade: 'A', territory: 'TER-04', pin: '580020' },
+  { key: 'x2', id: 'APP-102', name: 'Meena', status: 'Waitlisted', score: 70, grade: 'B', territory: 'TER-02', pin: '560058' },
+  { key: 'x3', id: 'APP-103', name: 'Kiran', status: 'Waitlisted', score: 60, grade: 'C', territory: 'TER-02', pin: '560058' },
+  { key: 'x4', id: 'APP-104', name: 'Sara', status: 'Site needed', score: 55, grade: 'C', territory: 'TER-02', pin: '560058' },
+  { key: 'x5', id: 'APP-105', name: 'Dev', status: 'Waitlisted', score: 50, grade: 'C', territory: 'TER-03', pin: '560066' }];
+const terrEconomics = {
+  'TER-04': { pins: [{ status: 'available' }, { status: 'missing' }], aggregate: { catchmentPopulation: { value: 300000, pinsWithData: 1, pinsTotal: 2 }, tam: { value: 5e8, pinsWithData: 1, pinsTotal: 2 }, investment: { mid: 2e7 }, payback: { best: { base: 24 } } } },
+  'TER-02': { pins: [{ status: 'available' }], aggregate: { catchmentPopulation: { value: 900000, pinsWithData: 1, pinsTotal: 1 }, tam: { value: 9e8, pinsWithData: 1, pinsTotal: 1 }, investment: { mid: 3e7 }, payback: { best: { base: 30 } } } },
+  'TER-03': { pins: [{ status: 'missing' }], aggregate: { catchmentPopulation: { value: null, pinsWithData: 0, pinsTotal: 1 }, tam: { value: null, pinsWithData: 0, pinsTotal: 1 }, investment: null, payback: null } }
+};
+const BAD = [/—/, /undefined|NaN|null/, /[a-z]\d[A-Za-z]/, /\d[A-Z][a-z]/, /[a-z][A-Z][a-z]/];
+const expectClean = lines => { for (const line of lines) for (const re of BAD) assert.doesNotMatch(line, re, `"${line}" should be clean text`); };
+const bulletsOf = text => text.split('\n').filter(l => l.startsWith('• ')).map(l => l.slice(2));
+
+test('territories summary: short bullets from fields, with the PIN data gap stated once', () => {
+  const ctx = Chat.buildPageContext({ tab: 'territories', state: terrState, results: terrResults, economics: terrEconomics, doc: dom('<h1>Territories</h1>') });
+  assert.equal(ctx.data.territories.length, 3);
+  assert.equal(ctx.data.territories.find(t => t.id === 'TER-02').applications, 3);
+  assert.equal(ctx.data.territories.find(t => t.id === 'TER-03').catchment, null, 'a missing catchment is null, not a dash');
+  const out = bulletsOf(Chat.summarise(ctx));
+  assert.ok(out.length >= 3 && out.length <= 5, `3–5 bullets, got ${out.length}`);
+  assert.ok(out.includes('3 territories, 5 applications, 1 of 3 slots recommended'), out.join(' | '));
+  assert.ok(out.includes('Bengaluru has the most applicants (4) but no recommendation yet'), out.join(' | '));
+  assert.equal(out.filter(l => /PIN dataset/.test(l)).length, 1, 'the PIN data gap appears once');
+  expectClean(out);
+});
+
+test('territories summary says economics are loading once, without placeholders', () => {
+  const ctx = Chat.buildPageContext({ tab: 'territories', state: terrState, results: terrResults, doc: dom('') });
+  const text = Chat.summarise(ctx);
+  assert.match(text, /• Not available: PIN economics are still loading/);
+  assert.equal((text.match(/Not available:/g) || []).length, 1);
+  assert.doesNotMatch(text, /—/);
+});
+
+test('overview, applications, rules and map summaries are clean bullets with no placeholders', () => {
+  const cases = [
+    Chat.buildPageContext({ tab: 'overview', state: { apps: [], territories: [{ id: 'T1', slots: 4 }], settings: {}, source: 'Workbook' }, results: terrResults, doc: dom('<h1>Overview</h1>') }),
+    Chat.buildPageContext({ tab: 'applications', state: terrState, results: terrResults, doc: dom('') }),
+    Chat.buildPageContext({ tab: 'expansion', state: terrState, results: terrResults, doc: dom('<div data-map-place-title>Karnataka</div>') }),
+    Chat.buildPageContext({ tab: 'rules', state: { ...terrState, settings: { minInvestment: 50, minArea: 800, minLaunch: 6, targetLaunch: 12, model: 'industry-v2' } }, results: [], doc: dom('') })
+  ];
+  for (const ctx of cases) {
+    const out = bulletsOf(Chat.summarise(ctx));
+    assert.ok(out.length >= 1 && out.length <= 5, `${ctx.page}: ${out.length} bullets`);
+    expectClean(out);
+  }
+});
+
+test('CEO view summary reads each card as title and value', () => {
+  const doc = dom('<div data-ceo-card="a"><span class="ceo-title">Grow in Bengaluru</span><div class="ceo-value"><strong>12</strong><span>stores</span></div><p class="ceo-headline">Strong demand</p></div>');
+  const out = bulletsOf(Chat.summarise(Chat.buildPageContext({ tab: 'ceo', state: terrState, results: [], doc })));
+  assert.deepEqual(out, ['Grow in Bengaluru: 12 stores']);
+});
+
+test('map summary lists popup KPIs as title and value and reports missing KPIs once', () => {
+  const doc = dom(`<div data-map-place-title>560058</div><div class="maplibregl-popup-content"><div class="expansion-popup"><header><strong>560058</strong></header>
+    <div class="expansion-popup-grid"><div class="expansion-popup-kpi"><span>Annual TAM</span><strong>₹55Cr /year</strong><small>x</small></div><div class="expansion-popup-kpi"><span>Ideal investment</span><strong>Not estimated</strong><small>y</small></div><div class="expansion-popup-kpi"><span>Revenue growth</span><strong>—</strong><small>z</small></div></div>
+    <div class="expansion-popup-status"><span>Modelled estimate</span></div></div></div>`);
+  const text = Chat.summarise(Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location }));
+  assert.match(text, /• Annual TAM: ₹55Cr \/year/);
+  assert.match(text, /Not available: Ideal investment, Revenue growth not estimated for this area/);
+  assert.equal((text.match(/Not available/g) || []).length, 1);
+  assert.doesNotMatch(text, /—|Not estimated/);
 });

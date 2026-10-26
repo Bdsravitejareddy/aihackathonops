@@ -4,6 +4,7 @@
   const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
   const ZOOMS = [3.5, 6, 9, 12, 14];
   const METRICS = {
+    potentialRevenue: 'Potential revenue · organised physical-store demand · estimated',
     potentialRevenue: 'Potential revenue · modeled', population: 'Population', populationDensity: 'Population density', households: 'Households',
     monthlyPerCapitaSpend: 'Monthly per-capita clothing & footwear spend', incomeProxy: 'Purchasing power / income proxy · modeled', apparelExpenditure: 'Annual clothing & footwear expenditure · estimated', tam: 'Annual TAM · modeled',
     sam: 'Annual SAM · modeled', som: 'Annual SOM · modeled', competitorCount: 'Competition · supply indicator', saturation: 'Competition / saturation',
@@ -450,7 +451,7 @@
       </div>
       <div class="expansion-map-shell">
         <div class="expansion-map-tools" aria-label="Map controls">
-          <label>Metric<select class="input" name="metric">${[['apparelExpenditure','Annual clothing & footwear expenditure'],['tam','TAM'],['sam','SAM'],['som','SOM'],['population','Population'],['populationDensity','Population density'],['monthlyPerCapitaSpend','Per-person spend'],['incomeProxy','Purchasing power'],['competitorCount','Competitor supply'],['saturation','Market saturation'],['revenue','Store revenue scenario'],['revenuePerKm2','Revenue per km²'],['growthPotential3Year','3-year growth'],['growthPotential5Year','5-year growth']].map(([key,title])=>`<option value="${key}" ${key==='apparelExpenditure'?'selected':''}>${title}</option>`).join('')}</select></label>
+          <label>Metric<select class="input" name="metric">${[['potentialRevenue','Potential revenue (organised store demand)'],['apparelExpenditure','Annual clothing & footwear expenditure'],['tam','TAM'],['sam','SAM'],['som','SOM'],['population','Population'],['populationDensity','Population density'],['monthlyPerCapitaSpend','Per-person spend'],['incomeProxy','Purchasing power'],['competitorCount','Competitor supply'],['saturation','Market saturation'],['revenue','Store revenue scenario'],['revenuePerKm2','Revenue per km²'],['growthPotential3Year','3-year growth'],['growthPotential5Year','5-year growth']].map(([key,title])=>`<option value="${key}" ${key==='apparelExpenditure'?'selected':''}>${title}</option>`).join('')}</select></label>
           <label>Scale<select class="input" data-map-color-mode aria-label="Colour scaling"><option value="linear">Linear</option><option value="log">Logarithmic</option><option value="percentile">Percentile</option></select></label>
           <label>Extent<select class="input" data-map-scale-scope aria-label="Scale geography"><option value="national">Fixed national</option><option value="local">Local rescale</option></select></label>
           <label>Basemap<select class="input" data-map-basemap><option value="satellite" selected>Satellite imagery</option><option value="street">Street</option><option value="terrain">Terrain</option></select></label>
@@ -483,7 +484,7 @@
   }
 
   function mountPage({ container, workspaceId, options = {} }) {
-    let year = options.year || new Date().getFullYear(), metric = 'apparelExpenditure', scenario = 'base', appliedScenario = 'base';
+    let year = options.year || new Date().getFullYear(), metric = 'potentialRevenue', scenario = 'base', appliedScenario = 'base';
     let features = [], selected = null, selectedDetail = null, path = [], zoom = ZOOMS[0], bounds;
     let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [], selectedEstimate=null;
     let level = 'state', sourceVersion=latestSourceVersion, currentLegend, map, geometryGroup=null, loadedRequestKey=null;
@@ -771,6 +772,7 @@
         if (!destroyed && revision === scenarioRevision && context === contextRevision && error.name !== 'AbortError') { $('[data-map-scenario-status]').textContent = error.message; status('Scenario unavailable. Apply again or reload a map layer.'); }
       } finally { if (!destroyed && revision === scenarioRevision) $('[data-map-apply]').disabled = false; }
     }
+    $('[name="metric"]').value = metric;
     try {
       map = mount({ container: $('[data-map-canvas]'), onSelect: selectGeography, onViewport(view) {
         zoom = view.zoom; bounds = view.bounds;
@@ -779,7 +781,7 @@
         while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
         if (changed) { selected = null; invalidate(); }
         loadLevels(); options.onViewport?.(view);
-      }, options: { ...options, year, segment:$('[name="apparelSegment"]').value, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
     container.addEventListener('click', onClick);
     function onClick(event) {

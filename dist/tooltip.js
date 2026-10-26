@@ -8,7 +8,7 @@
     corrections: 'Values the app proposed to fix when the workbook was uploaded (for example an amount typed in rupees instead of lakh) and you then confirmed on Data review.',
     onboardTime: 'Average days from a partner starting training to finishing it, from the dates recorded on Onboarding.',
     lmsTime: 'Average hours recommended partners spent on the learning system (LMS), as recorded on Onboarding.',
-    rampTime: 'How long a new store takes to reach its full sales rate. This is the store model’s planning assumption for the base case, not measured from real stores.',
+    rampTime: 'Average months from a store opening to its first month at target sales, from the dates recorded on Onboarding. Until a store has both dates, the store model plans on a 6-month ramp.',
     received: 'All applications in the workbook.',
     onboardingComplete: 'Recommended partners with a training finish date on Onboarding.',
     Recommended: 'Meets every requirement and has a territory slot. Funds and premises are as declared on the form.',

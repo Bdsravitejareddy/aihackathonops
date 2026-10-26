@@ -416,7 +416,7 @@
       if (!ready || destroyed || !fetcher || map.getZoom() < PIN_MIN_ZOOM) return;
       const bbox=pinBbox(map.getBounds().toArray()); if (!bbox) return;
       const key=metric==='potentialRevenue'?'potentialRevenue':activeMetric();
-      const cacheKey=JSON.stringify([bbox,key,popupYear]);
+      const cacheKey=JSON.stringify([bbox,key,popupYear,sectorId()]);
       if (cacheKey===pinKey) return;
       pinAbort?.abort(); pinAbort=new AbortController(); const revision=++pinRevision;
       const accept=data=>{

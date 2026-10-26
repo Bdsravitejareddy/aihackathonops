@@ -63,16 +63,15 @@ test('ranks applicants by confirmed score then supplied tie-break fields and ID'
   assert.deepEqual(ids, ['D','A','C','B']);
 });
 
-test('preserves incomplete score ranges and marks verification, allocation and funding without approval language', t => {
+test('preserves incomplete score ranges and shows category and declared funding against the requirement without approval language', t => {
   const h = harness({ location:{pin:'560001'}, marketContext:{ investment:{minimum:1000000,recommended:1500000,maximum:2000000} }, applicants:[
-    {id:'INCOMPLETE',pin:'560001',name:'Incomplete',confirmedEligibilityScore:52,possibleEligibilityScore:87,scoreRange:{low:52,high:87},status:'Clarification needed',verificationStatus:'Pending',allocationStatus:'Unassigned',declaredInvestment:800000,verifiedFunds:600000,conditionalLoan:200000,blockingConditions:['Verify funds']}
+    {id:'INCOMPLETE',pin:'560001',name:'Incomplete',confirmedEligibilityScore:52,possibleEligibilityScore:87,scoreRange:{low:52,high:87},status:'Clarification needed',category:'Data required',verificationStatus:'Pending',allocationStatus:'Unassigned',declaredInvestment:800000,requiredInvestment:1500000,verifiedFunds:600000,conditionalLoan:200000,blockingConditions:['Verify funds']}
   ] });
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /52–87/);
-  assert.match(h.root.textContent, /Pending/);
-  assert.match(h.root.textContent, /Unassigned/);
-  assert.match(h.root.textContent, /funding gap/i);
-  assert.match(h.root.textContent, /₹7,00,000/);
+  assert.match(h.root.textContent, /Data required \(Clarification needed\)/);
+  assert.match(h.root.textContent, /short by ₹7,00,000/);
+  assert.doesNotMatch(h.root.textContent, /Verification status|funding gap/i);
   assert.match(h.root.textContent, /not an approval/i);
   assert.equal(h.root.querySelector('[data-applicant-id]').dataset.applicantId, 'INCOMPLETE');
 });
@@ -121,12 +120,12 @@ test('uploaded State to City to PIN selectors cascade to a sourced workspace ter
 
 test('existing-store restriction and funding compatibility are informational only', t => {
   const h = harness({ location:{pin:'560001'}, marketContext:{existingStore:{present:true,description:'Brand store on this PIN'},investment:{recommended:1000000}}, applicants:[
-    {id:'A1',pin:'560001',confirmedEligibilityScore:90,status:'Recommended',declaredInvestment:1200000}
+    {id:'A1',pin:'560001',confirmedEligibilityScore:90,status:'Recommended',declaredInvestment:1200000,requiredInvestment:1000000}
   ] });
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /existing franchise store/i);
   assert.match(h.root.textContent, /Recommended status is not final approval/i);
-  assert.match(h.root.textContent, /above the supplied recommended investment/i);
+  assert.match(h.root.textContent, /the brand needs ₹10,00,000 · enough/);
 });
 
 test('does not rank applicants without an explicit matching PIN', t => {

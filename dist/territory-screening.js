@@ -207,20 +207,12 @@
       }
       return sorted;
     }
+    // Declared funds against the brand's investment requirement. Funds are as declared; they are not verified.
     function fundingText(applicant) {
-      const requirement=market?.investment || market?.investmentRange;
-      const target=numeric(requirement?.recommended)?requirement.recommended:numeric(requirement?.minimum)?requirement.minimum:null;
-      const supplied=[applicant.declaredInvestment,applicant.verifiedFunds,applicant.availableFunds,applicant.conditionalLoan].filter(numeric);
-      if(target===null || !supplied.length)return 'Funding compatibility unavailable · no comparable supplied figures';
-      const secured=Math.max(numeric(applicant.verifiedFunds)?applicant.verifiedFunds:0,numeric(applicant.availableFunds)?applicant.availableFunds:0);
-      const declared=numeric(applicant.declaredInvestment)?applicant.declaredInvestment:0;
-      const conditional=numeric(applicant.conditionalLoan)?applicant.conditionalLoan:0;
-      const basis=secured+conditional;
-      const hasVerified=numeric(applicant.verifiedFunds)||numeric(applicant.availableFunds), hasLoan=numeric(applicant.conditionalLoan);
-      const gap=hasVerified&&hasLoan?Math.max(0,target-basis):null;
-      const declaredFit=numeric(applicant.declaredInvestment)?(declared>=target?'declared capacity is above the supplied recommended investment':'declared capacity is below the supplied recommended investment'):'declared capacity comparison unavailable';
-      const display=doc.defaultView?.FranchiseDisplay;
-      return `Market reference ${fmt(target,'₹',display)} · declared capacity ${numeric(applicant.declaredInvestment)?fmt(declared,'₹',display):'unavailable'} · verified funds ${hasVerified?fmt(secured,'₹',display):'unavailable'} · conditional loan ${hasLoan?fmt(conditional,'₹',display):'unavailable'} · estimated funding gap ${gap===null?'unavailable':fmt(gap,'₹',display)} · ${declaredFit}; verify funds and loan conditions`;
+      const display=doc.defaultView?.FranchiseDisplay, declared=applicant.declaredInvestment, required=applicant.requiredInvestment;
+      if(!numeric(declared))return 'Not stated on the application';
+      if(!numeric(required))return `${fmt(declared,'₹',display)} declared`;
+      return `${fmt(declared,'₹',display)} declared · the brand needs ${fmt(required,'₹',display)}${declared>=required?' · enough':' · short by '+fmt(required-declared,'₹',display)}`;
     }
     function renderApplicants() {
       const target=q('[data-applicants]'), rows=applicantsForPin(); target.replaceChildren();
@@ -229,11 +221,11 @@
       rows.forEach((a,index)=>{
         const row=doc.createElement('article');row.className='ts-applicant';row.dataset.applicantId=idOf(a);
         const head=doc.createElement('div');head.className='ts-applicant-main';const rank=doc.createElement('span');rank.className='ts-rank';rank.textContent=`${index+1}`;
-        const identity=doc.createElement('div');identity.className='ts-identity';const name=doc.createElement('h3');name.textContent=a.name||idOf(a)||'Applicant';const meta=doc.createElement('p');meta.textContent=`Application ${idOf(a)||'ID unavailable'} · ${a.verificationStatus || a.verification?.status || 'Verification status unavailable'}`;identity.append(name,meta);
-        const score=doc.createElement('div');score.className='ts-score';const confirmed=confirmedScore(a);const scoreLabel=doc.createElement('strong');scoreLabel.textContent=scoreRange(a);const scoreKind=doc.createElement('small');scoreKind.textContent=confirmed===undefined?'No confirmed eligibility score':'Confirmed eligibility';score.append(scoreLabel,scoreKind);head.append(rank,identity,score);row.append(head);
-        const status=doc.createElement('div');status.className='ts-applicant-meta';for(const [label,value] of [['Screening status',a.status||'Unavailable'],['Territory allocation',a.allocationStatus||a.territoryAllocationStatus||'Unavailable'],['Funding fit',fundingText(a)]]){const item=doc.createElement('p');const b=doc.createElement('b');b.textContent=`${label}: `;item.append(b,doc.createTextNode(value));status.append(item);}row.append(status);
+        const identity=doc.createElement('div');identity.className='ts-identity';const name=doc.createElement('h3');name.textContent=a.name||idOf(a)||'Applicant';const meta=doc.createElement('p');meta.textContent=`Application ${idOf(a)||'ID unavailable'}${a.city?` · ${a.city}`:''}`;identity.append(name,meta);
+        const score=doc.createElement('div');score.className='ts-score';const confirmed=confirmedScore(a);const scoreLabel=doc.createElement('strong');scoreLabel.textContent=scoreRange(a);const scoreKind=doc.createElement('small');scoreKind.textContent=confirmed===undefined?'No fit score yet':'Fit score';scoreKind.dataset.tipKey='score';scoreKind.tabIndex=0;score.append(scoreLabel,scoreKind);head.append(rank,identity,score);row.append(head);
+        const status=doc.createElement('div');status.className='ts-applicant-meta';for(const [label,value] of [['Category',a.category?`${a.category}${a.status&&a.status!==a.category?` (${a.status})`:''}`:a.status||'Not screened'],['Territory',a.territory||'Not in a territory the brand is expanding into'],['Funding',fundingText(a)]]){const item=doc.createElement('p');const b=doc.createElement('b');b.textContent=`${label}: `;item.append(b,doc.createTextNode(value));status.append(item);}row.append(status);
         const blockers=list(a.blockingConditions||a.blockers);if(blockers.length){const ul=doc.createElement('ul');ul.className='ts-blockers';for(const blocker of blockers){const li=doc.createElement('li');li.textContent=typeof blocker==='string'?blocker:blocker.description||blocker.label||'Verification required';ul.append(li);}row.append(ul);}
-        const action=doc.createElement('p');action.className='ts-next-action';action.textContent=`Next action: ${a.nextAction||a.nextActionLabel|| (blockers.length?String(blockers[0]):'Continue verification and site review')}`;row.append(action);
+        const action=doc.createElement('p');action.className='ts-next-action';action.textContent=`Next action: ${a.nextAction||a.nextActionLabel|| (blockers.length?String(blockers[0]):'Review the application')}`;row.append(action);
         const open=doc.createElement('button');open.type='button';open.className='ts-open';open.dataset.openApplicant=idOf(a);open.textContent='Open detailed assessment ↗';open.addEventListener('click',()=>onOpenApplicant(a,{location:selected,marketContext:market}));row.append(open);
         const caution=doc.createElement('small');caution.className='ts-caution';caution.textContent='This ranking is not an approval; recommended status is not final approval.';row.append(caution);target.append(row);
       });

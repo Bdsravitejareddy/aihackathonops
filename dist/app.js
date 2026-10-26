@@ -71,7 +71,7 @@ function screeningRowsForPin(rawRows){
    if(!assessed)return {...raw,confirmedEligibilityScore:undefined,scoreRange:{low:null,high:null},blockingConditions:['Applicant is not present in the active eligibility assessment.']};
    return {...raw,confirmedEligibilityScore:assessed.score,score:assessed.score,high:assessed.high,scoreLow:assessed.score,scoreHigh:assessed.high,
      scoreRange:{low:assessed.score,high:assessed.high},status:assessed.status,allocationStatus:assessed.territory?`${assessed.status} · ${assessed.territory}`:'Unassigned',
-     declaredInvestment:Number.isFinite(raw.investment)?raw.investment*100000:undefined,
+     declaredInvestment:Number.isFinite(raw.investment)?raw.investment*100000:undefined,requiredInvestment:Number(state.settings.minInvestment)>0?Number(state.settings.minInvestment)*100000:undefined,category:assessed.category,territory:assessed.territory,city:assessed.city,
      blockingConditions:assessed.status==='Recommended'||assessed.status==='Eligible'?[]:assessed.reasons,
      nextAction:nextAction(assessed),key:raw.key||assessed.key};
  });

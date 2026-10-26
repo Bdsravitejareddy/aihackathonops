@@ -23,6 +23,12 @@ test('where questions resolve deterministically to a safe registered navigation 
  assert.equal(r.navigation.label,'Applications');
  assert.equal(r.navigation.execute,false);
 });
+test('approval stages resolve to the applicant onboarding checklist rather than data review',()=>{
+ const r=ask('Where do I find approval stages?');
+ assert.equal(r.navigation.route,'onboarding');
+ assert.equal(r.navigation.execute,false);
+ assert.match(r.text,/select the applicant.*checklist/i);
+});
 test('navigation registry documents context and caution metadata for sensitive routes',()=>{
  const applicant=Bot.routes.find(route=>route.id==='applications');
  const review=Bot.routes.find(route=>route.id==='review');
@@ -31,12 +37,11 @@ test('navigation registry documents context and caution metadata for sensitive r
  assert.match(review.caution,/human/i);
  assert.ok(applicant.intents.includes('where'));
 });
-test('training completion is reported as unavailable as a standalone route',()=>{
+test('training completion navigates to the existing applicant checklist',()=>{
  const r=ask('Where do I complete training?');
- assert.equal(r.navigation.type,'unavailable');
- assert.equal(r.navigation.route,null);
- assert.match(r.text,/no standalone.*training/i);
- assert.match(r.text,/Onboarding/i);
+ assert.equal(r.navigation.type,'navigate');
+ assert.equal(r.navigation.route,'onboarding');
+ assert.match(r.text,/select the applicant.*checklist/i);
 });
 test('approval and deletion requests can only return navigation, never execute actions',()=>{
  for(const prompt of ['How do I approve an application?','Where can I delete an application?']){
@@ -45,6 +50,11 @@ test('approval and deletion requests can only return navigation, never execute a
   assert.equal(r.navigation.execute,false);
   assert.match(r.navigation.caution,/cannot.*(approve|delete)|human/i);
  }
+});
+test('navigation intents cover funding, scoring, market sizing and territory comparison',()=>{
+ const cases=[['How do I verify funding?','onboarding'],['Where is the applicant score breakdown?','applications'],['Where can I change scoring weights?','rules'],['How do I compare two territories?','expansion'],['Show me TAM for Bengaluru','market']];
+ for(const [prompt,route] of cases)assert.equal(ask(prompt).navigation.route,route,prompt);
+ assert.equal(ask('Show me TAM for Bengaluru').navigation.context.searchQuery,'bengaluru');
 });
 test('parent integration receives navigation only through the documented custom event',()=>{
  let received=null;

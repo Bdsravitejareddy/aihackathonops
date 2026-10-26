@@ -32,6 +32,25 @@ test('renders supplied market evidence and explicit missing values without deriv
   assert.doesNotMatch(h.root.textContent, /₹48,96,000/);
 });
 
+test('financial results use the shared currency display mode and refresh without recalculation', async t => {
+  const scenarioResult={modelVersion:'test', economics:{breakEvenRevenueMonthly:224532000, scenarios:{
+    conservative:{years:[{nominalRevenue:224532000}],months:[],roiPercent:0,paybackMonths:30,npv:224532000,irrAnnual:0},
+    base:{years:[{nominalRevenue:224532000}],months:[],roiPercent:0,paybackMonths:30,npv:224532000,irrAnnual:0},
+    optimistic:{years:[{nominalRevenue:224532000}],months:[],roiPercent:0,paybackMonths:30,npv:224532000,irrAnnual:0}
+  }}};
+  const h = harness({ location:{pin:'560001'}, onRunScenario:async()=>scenarioResult });
+  t.after(() => h.dom.window.close());
+  h.dom.window.FranchiseDisplay=require('../dist/display-format.js');
+  h.dom.window.FranchiseDisplay.setMode('millions');
+  h.root.querySelector('[data-financial-scenario]').dispatchEvent(new h.dom.window.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setImmediate(resolve));
+  h.controller.refreshDisplay();
+  assert.match(h.root.textContent,/₹224\.5M/);
+  h.dom.window.FranchiseDisplay.setMode('crores');
+  h.controller.refreshDisplay();
+  assert.match(h.root.textContent,/₹22\.45 Cr/);
+});
+
 test('ranks applicants by confirmed score then supplied tie-break fields and ID', t => {
   const h = harness({ location:{pin:'560001'}, applicants:[
     {id:'B',pin:'560001',confirmedEligibilityScore:80,launchMonths:4,status:'Eligible'},

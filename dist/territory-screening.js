@@ -39,14 +39,16 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const list = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value];
   const numeric = value => typeof value === 'number' && Number.isFinite(value);
-  const fmt = (value, unit = '') => {
+  const fmt = (value, unit = '', display = null) => {
     if (!numeric(value)) return 'Unavailable';
+    if (/^(?:INR|₹)/i.test(String(unit)) && display?.money) return display.money(value, unit);
     const amount=value.toLocaleString('en-IN',{maximumFractionDigits:2});
     return unit.startsWith('₹') ? `₹${amount}${unit.slice(1)}` : `${amount}${unit ? ` ${unit}` : ''}`;
   };
   const metricValue = value => numeric(value) ? value : value && value.status !== 'unavailable' && numeric(value.value) ? value.value : null;
-  const money = value => numeric(value) ? `₹${value.toLocaleString('en-IN',{maximumFractionDigits:0})}` : 'Not estimable';
+  const money = (value, display) => numeric(value) ? display?.money?.(value, 'INR') || `₹${value.toLocaleString('en-IN',{maximumFractionDigits:0})}` : 'Not estimable';
   function renderScenarioResult(result, context, doc, values = {}) {
+    const display=doc.defaultView?.FranchiseDisplay;
     const forecast=result?.economics, summary=forecast?.economics||forecast, scenarios=forecast?.scenarios||summary?.scenarios;
     if (!scenarios) return '<p class="ts-scenario-empty">Run the illustrative calculator to see five-year financial scenarios. Local investment and return evidence is not available for this PIN.</p>';
     const economics={...summary,scenarios};
@@ -58,15 +60,15 @@
     const yearOneOperatingCosts=name=>{const rows=yearRows(name);return numeric(values.monthlyFixedCosts)&&rows.length===12&&rows.every(row=>numeric(row.revenue)&&numeric(row.grossProfit)&&numeric(row.royalty))?rows.reduce((sum,row)=>sum+row.revenue-row.grossProfit+row.royalty+values.monthlyFixedCosts,0):null;};
     const pct=value=>numeric(value)?`${value.toFixed(1)}%`:'Not estimable';
     const rows=[
-      ['User-entered budget range',`${money(values.budgetMin)} – ${money(values.initialInvestment)} – ${money(values.budgetMax)}`,'Low · modelled investment · high'],
-      ['Projected sales · year 1',...names.map(([key])=>money(annualRevenue(key)))],
-      ['Operating costs · year 1',...names.map(([key])=>money(yearOneOperatingCosts(key)))],
-      ['Operating cash flow · year 1',...names.map(([key])=>money(yearOneCashFlow(key)))],
-      ['Break-even sales · monthly',...names.map(()=>money(economics.breakEvenRevenueMonthly))],
+      ['User-entered budget range',`${money(values.budgetMin,display)} – ${money(values.initialInvestment,display)} – ${money(values.budgetMax,display)}`,'Low · modelled investment · high'],
+      ['Projected sales · year 1',...names.map(([key])=>money(annualRevenue(key),display))],
+      ['Operating costs · year 1',...names.map(([key])=>money(yearOneOperatingCosts(key),display))],
+      ['Operating cash flow · year 1',...names.map(([key])=>money(yearOneCashFlow(key),display))],
+      ['Break-even sales · monthly',...names.map(()=>money(economics.breakEvenRevenueMonthly,display))],
       ['Break-even transactions · monthly',...names.map(()=>numeric(economics.breakEvenTransactionsMonthly)?Math.ceil(economics.breakEvenTransactionsMonthly).toLocaleString('en-IN'):'Not estimable')],
       ['Five-year ROI',...names.map(([key])=>pct(scenario(key).roiPercent))],
       ['Payback period',...names.map(([key])=>numeric(scenario(key).paybackMonths)?`${scenario(key).paybackMonths} months`:'Not reached in forecast')],
-      ['Five-year NPV',...names.map(([key])=>money(scenario(key).npv))],
+      ['Five-year NPV',...names.map(([key])=>money(scenario(key).npv,display))],
       ['Annualized IRR',...names.map(([key])=>pct(scenario(key).irrAnnual))]
     ];
     const table=`<div class="ts-financial-table-wrap"><table class="ts-financial-table"><thead><tr><th>Measure</th>${names.map(([,label])=>`<th>${label}</th>`).join('')}</tr></thead><tbody>${rows.map((row,index)=>`<tr><th>${esc(row[0])}</th>${index===0?`<td colspan="3">${esc(row[1])} <small>(${esc(row[2])})</small></td>`:row.slice(1).map(value=>`<td>${esc(value)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
@@ -153,7 +155,7 @@
     function metricCard(key, raw) {
       const conf=TEXT[key]||[key.replace(/([a-z])([A-Z])/g,'$1 $2'), ''];
       const val=metricValue(raw), card=doc.createElement('article'); card.className='ts-metric';
-      const h=doc.createElement('span'); h.textContent=conf[0]; const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1]);
+      const h=doc.createElement('span'); h.textContent=conf[0]; const strong=doc.createElement('strong'); strong.textContent=fmt(val,raw?.unit || conf[1],doc.defaultView?.FranchiseDisplay);
       const evidence=doc.createElement('small'); evidence.textContent=(raw?.evidenceClass || (val===null?'Missing evidence':'Evidence class not supplied')).replace(/_/g,' ').replace(/\bmodeled\b/gi,'modelled');
       card.append(h,strong,evidence);
       if(raw?.referenceYear || raw?.referencePeriod){const year=doc.createElement('small');year.textContent=`Reference: ${raw.referenceYear || raw.referencePeriod}`;card.append(year);}
@@ -179,7 +181,7 @@
       section.append(explanation); target.append(section);
       const evidence=q('[data-evidence]'); evidence.replaceChildren();
       const spend=context.spend || context.spending || {};
-      if(spend.rural || spend.urban){const h=doc.createElement('h3');h.textContent='Regional spend benchmarks';evidence.append(h);for(const type of ['rural','urban']) if(spend[type]){const line=doc.createElement('p');const val=metricValue(spend[type]);line.textContent=`${type[0].toUpperCase()+type.slice(1)}: ${fmt(val,spend[type].unit || '₹/person/month')} · ${spend[type].evidenceClass || 'evidence class unavailable'} · ${spend[type].referenceYear || 'year unavailable'}`;evidence.append(line);}}
+      if(spend.rural || spend.urban){const h=doc.createElement('h3');h.textContent='Regional spend benchmarks';evidence.append(h);for(const type of ['rural','urban']) if(spend[type]){const line=doc.createElement('p');const val=metricValue(spend[type]);line.textContent=`${type[0].toUpperCase()+type.slice(1)}: ${fmt(val,spend[type].unit || '₹/person/month',doc.defaultView?.FranchiseDisplay)} · ${spend[type].evidenceClass || 'evidence class unavailable'} · ${spend[type].referenceYear || 'year unavailable'}`;evidence.append(line);}}
       if(spend.incomeAdjustment){const line=doc.createElement('p');line.textContent=`Income-adjusted spend: ${spend.incomeAdjustment.formula || spend.incomeAdjustment.method || 'Adjustment method not supplied'} · ${spend.incomeAdjustment.evidenceClass || 'evidence class unavailable'}${spend.incomeAdjustment.uncertainty ? ` · ${spend.incomeAdjustment.uncertainty}` : ''}`;evidence.append(line);}
       const footfall=context.footfall;
       const fh=doc.createElement('h3');fh.textContent='Footfall distinctions';evidence.append(fh);
@@ -214,7 +216,8 @@
       const hasVerified=numeric(applicant.verifiedFunds)||numeric(applicant.availableFunds), hasLoan=numeric(applicant.conditionalLoan);
       const gap=hasVerified&&hasLoan?Math.max(0,target-basis):null;
       const declaredFit=numeric(applicant.declaredInvestment)?(declared>=target?'declared capacity is above the supplied recommended investment':'declared capacity is below the supplied recommended investment'):'declared capacity comparison unavailable';
-      return `Market reference ${fmt(target,'₹')} · declared capacity ${numeric(applicant.declaredInvestment)?fmt(declared,'₹'):'unavailable'} · verified funds ${hasVerified?fmt(secured,'₹'):'unavailable'} · conditional loan ${hasLoan?fmt(conditional,'₹'):'unavailable'} · estimated funding gap ${gap===null?'unavailable':fmt(gap,'₹')} · ${declaredFit}; verify funds and loan conditions`;
+      const display=doc.defaultView?.FranchiseDisplay;
+      return `Market reference ${fmt(target,'₹',display)} · declared capacity ${numeric(applicant.declaredInvestment)?fmt(declared,'₹',display):'unavailable'} · verified funds ${hasVerified?fmt(secured,'₹',display):'unavailable'} · conditional loan ${hasLoan?fmt(conditional,'₹',display):'unavailable'} · estimated funding gap ${gap===null?'unavailable':fmt(gap,'₹',display)} · ${declaredFit}; verify funds and loan conditions`;
     }
     function renderApplicants() {
       const target=q('[data-applicants]'), rows=applicantsForPin(); target.replaceChildren();
@@ -241,7 +244,7 @@
     const sharedLocation=event=>{const detail=event.detail;if(detail && typeof detail==='object')updateLocation(detail);};
     win?.addEventListener('franchiseos:location-selected',sharedLocation);
     updateLocation(location);renderMarket();renderApplicants();
-    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
+    return { updateLocation(value){updateLocation(value);}, updateMarketContext(value){market=value||null;renderMarket();renderApplicants();renderFinancial();}, updateApplicants(value){records=list(value);renderApplicants();}, refreshDisplay(){renderMarket();renderFinancial();}, setFilter(value){if(!['all','actionable'].includes(value))throw new Error('Unknown applicant filter');filter=value;shell.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));onFilterChange(filter);renderApplicants();}, getLocation(){return selected;}, destroy(){win?.removeEventListener('franchiseos:location-selected',sharedLocation);shell.remove();} };
   }
   return {mount,sortApplicants};
 });

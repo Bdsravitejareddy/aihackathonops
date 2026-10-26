@@ -7,7 +7,7 @@
 
   const commercial = new Set(['fixedCosts','grossMargin','monthlyRevenue','investment','workingCapital','areaSqFt','aov','conversionRate']);
   const internal = new Set(['name','country','state','city','pin','catchment']);
-  const money = value => Number.isFinite(Number(value)) && value !== null ? '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits:0 }) : 'Unavailable';
+  const money = (value, display = null) => Number.isFinite(Number(value)) && value !== null ? display?.money?.(Number(value),'INR') || '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits:0 }) : 'Unavailable';
   const count = value => Number.isFinite(Number(value)) && value !== null ? Number(value).toLocaleString('en-IN') : 'Unavailable';
   const valueOf = metric => metric && metric.status !== 'unavailable' && Number.isFinite(Number(metric.value)) && metric.value !== null ? metric.value : null;
   const causeLabels = { source_unavailable:'Source unavailable', not_integrated:'Source not integrated', geography_mismatch:'Geography mismatch', missing_calculation_dependency:'Missing calculation dependency', api_database_failure:'API/database failure', user_input_required:'User input required' };
@@ -19,9 +19,11 @@
   };
   const cleanUrl = url => { try { const parsed = new URL(url); return ['https:','http:'].includes(parsed.protocol) ? parsed.href : null; } catch { return null; } };
   const element = (doc, tag, className, text) => { const node = doc.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
-  const metricLine = (doc, label, metric, formatter = money) => {
+  const metricLine = (doc, label, metric, formatter = null) => {
     const row = element(doc, 'div', 'mi-metric');
-    row.append(element(doc,'span','',label), element(doc,'strong','',formatter(valueOf(metric))));
+    const amount=valueOf(metric),format=formatter|| (value=>money(value,doc.defaultView?.FranchiseDisplay));
+    row.append(element(doc,'span','',label), element(doc,'strong','',format(amount)));
+    if(metric?.unit)row.append(element(doc,'small','mi-unit',metric.unit));
     return row;
   };
   const uniqueEvidence = (location, snapshot, sources) => {
@@ -34,27 +36,28 @@
     target.replaceChildren();
     const metrics = result?.metrics || snapshot?.results?.metrics || {};
     const geographic = location?.metrics || {};
-    const name = location?.name || snapshot?.location?.city || snapshot?.location?.state || snapshot?.location?.pin || 'Selected location';
+    const display=doc.defaultView?.FranchiseDisplay, cash=value=>money(value,display);
+    const name = location?.level==='pin' && (location?.city||location?.postalCity) ? `${location.city||location.postalCity} · PIN ${location.pin||location.name}` : location?.name || snapshot?.location?.city || snapshot?.location?.state || snapshot?.location?.pin || 'Selected location';
     const lead = element(doc,'div','mi-lead');
     lead.append(element(doc,'div','mi-kicker','MARKET SNAPSHOT'), element(doc,'h2','',name));
     const annual = valueOf(geographic.apparelExpenditure);
     const monthlyBenchmark = valueOf(geographic.monthlyPerCapitaSpend);
     lead.append(element(doc,'p','',annual === null && monthlyBenchmark !== null
-      ? `${money(monthlyBenchmark)} per person per month is available as a regional HCES benchmark. Total PIN expenditure is unestimated because this PIN has no defensible population crosswalk.`
-      : annual === null ? 'No supported annual clothing and footwear market expenditure is available for this geography.' : `${money(annual)} estimated annual clothing and footwear market expenditure. This is market expenditure, not store revenue.`));
+      ? `${cash(monthlyBenchmark)} per person per month is available as a regional HCES benchmark. Total PIN expenditure is unestimated because this PIN has no defensible population crosswalk.`
+      : annual === null ? 'No supported annual clothing and footwear market expenditure is available for this geography.' : `${cash(annual)} estimated annual clothing and footwear market expenditure. This is market expenditure, not store revenue.`));
     if (location?.postOffices?.length) {
-      lead.append(element(doc,'p','mi-note',`India Post postal resolution · ${location.postalRegion || 'Bengaluru'} · ${location.postalDivision || 'postal division unavailable'}. Offices: ${location.postOffices.map(item=>`${item.name} (${item.delivery})`).join('; ')}. The directory gives no PIN boundary or coordinate.`));
+      const postal=element(doc,'details','mi-postal');postal.append(element(doc,'summary','','Postal directory metadata'),element(doc,'p','mi-note',`${location.postalRegion||location.postalCity||location.city||'Postal region unavailable'} · ${location.postalDivision||'postal division unavailable'}. Post offices: ${location.postOffices.map(item=>`${item.name} (${item.delivery})`).join('; ')}. This directory does not define a PIN boundary or population.`));lead.append(postal);
     }
     target.append(lead);
     const grid = element(doc,'div','mi-snapshot-grid');
     const demand = element(doc,'article','mi-card'); demand.append(element(doc,'h3','','Demand and purchasing capacity'));
-    demand.append(metricLine(doc,'Geographic population',geographic.population,count), metricLine(doc,'Monthly clothing & footwear spend/person',geographic.monthlyPerCapitaSpend), metricLine(doc,'Annual market expenditure',geographic.apparelExpenditure));
+    demand.append(metricLine(doc,'Geographic population',geographic.population,count), metricLine(doc,'Monthly clothing & footwear spend/person',geographic.monthlyPerCapitaSpend,cash), metricLine(doc,'Annual market expenditure',geographic.apparelExpenditure,cash));
     if (location?.benchmarkComparison) {
-      demand.append(metricLine(doc,'Karnataka rural HCES benchmark',location.benchmarkComparison.rural));
-      demand.append(metricLine(doc,'Karnataka urban HCES benchmark',location.benchmarkComparison.urban));
+      demand.append(metricLine(doc,'Karnataka rural HCES benchmark',location.benchmarkComparison.rural,cash));
+      demand.append(metricLine(doc,'Karnataka urban HCES benchmark',location.benchmarkComparison.urban,cash));
       demand.append(element(doc,'p','mi-note','Regional state-sector survey benchmarks (2023–24), not PIN observations. PIN income, rural/urban population mix and total population are not available, so no PIN-level spend adjustment or TAM is calculated.'));
     }
-    demand.append(metricLine(doc,'Store catchment TAM',metrics.tam), metricLine(doc,'Serviceable market',metrics.sam), metricLine(doc,'Capturable market',metrics.som));
+    demand.append(metricLine(doc,'Store catchment TAM',metrics.tam,cash), metricLine(doc,'Serviceable market',metrics.sam,cash), metricLine(doc,'Capturable market',metrics.som,cash));
     const catchment = valueOf(metrics.tam);
     demand.append(element(doc,'p','mi-note',catchment === null ? 'Store catchment TAM needs a supported catchment population and comparable spending assumptions.' : 'TAM, SAM and SOM are deterministic model outputs from saved inputs.'));
     const competition = element(doc,'article','mi-card'); competition.append(element(doc,'h3','','Competition and audience'));
@@ -65,7 +68,7 @@
     const forecast = snapshot?.forecast;
     const base = forecast?.economics?.scenarios?.base;
     if (base) {
-      feasibility.append(metricLine(doc,'Projected year-one revenue',{value:base.years?.[0]?.nominalRevenue}),metricLine(doc,'Break-even revenue / month',{value:forecast.economics?.breakEvenRevenueMonthly}));
+      feasibility.append(metricLine(doc,'Projected year-one revenue',{value:base.years?.[0]?.nominalRevenue,unit:'INR/year'},cash),metricLine(doc,'Break-even revenue / month',{value:forecast.economics?.breakEvenRevenueMonthly,unit:'INR/month'},cash));
       feasibility.append(element(doc,'p','mi-note',`${base.paybackMonths === null || base.paybackMonths === undefined ? 'Payback unavailable' : `${count(base.paybackMonths)} months payback`} · ${base.roiPercent === null || base.roiPercent === undefined ? 'ROI unavailable' : `${Number(base.roiPercent).toFixed(1)}% ROI`}. Revenue is a scenario projection, not observed sales.`));
     } else feasibility.append(metricLine(doc,'Break-even revenue / month',metrics.breakEvenRevenue),metricLine(doc,'Simple payback / months',metrics.paybackMonths,count));
     if (forecast?.viability?.score !== null && forecast?.viability?.score !== undefined && forecast.viability.status !== 'unscored') feasibility.append(element(doc,'p','mi-note',`Market viability ${forecast.viability.score}/100 · ${forecast.viability.status}. Provisional evidence-based weights.`));
@@ -73,20 +76,14 @@
     grid.append(demand,competition,feasibility); target.append(grid);
     const insights = element(doc,'div','mi-insights');
     const opportunity = element(doc,'article','mi-insight'); opportunity.append(element(doc,'h3','','Key opportunities'));
-    opportunity.append(element(doc,'p','',valueOf(metrics.som) !== null ? `The saved assumptions yield ${money(valueOf(metrics.som))} in capturable annual market expenditure; compare that with store operating costs.` : annual !== null ? `The geography has ${money(annual)} in estimated annual category expenditure, providing a broad demand benchmark for catchment research.` : monthlyBenchmark !== null ? `A regional apparel benchmark of ${money(monthlyBenchmark)} per person per month is available; the PIN market total remains unquantified until population and catchment evidence is supplied.` : 'No defensible local market expenditure estimate is available yet.'));
+    opportunity.append(element(doc,'p','',valueOf(metrics.som) !== null ? `The saved assumptions yield ${cash(valueOf(metrics.som))} in capturable annual market expenditure; compare that with store operating costs.` : annual !== null ? `The geography has ${cash(annual)} in estimated annual category expenditure, providing a broad demand benchmark for catchment research.` : monthlyBenchmark !== null ? `A regional apparel benchmark of ${cash(monthlyBenchmark)} per person per month is available; the PIN market total remains unquantified until population and catchment evidence is supplied.` : 'No defensible local market expenditure estimate is available yet.'));
     const risk = element(doc,'article','mi-insight'); risk.append(element(doc,'h3','','Key risks'));
     risk.append(element(doc,'p','',valueOf(metrics.breakEvenRevenue) === null && forecast?.economics?.breakEvenRevenueMonthly == null ? 'Store costs and gross margin are missing, so break-even and payback cannot support an investment decision.' : !competitors.length ? 'Competitor coverage is missing; capture assumptions need local validation.' : 'Check whether the saved capture and conversion assumptions hold at the proposed site.'));
     insights.append(opportunity,risk); target.append(insights);
-    const next = element(doc,'div','mi-next'); next.append(element(doc,'h3','','What to check next'));
-    const missing = [];
-    if (valueOf(geographic.population) === null) missing.push('verified population at the selected resolution');
-    if (valueOf(geographic.monthlyPerCapitaSpend) === null) missing.push('compatible apparel spending benchmark');
-    if (catchment === null) missing.push('store catchment population and demand assumptions');
-    if (!competitors.length) missing.push('local competitor inventory');
-    if (valueOf(metrics.breakEvenRevenue) === null && forecast?.economics?.breakEvenRevenueMonthly == null) missing.push('store costs and margin');
-    next.append(element(doc,'p','',missing.length ? `Missing: ${missing.join('; ')}.` : 'Review comparable store sales and local access before making an investment decision.'));
     const uniqueGaps = [...new Set([...Object.entries(geographic), ...Object.entries(metrics)].map(([key,item])=>gapDescription(key,item)).filter(Boolean))];
-    if (uniqueGaps.length) { const list=element(doc,'ul','mi-gap-actions'); for (const action of uniqueGaps) list.append(element(doc,'li','',action)); next.append(list); }
+    const next = element(doc,'div','mi-next'); next.append(element(doc,'h3','','What to check next'));
+    next.append(element(doc,'p','',uniqueGaps.length ? `${uniqueGaps.length} evidence gaps remain. Start with the highest-impact item below.` : 'Review comparable store sales and local access before making an investment decision.'));
+    if (uniqueGaps.length) { const list=element(doc,'ul','mi-gap-actions'); for (const action of uniqueGaps.slice(0,4)) list.append(element(doc,'li','',action)); next.append(list); if(uniqueGaps.length>4){const details=element(doc,'details','mi-more-gaps');details.append(element(doc,'summary','',`Show ${uniqueGaps.length-4} more evidence gaps`));const rest=element(doc,'ul','mi-gap-actions');for(const action of uniqueGaps.slice(4))rest.append(element(doc,'li','',action));details.append(rest);next.append(details);} }
     target.append(next);
     const drawer = element(doc,'details','mi-evidence'); drawer.append(element(doc,'summary','','Evidence & Methodology'));
     const list = element(doc,'ul',''); list.dataset.miEvidence = '';
@@ -146,9 +143,10 @@
     const pinStatus = root.querySelector('#market-pin-status'); if (pinStatus) advancedBody.append(pinStatus);
     commercialDetails.append(commercialBody); advancedDetails.append(advancedBody);
     const results = element(doc,'section','mi-results'); results.dataset.miResults = ''; results.hidden = !analyzed;
+    let researchPanel=null;
     if (analyzed) describe(doc,results,{location:selectedLocation,snapshot,result,sources});
     if (analyzed) {
-      const researchPanel = element(doc,'section','mi-research'); researchPanel.dataset.miResearch = '';
+      researchPanel = element(doc,'section','mi-research'); researchPanel.dataset.miResearch = '';
       researchPanel.append(element(doc,'h3','','Grounded market context'));
       const researchBody = element(doc,'div','mi-research-body','Research loads separately from the market calculation.'); researchPanel.append(researchBody);
       const refresh = element(doc,'button','button small','Refresh research'); refresh.type='button'; researchPanel.append(refresh);
@@ -213,8 +211,11 @@
         }catch(error){if(current===applicantRevision&&applicantPanel.isConnected)applicantBody.textContent=`Applicant records unavailable: ${error.message||'workspace lookup failed'}.`;}
       })();
     }
+    const latestAssessments=new Map();
+    for(const item of assessments){const key=String(item.id||item.snapshot?.id||`${item.snapshot?.name||'assessment'}:${item.snapshot?.location?.pin||item.snapshot?.location?.city||''}`),previous=latestAssessments.get(key);if(!previous||Number(item.version||0)>=Number(previous.version||0))latestAssessments.set(key,item);}
+    const savedRows=[...latestAssessments.values()].sort((a,b)=>String(a.snapshot?.name||a.id).localeCompare(String(b.snapshot?.name||b.id)));
     const saved = element(doc,'section','mi-saved'); saved.append(element(doc,'h2','','Saved assessments'));
-    if (assessments.length) for (const item of assessments) {
+    if (savedRows.length) for (const item of savedRows) {
       const button = element(doc,'button','mi-saved-item',`${item.snapshot?.name || item.id} · v${item.version}`);
       button.type = 'button'; button.dataset.miSaved = item.id; saved.append(button);
     } else saved.append(element(doc,'p','mi-note','No saved assessments yet.'));
@@ -274,7 +275,8 @@
       preview.append(element(doc,'strong','',location.name || 'Selected place'),element(doc,'span','',`${location.level || 'Location'} · ${population === null ? 'Population unavailable' : `${count(population)} people at ${location.level || 'this geographic'} level`}${spend === null ? '' : ` · regional spend benchmark ₹${count(spend)}/person/month`} · ${location.sourceVersion || 'Source version unavailable'}`));
       if (location.evidence?.length) preview.append(element(doc,'small','','Source: ' + (location.evidence[0].title || location.evidence[0].sourceId || 'linked evidence') + (location.evidence[0].referenceYear ? ` · ${location.evidence[0].referenceYear}` : '')));
     }
-    return { setLocation, getLocation:() => selectedLocation };
+    function refreshDisplay(){if(!analyzed)return;researchPanel?.remove();describe(doc,results,{location:selectedLocation,snapshot,result,sources});if(researchPanel)results.append(researchPanel);}
+    return { setLocation, getLocation:() => selectedLocation, refreshDisplay };
   }
   return { mount };
 });

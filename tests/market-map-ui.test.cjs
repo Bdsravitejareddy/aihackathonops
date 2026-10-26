@@ -76,7 +76,8 @@ test('national loading requests state aggregates and never requests PINs without
   assert.equal(url.searchParams.get('parentId'), null);
   h.map.zoom = 13; h.map.fire('moveend'); await tick();
   assert.ok(h.requests.every(r => Number(new URL(r.url,'http://localhost').searchParams.get('zoom')) < 6));
-  assert.equal(h.map.options.style.sources && Object.keys(h.map.options.style.sources).length, 0, 'no remote tile dependency');
+  assert.match(h.map.options.style.sources.openStreetMap.tiles[0],/^https:\/\/tile\.openstreetmap\.org\//);
+  assert.match(h.map.options.style.sources.openStreetMap.attribution,/OpenStreetMap contributors/);
 });
 
 test('panning and zooming the loaded state layer reuses its geometry request', async t => {
@@ -99,6 +100,24 @@ test('fixed national legend survives local extrema; null stays gray while zero i
   assert.equal(changed[1].properties.color, '#185a44');
   assert.equal(changed[2].properties.color, '#b9c1c5');
   assert.match(legend, /100/); assert.match(legend, /200/); assert.match(legend, /national/i);
+});
+
+test('changing INR display units refreshes map labels without fetching geography again', async t => {
+  const h = setup(url => url.includes('/geographies/') ? feature('a',120) : {
+    ...levels([feature('a',120)]),
+    legend: { metric:'apparelExpenditure', year:2026, scope:'national', thresholds:[10000000,100000000], colors:['#d9eee1','#6ba688','#185a44'], unit:'INR/year' }
+  });
+  t.after(() => { h.controller.destroy(); h.dom.window.close(); });
+  await tick();
+  h.window.eval(read('dist/display-format.js'));
+  h.window.FranchiseDisplay.setMode('millions');
+  h.controller.refreshDisplay();
+  assert.match(h.host.querySelector('[data-map-legend]').textContent, /₹10M/);
+  const before = h.requests.length;
+  h.window.FranchiseDisplay.setMode('crores');
+  h.controller.refreshDisplay();
+  assert.match(h.host.querySelector('[data-map-legend]').textContent, /₹1 Cr/);
+  assert.equal(h.requests.length, before);
 });
 
 test('visible fill layer accepts sourced MultiPolygon state boundaries', async t => {

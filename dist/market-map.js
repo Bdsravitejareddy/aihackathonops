@@ -17,7 +17,11 @@
   const metricValue = metric => numeric(metric) ? metric : numeric(metric?.value) && metric.status !== 'unavailable' ? metric.value : null;
   const display = metric => {
     const value = metricValue(metric);
-    return value === null ? 'Unavailable' : value.toLocaleString('en-IN', { maximumFractionDigits: 2 }) + (metric?.unit ? ' ' + metric.unit : '');
+    if (value === null) return 'Unavailable';
+    const unit=String(metric?.unit||'');
+    if (/^(?:INR|₹)/i.test(unit) && root.FranchiseDisplay) return root.FranchiseDisplay.money(value,unit);
+    if (/^(?:people|households)$/i.test(unit) && root.FranchiseDisplay) return `${root.FranchiseDisplay.count(value)} ${unit}`;
+    return value.toLocaleString('en-IN', { maximumFractionDigits: 2 }) + (unit ? ' ' + unit : '');
   };
   const label = key => METRICS[key] || key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
   const safeUrl = value => {
@@ -99,12 +103,15 @@
       ${(raw?.demographics || geo.demographics) ? `<h4>Detailed demographic distribution</h4>${reportHTML(raw?.demographics || geo.demographics)}` : '<p class="hint">Detailed age, gender and household distributions are unavailable at this geographic resolution.</p>'}
       <details><summary>Evidence, vintage and allocation</summary>${evidenceHTML(raw?.evidence || geo.evidence)}${raw?.warnings ? `<p>${list(raw.warnings).map(escape).join(' · ')}</p>` : ''}</details>`;
   }
-  function reportHTML(value) {
+  function reportHTML(value, key = '') {
     if (value === null || value === undefined) return '<span class="muted">Unavailable</span>';
-    if (typeof value !== 'object') return escape(value);
+    if (typeof value !== 'object') {
+      if (numeric(value) && /(?:revenue|investment|cash.?flow|profit|cost|income|expenditure|market|tam|sam|som|npv|budget|working.?capital|sales)/i.test(key) && root.FranchiseDisplay) return escape(root.FranchiseDisplay.money(value, 'INR'));
+      return escape(value);
+    }
     if ('value' in value) return `<strong>${escape(display(value))}</strong><small>${escape(value.evidenceClass || '')}</small>`;
-    if (Array.isArray(value)) return `<ul>${value.map(row => `<li>${reportHTML(row)}</li>`).join('')}</ul>`;
-    return `<dl class="expansion-report">${Object.entries(value).filter(([key]) => !['geometry','coordinates'].includes(key)).map(([key,item]) => `<div><dt>${escape(label(key))}</dt><dd>${reportHTML(item)}</dd></div>`).join('')}</dl>`;
+    if (Array.isArray(value)) return `<ul>${value.map(row => `<li>${reportHTML(row,key)}</li>`).join('')}</ul>`;
+    return `<dl class="expansion-report">${Object.entries(value).filter(([key]) => !['geometry','coordinates'].includes(key)).map(([child,item]) => `<div><dt>${escape(label(child))}</dt><dd>${reportHTML(item,child)}</dd></div>`).join('')}</dl>`;
   }
   function normalizeLegend(legend) {
     if (!legend || !Array.isArray(legend.thresholds) || !Array.isArray(legend.colors)) return null;
@@ -135,9 +142,15 @@
   function mount({ container, onSelect = () => {}, onViewport = () => {}, options = {} }) {
     const lib = options.maplibre || root.maplibregl;
     if (!lib) throw Error('Self-hosted MapLibre is unavailable. Reload to retry.');
+    const basemap=options.basemap||root.FRANCHISEOS_BASEMAP_CONFIG||{};
+    const tileUrl=typeof basemap.tileUrl==='string'&&/^https:\/\//i.test(basemap.tileUrl)&&/\{z\}.*\{x\}.*\{y\}/.test(basemap.tileUrl)?basemap.tileUrl:'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const attribution=typeof basemap.attribution==='string'&&basemap.attribution.trim()?basemap.attribution:'© OpenStreetMap contributors';
     let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), selected = null, ready = false, destroyed = false, popup, dataSignature=null;
     const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17,
-      style: { version: 8, sources: {}, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } }] },
+      style: { version: 8, sources: { openStreetMap:{type:'raster',tiles:[tileUrl],tileSize:256,attribution} }, layers: [
+        { id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } },
+        { id:'street-basemap',type:'raster',source:'openStreetMap',paint:{'raster-opacity':0.92} }
+      ] },
       attributionControl: true });
     map.addControl(new lib.NavigationControl(), 'top-right');
     const data = () => ({ type: 'FeatureCollection', features: features.filter(f => f.geometry).map(f => ({ type: 'Feature', id: String(f.id), geometry: f.geometry,
@@ -177,6 +190,7 @@
       setMetric(value) { metric = value; popup?.remove(); paint(); },
       setYear() { popup?.remove(); }, setScenario() { popup?.remove(); },
       setLegend(value) { legend = normalizeLegend(value); paint(); },
+      refreshDisplay() { popup?.remove(); paint(); },
       setFeatures(value,meta) {
         features = Array.isArray(value) ? value : []; popup?.remove();
         const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>[f.id,Object.entries(f.metrics||{}).map(([key,item])=>[key,metricValue(item)])])]) : null;
@@ -249,10 +263,11 @@
     let destroyed = false, contextRevision = 0, levelRevision = 0, detailRevision = 0, compareRevision = 0, scenarioRevision = 0, searchRevision = 0, researchRevision = 0, searchResults = [];
     let level = 'state', sourceVersion=latestSourceVersion, currentLegend, map, geometryGroup=null, loadedRequestKey=null;
     const legends = new Map(), compared = new Map(), aborters = new Map();
+    let selectedRecord=null, comparisonResult=null, scenarioResult=null;
     container.innerHTML = pageHTML(year);
     const $ = selector => container.querySelector(selector);
     const status = text => { $('[data-map-status]').textContent = text; };
-    const clearResults = () => { $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
+    const clearResults = () => { comparisonResult=null; scenarioResult=null; $('[data-map-comparison]').innerHTML = ''; $('[data-map-forecast]').innerHTML = ''; };
     const childIndex = () => path.length ? Math.min(LEVELS.indexOf(path.at(-1).level) + 1, LEVELS.length-1) : 0;
     async function request(kind, endpoint, body) {
       aborters.get(kind)?.abort();
@@ -299,7 +314,8 @@
     }
     function renderLegend() {
       $('[data-map-legend]').innerHTML = `<strong>Fixed national scale · ${escape(label(metric))} · ${escape(year)}</strong><div class="expansion-legend-items">${currentLegend ? currentLegend.colors.map((color,i) => {
-        const low = i ? currentLegend.thresholds[i-1].toLocaleString('en-IN') : null, high = currentLegend.thresholds[i]?.toLocaleString('en-IN');
+        const formatThreshold=value=>/^(?:INR|₹)/i.test(String(currentLegend.unit||''))&&root.FranchiseDisplay?root.FranchiseDisplay.money(value,currentLegend.unit):value.toLocaleString('en-IN');
+        const low = i ? formatThreshold(currentLegend.thresholds[i-1]) : null, high = currentLegend.thresholds[i]===undefined?undefined:formatThreshold(currentLegend.thresholds[i]);
         return `<span><i style="background:${color}"></i>${escape(low === null ? '< ' + high : high === undefined ? '≥ ' + low : low + ' – < ' + high)}</span>`;
       }).join('') : '<span>National thresholds unavailable; values remain gray.</span>'}<span><i style="background:${MISSING}"></i>Missing / unavailable</span></div><small>${escape(currentLegend?.unit || '')} · Vintage is shown in evidence, not implied by the analysis year.</small>`;
     }
@@ -311,6 +327,16 @@
     function renderCompared() {
       $('[data-map-compare-list]').innerHTML = [...compared.values()].map(f => `<div class="expansion-compare-item"><span>${escape(f.name)}</span><button class="text-button" type="button" data-map-remove="${escape(f.id)}" aria-label="Remove ${escape(f.name)}">Remove</button></div>`).join('');
       $('[data-map-compare]').disabled = compared.size < 2;
+    }
+    function renderComparison() {
+      if(!comparisonResult){$('[data-map-comparison]').innerHTML='';return;}
+      const result=comparisonResult;
+      $('[data-map-comparison]').innerHTML=list(result.geographies||result.features).map(geographyHTML).join('')+reportHTML(Object.fromEntries(Object.entries(result).filter(([key])=>!['geographies','features'].includes(key))));
+    }
+    function renderForecast() {
+      if(!scenarioResult){$('[data-map-forecast]').innerHTML='';return;}
+      const result=scenarioResult;
+      $('[data-map-forecast]').innerHTML=`<h3>Server scenario · projection</h3>${result.forecast?reportHTML(result.forecast):'<p>Forecast unavailable: required evidence or inputs may be missing.</p>'}${result.warnings?reportHTML(result.warnings):''}`;
     }
     function updateSelectionActions() {
       const loaded = features.find(f => String(f.id) === selected);
@@ -373,7 +399,7 @@
       }
     }
     async function selectGeography(id) {
-      selected = String(id); selectedDetail = null; const revision = ++detailRevision, context = contextRevision;
+      selected = String(id); selectedDetail = null; selectedRecord=null; const revision = ++detailRevision, context = contextRevision;
       map?.selectGeography(selected); renderAreas();
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
@@ -386,7 +412,7 @@
         const result=cached && Date.now()-cached.at<300000 ? cached.data : await request('detail',endpoint);
         if (destroyed || revision !== detailRevision || context !== contextRevision) return;
         if (!cached) detailCache.set(cacheKey,{at:Date.now(),data:result});
-        selectedDetail = result.geography || result;
+        selectedRecord=result; selectedDetail = result.geography || result;
         const loaded = features.find(f => String(f.id) === selected);
         selectedDetail = { ...loaded, ...selectedDetail, id: selected };
         $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
@@ -422,7 +448,7 @@
       try {
         const result = await request('compare', '/api/market/map/compare', { workspaceId, geographyIds: [...compared.keys()], year, metric, scenario: appliedScenario });
         if (destroyed || revision !== compareRevision || context !== contextRevision) return;
-        $('[data-map-comparison]').innerHTML = list(result.geographies || result.features).map(geographyHTML).join('') + reportHTML(Object.fromEntries(Object.entries(result).filter(([k])=>!['geographies','features'].includes(k))));
+        comparisonResult=result; renderComparison();
       } catch (error) { if (!destroyed && revision === compareRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-comparison]').textContent = error.message; }
     }
     async function applyScenario(event) {
@@ -443,7 +469,7 @@
         appliedScenario = result.scenarioId || result.scenario?.id || String(values.get('scenario')); map?.setScenario(appliedScenario);
         if (result.map) acceptLevels(result.map); else await loadLevels();
         if (destroyed || revision !== scenarioRevision || context !== contextRevision) return;
-        $('[data-map-forecast]').innerHTML = `<h3>Server scenario · projection</h3>${result.forecast ? reportHTML(result.forecast) : '<p>Forecast unavailable: required evidence or inputs may be missing.</p>'}${result.warnings ? reportHTML(result.warnings) : ''}`;
+        scenarioResult=result; renderForecast();
         $('[data-map-scenario-status]').textContent = 'Applied user assumptions · server results';
         if (selected) selectGeography(selected);
       } catch (error) {
@@ -526,9 +552,15 @@
     }
     $('[data-map-scenario-form]').addEventListener('submit', applyScenario);
     renderLegend(); renderCompared(); loadLevels();
+    function refreshDisplay(){
+      renderLegend(); renderAreas(); renderCompared(); renderComparison(); renderForecast(); map?.refreshDisplay();
+      if(selectedDetail&&selectedRecord)$('[data-map-detail]').innerHTML=geographyHTML({...selectedRecord,geography:selectedDetail});
+    }
+    root.addEventListener?.('franchiseos:currency-display-changed',refreshDisplay);
     return { setMetric, setYear, setScenario, selectGeography,
+      refreshDisplay,
       setFeatures(value) { features = Array.isArray(value) ? value : []; map?.setFeatures(features); renderAreas(); },
-      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
+      destroy() { destroyed = true; contextRevision++; searchRevision++; researchRevision++; root.removeEventListener?.('franchiseos:currency-display-changed',refreshDisplay); for (const c of aborters.values()) c.abort(); map?.destroy(); container.removeEventListener('click',onClick); container.removeEventListener('change',onChange); $('[data-map-search]')?.removeEventListener('input',renderAreas); $('[data-map-global-form]')?.removeEventListener('submit',searchPlaces); $('[data-map-ask-form]')?.removeEventListener('submit',submitQuestion); $('[data-map-scenario-form]')?.removeEventListener('submit',applyScenario); }
     };
   }
   root.MarketMap = { mount, mountPage };

@@ -89,6 +89,26 @@ test('PIN assessment reuses the applicant callback and ranks confirmed eligibili
   assert.match(rows[1],/2\. Second · 70/);
 });
 
+test('PIN postal office labels stay in collapsed metadata beneath the city name', t => {
+  const h=snapshotHarness({analyzed:true,selectedLocation:{id:'pin:560026',name:'Government Electric Factory S.O',level:'pin',pin:'560026',city:'Bengaluru',postalCity:'Bengaluru',postOffices:[{name:'Government Electric Factory S.O',delivery:'Delivery'}]}});
+  t.after(()=>h.dom.window.close());
+  assert.equal(h.rootElement.querySelector('.mi-lead h2').textContent,'Bengaluru · PIN 560026');
+  assert.match(h.rootElement.querySelector('.mi-postal summary').textContent,/Postal directory metadata/);
+  assert.equal(h.rootElement.querySelector('.mi-postal').open,false);
+});
+
+test('saved assessment rows deduplicate by ID and show the newest version', t => {
+  const assessments=[
+    {id:'a1',version:2,snapshot:{name:'Bengaluru review'}},
+    {id:'a1',version:4,snapshot:{name:'Bengaluru review'}},
+    {id:'a2',version:1,snapshot:{name:'Mysuru review'}}
+  ];
+  const h=snapshotHarness({assessments});t.after(()=>h.dom.window.close());
+  const rows=[...h.rootElement.querySelectorAll('[data-mi-saved]')];
+  assert.equal(rows.length,2);
+  assert.equal(rows.find(row=>row.dataset.miSaved==='a1').textContent,'Bengaluru review · v4');
+});
+
 test('analysed snapshot names missing dimensions and deduplicates relevant evidence', t => {
   const evidence = {sourceId:'hces',title:'HCES 2023–24',referenceYear:2024,url:'https://example.org/hces'};
   const h = snapshotHarness({ analyzed:true, selectedLocation:{name:'Karnataka',level:'state',state:'Karnataka',
@@ -115,6 +135,8 @@ test('missing market evidence shows its cause and a practical next action while 
   assert.match(text,/validated PIN-to-population crosswalk/i);
   assert.match(text,/source unavailable/i);
   assert.match(text,/supply population and spend inputs/i);
+  assert.match(text,/\d+ evidence gaps remain/i);
+  assert.doesNotMatch(text,/Missing:/);
 });
 
 test('commercial and advanced controls retain existing field names for the API', t => {
@@ -174,7 +196,7 @@ test('running application accepts map selection and keeps the snapshot form conc
     if (pathName.includes('/api/market/assessments')) return {assessments:[]};
     return {};
   }});
-  for (const file of ['engine.js','bot.js','persistence.js','market-map.js','market-intelligence.js','app.js']) w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
+  for (const file of ['engine.js','display-format.js','bot.js','persistence.js','market-map.js','market-intelligence.js','app.js']) w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
   await new Promise(resolve => setImmediate(resolve)); await new Promise(resolve => setImmediate(resolve));
   w.document.querySelector('[data-tab="market"]').click();
   await new Promise(resolve => setImmediate(resolve));
@@ -215,16 +237,40 @@ test('Analyse saves a versioned assessment and shows the deterministic snapshot'
 
 test('saved assessment selection restores its location and deterministic results', async t => {
   const dom = new JSDOM(html,{url:'http://localhost/#market',runScripts:'outside-only'}); t.after(()=>dom.window.close()); const w=dom.window;
-  const assessments=['Bengaluru','Mysuru'].map((city,index)=>({id:`saved-${index}`,version:3,snapshot:{name:`${city} review`,location:{country:'India',state:'Karnataka',city},inputs:{demand:{},segmentation:{},economics:{}},results:{metrics:{tam:{value:index?500:100,unit:'INR/year'}}}}}));
+  const assessments=['Bengaluru','Mysuru'].map((city,index)=>({id:`saved-${index}`,version:3,snapshot:{name:`${city} review`,location:{country:'India',state:'Karnataka',city},inputs:{demand:{},segmentation:{},economics:{}},results:{metrics:{tam:{value:index?224532000:100,unit:'INR/year'}}}}}));
   w.fetch=async url=>({ok:true,status:200,json:async()=>{
     const p=String(url); if(p==='demo.json')return JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8'));
     if(p.includes('/api/market/sources'))return {sources:[]};if(p.includes('/api/market/benchmarks'))return {observations:[]};
     if(p.includes('/api/market/assessments'))return {assessments};return {};
   }});
-  for(const file of ['engine.js','bot.js','persistence.js','market-map.js','market-intelligence.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
+  for(const file of ['engine.js','display-format.js','bot.js','persistence.js','market-map.js','market-intelligence.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
   await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>setImmediate(resolve));
   w.document.querySelector('[data-mi-saved="saved-1"]').click();
   assert.equal(w.document.querySelector('#market-form [name="city"]').value,'Mysuru');
   assert.equal(w.document.querySelector('[data-mi-results]').hidden,false);
-  assert.match(w.document.querySelector('[data-mi-results]').textContent,/₹500/);
+  assert.match(w.document.querySelector('[data-mi-results]').textContent,/₹224\.5M/);
+  w.document.querySelector('#currency-toggle').click();
+  assert.match(w.document.querySelector('[data-mi-results]').textContent,/₹22\.45 Cr/);
+});
+
+test('Franchise bot approval-stage answer offers safe navigation to onboarding', async t => {
+  const dom=new JSDOM(html,{url:'http://localhost/',runScripts:'outside-only'});t.after(()=>dom.window.close());const w=dom.window;
+  w.fetch=async url=>({ok:true,status:200,json:async()=>String(url)==='demo.json'?JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')):{}});
+  for(const file of ['engine.js','display-format.js','bot.js','persistence.js','market-map.js','market-intelligence.js','territory-screening.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
+  await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>setImmediate(resolve));
+  w.document.querySelector('[data-tab="assistant"]').click();
+  const input=w.document.querySelector('#chat-text');input.value='Where do I find approval stages?';
+  w.document.querySelector('#chat-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  assert.match(w.document.querySelector('#chat-log').textContent,/Onboarding/i);
+  const action=w.document.querySelector('[data-bot-navigation]');assert.ok(action,'bot answer includes a navigation action');
+  action.click();
+  assert.equal(w.document.querySelector('#crumb').textContent,'Onboarding');
+  assert.match(w.document.querySelector('#main').textContent,/Partner onboarding/);
+  w.document.querySelector('[data-tab="assistant"]').click();
+  const next=w.document.querySelector('#chat-text');next.value='Show me TAM for Bengaluru';
+  w.document.querySelector('#chat-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  [...w.document.querySelectorAll('[data-bot-navigation]')].at(-1).click();
+  assert.equal(w.document.querySelector('#crumb').textContent,'Market Intelligence');
+  assert.equal(w.document.querySelector('#market-form [name="locationQuery"]').value,'bengaluru');
+  await new Promise(resolve=>setImmediate(resolve));
 });

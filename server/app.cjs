@@ -73,7 +73,24 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
     try { geography = await marketMapStore.getMapGeography(geographyId, 'apparelExpenditure', { captureRate: null }); }
     catch { if (pinPlace) return withSector(pinPlace, sector); throw new Error('Map geography service unavailable'); }
     if (geography && pinPlace) geography = { ...geography, city: geography.city || pinPlace.city || null, postalCity: pinPlace.postalCity || null, postOffices: pinPlace.postOffices };
-    return withSector(geography || pinPlace || null, sector);
+    const shaped = withSector(geography || pinPlace || null, sector);
+    return shaped?.level === 'pin' ? { ...shaped, catchment: await pinCatchment(shaped, sector) } : shaped;
+  }
+  // A store's shoppers come from nearby PINs too: its catchment is every PIN whose anchor lies within 3 km
+  // (the same spacing the next-best ranking uses). Null when anchors are unavailable.
+  const CATCHMENT_KM = 3;
+  async function pinCatchment(pin, sector) {
+    if (!Array.isArray(pin?.anchor) || !marketMapStore?.listMapGeographies) return null;
+    const [lng, lat] = pin.anchor, dLat = CATCHMENT_KM / 111, dLng = CATCHMENT_KM / (111 * Math.cos(lat * Math.PI / 180));
+    try {
+      const nearby = (await marketMapStore.listMapGeographies({ level: 'pin', bbox: [lng - dLng, lat - dLat, lng + dLng, lat + dLat], metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false }))
+        .map(feature => withSector(feature, sector)).filter(feature => Array.isArray(feature.anchor) && Number.isFinite(feature.metrics?.potentialRevenue?.value));
+      const km = (a, b) => { const r = Math.PI / 180, x = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), y = (b[1] - a[1]) * r; return 6371 * Math.hypot(x, y); };
+      const inside = nearby.filter(feature => km(pin.anchor, feature.anchor) <= CATCHMENT_KM);
+      if (!inside.some(feature => String(feature.pin) === String(pin.pin))) return null;
+      const sum = key => inside.reduce((total, feature) => total + (feature.metrics?.[key]?.value || 0), 0);
+      return { radiusKm: CATCHMENT_KM, pins: inside.length, pinCodes: inside.map(feature => String(feature.pin)), population: Math.round(sum('population')), potentialRevenue: Math.round(sum('potentialRevenue')), evidenceClass: 'derived_estimate' };
+    } catch { return null; }
   }
   // ?sector= (default apparel). A researched sector re-derives potential revenue from its HCES item groups.
   async function sectorFor(id) {

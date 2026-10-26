@@ -197,13 +197,13 @@ test('map summary lists popup KPIs as title and value and reports missing KPIs o
 test('greetings and method questions are answered instantly without Gemini', async () => {
   const fetched = [];
   const fetch = async (...args) => { fetched.push(args); return { ok: true, json: async () => ({ answer: 'remote' }) }; };
-  const doc = dom('<div class="analysis-why"><strong>Why this payback?</strong> Store sales are below break-even.</div>');
+  const doc = dom('<div class="analysis-why"><strong>How the payback is worked out</strong><ol><li>Store sales are below break-even.</li></ol></div>');
   const ctx = { ...Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location }), geography: { id: 'pin:524003', name: 'PIN 524003' } };
   const hi = await Chat.answer('hi', { ctx, fetch, doc });
   assert.equal(hi.source, 'page'); assert.match(hi.text, /^Hi!/);
   const payback = await Chat.answer("What's the criteria and methodology to calculate payback period", { ctx, fetch, doc });
   assert.equal(payback.source, 'page');
-  assert.match(payback.text, /capture rate/); assert.match(payback.text, /For PIN 524003: Store sales are below break-even/);
+  assert.match(payback.text, /capture rate/); assert.match(payback.text, /For PIN 524003:\n• Store sales are below break-even/);
   assert.equal(fetched.length, 0);
 });
 

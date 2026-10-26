@@ -1,439 +1,443 @@
 {
- "version": "1.0.0",
- "retrievedAt": "2026-10-26",
- "storeFormat": {
-  "id": "mass-market-family-apparel",
-  "label": "Mass-market family apparel store (value/mass segment)"
- },
- "conventions": {
-  "levels": "low / mid / high are cost-or-value levels; 'favorable' says which end helps the store (used by the upside scenario; the downside scenario uses the other end).",
-  "tierClass": "HRA X/Y/Z city class from data/india-city-tiers.json.",
-  "evidenceClasses": [
-   "official_observed",
-   "official_survey_estimate",
-   "derived_estimate",
-   "model_assumption"
-  ],
-  "storeRevenue": "Store revenue = min(area × sales per sq ft, area potentialRevenue × captureRate). Without potentialRevenue: min(capacity, SOM × revenueScenarioFactor); without either: capacity × revenueScenarioFactor."
- },
- "assumptions": {
-  "areaSqFt": {
-   "label": "Store area",
-   "unit": "sq ft",
-   "favorable": "neutral",
-   "evidenceClass": "derived_estimate",
-   "value": {
-    "low": 8652,
-    "mid": 8652,
-    "high": 8652
-   },
-   "sources": [
-    {
-     "publisher": "Nirmal Bang Equities (broker result update quoting V-Mart Retail disclosures)",
-     "title": "V-Mart Retail 4QFY25 Result Update",
-     "url": "https://www.nirmalbang.com/Upload/V-Mart-Retail---4QFY25-Result-Update---06-May-2025.pdf",
-     "publicationDate": "2025-05-06",
-     "referencePeriod": "FY2025",
-     "sourceType": "secondary_company_disclosure",
-     "supportingPassage": "The retail area of 4.3 msf increased 11.4% YoY. ... Total stores are 497 and 85 of them are UL stores."
-    }
-   ],
-   "method": "V-Mart retail area 4.3 million sq ft / 497 stores = 8,652 sq ft mean store size (Q4 FY25).",
-   "caveat": "Network mean of one value retailer, used as a default format size only. Franchise formats are often smaller; override with the planned store area."
+  "version": "1.0.0",
+  "retrievedAt": "2026-10-26",
+  "storeFormat": {
+    "id": "mass-market-family-apparel",
+    "label": "Mass-market family apparel store (value/mass segment)"
   },
-  "revenuePerSqFtYear": {
-   "label": "Benchmark sales density",
-   "unit": "INR/sq ft/year",
-   "favorable": "high",
-   "evidenceClass": "derived_estimate",
-   "value": {
-    "low": 7888,
-    "mid": 8520,
-    "high": 9595
-   },
-   "sources": [
-    {
-     "publisher": "Aditya Birla Fashion and Retail Limited",
-     "title": "ABFRL Q4 & FY26 Investor Presentation",
-     "url": "https://www.abfrl.com/wp-content/uploads/2026/05/SE_Investor-Presentation.pdf",
-     "publicationDate": "2026-05-25",
-     "referencePeriod": "FY2026",
-     "sourceType": "company_disclosure",
-     "supportingPassage": "FY26 Update: segment revenue Rs. 4560 Cr ... Area (000s sq. ft.) / stores, Mar 2026: 5,781 / 399."
+  "conventions": {
+    "levels": "low / mid / high are cost-or-value levels; 'favorable' says which end helps the store (used by the upside scenario; the downside scenario uses the other end).",
+    "tierClass": "HRA X/Y/Z city class from data/india-city-tiers.json.",
+    "evidenceClasses": [
+      "official_observed",
+      "official_survey_estimate",
+      "derived_estimate",
+      "model_assumption"
+    ],
+    "storeRevenue": "Store revenue = min(area × sales per sq ft, area potentialRevenue × captureRate). Without potentialRevenue: min(capacity, SOM × revenueScenarioFactor); without either: capacity × revenueScenarioFactor.",
+    "catchment": "Area demand for a PIN is the potential revenue of every PIN whose anchor is within 3 km of it (the store's catchment), not the PIN alone. 3 km matches the spacing used for next-best PINs."
+  },
+  "assumptions": {
+    "areaSqFt": {
+      "label": "Store area",
+      "unit": "sq ft",
+      "favorable": "neutral",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 400,
+        "mid": 400,
+        "high": 400
+      },
+      "sources": [],
+      "method": "Case 1 demonstration profile: minimum usable area 400 sq ft (Franchise Assessment Research and Methodology, 'Proposed screening methodology'). The model prices one store of the brand's own franchise format.",
+      "caveat": "Replace with the brand's signed-off format size. Earlier versions used V-Mart's 8,652 sq ft network mean, a company-owned big-box format, which over-stated costs and capacity for a franchise store."
     },
-    {
-     "publisher": "Nirmal Bang Equities (broker result update quoting V-Mart Retail disclosures)",
-     "title": "V-Mart Retail 4QFY25 Result Update",
-     "url": "https://www.nirmalbang.com/Upload/V-Mart-Retail---4QFY25-Result-Update---06-May-2025.pdf",
-     "publicationDate": "2025-05-06",
-     "referencePeriod": "FY2025",
-     "sourceType": "secondary_company_disclosure",
-     "supportingPassage": "For FY25, sales per square feet at Rs710 was higher ~11% on YoY basis. (Sales per sqft reported in Rs/month.)"
+    "revenuePerSqFtYear": {
+      "label": "Benchmark sales density",
+      "unit": "INR/sq ft/year",
+      "favorable": "high",
+      "evidenceClass": "derived_estimate",
+      "value": {
+        "low": 7888,
+        "mid": 8520,
+        "high": 9595
+      },
+      "sources": [
+        {
+          "publisher": "Aditya Birla Fashion and Retail Limited",
+          "title": "ABFRL Q4 & FY26 Investor Presentation",
+          "url": "https://www.abfrl.com/wp-content/uploads/2026/05/SE_Investor-Presentation.pdf",
+          "publicationDate": "2026-05-25",
+          "referencePeriod": "FY2026",
+          "sourceType": "company_disclosure",
+          "supportingPassage": "FY26 Update: segment revenue Rs. 4560 Cr ... Area (000s sq. ft.) / stores, Mar 2026: 5,781 / 399."
+        },
+        {
+          "publisher": "Nirmal Bang Equities (broker result update quoting V-Mart Retail disclosures)",
+          "title": "V-Mart Retail 4QFY25 Result Update",
+          "url": "https://www.nirmalbang.com/Upload/V-Mart-Retail---4QFY25-Result-Update---06-May-2025.pdf",
+          "publicationDate": "2025-05-06",
+          "referencePeriod": "FY2025",
+          "sourceType": "secondary_company_disclosure",
+          "supportingPassage": "For FY25, sales per square feet at Rs710 was higher ~11% on YoY basis. (Sales per sqft reported in Rs/month.)"
+        },
+        {
+          "publisher": "Vishal Mega Mart Ltd (NSE disclosure)",
+          "title": "Press release: financial results for the quarter and half year ended September 30, 2025",
+          "url": "https://nsearchives.nseindia.com/corporate/VMMP2024_13112025162954_Disclosure_Press_Release_VMM_November_2025.pdf",
+          "publicationDate": "2025-11-13",
+          "referencePeriod": "H1 FY2026 (April–September 2025)",
+          "sourceType": "company_disclosure",
+          "supportingPassage": "Revenue From Operations 29,815 24,362 22.4% 61,218 ... total retail area of ~12.76 million Sq. Ft"
+        }
+      ],
+      "method": "low: Pantaloons FY26 segment revenue Rs 45,600 mn / 5.781 mn sq ft = Rs 7,888; mid: V-Mart FY25 Rs 710/sq ft/month × 12 = Rs 8,520; high: Vishal Mega Mart H1 FY26 revenue Rs 61,218 mn × 2 / 12.76 mn sq ft = Rs 9,595 (includes general merchandise and FMCG).",
+      "caveat": "Listed-retailer network averages, used only as a store-capacity fallback and a plausibility check; not a forecast of sales at a specific site."
     },
-    {
-     "publisher": "Vishal Mega Mart Ltd (NSE disclosure)",
-     "title": "Press release: financial results for the quarter and half year ended September 30, 2025",
-     "url": "https://nsearchives.nseindia.com/corporate/VMMP2024_13112025162954_Disclosure_Press_Release_VMM_November_2025.pdf",
-     "publicationDate": "2025-11-13",
-     "referencePeriod": "H1 FY2026 (April–September 2025)",
-     "sourceType": "company_disclosure",
-     "supportingPassage": "Revenue From Operations 29,815 24,362 22.4% 61,218 ... total retail area of ~12.76 million Sq. Ft"
-    }
-   ],
-   "method": "low: Pantaloons FY26 segment revenue Rs 45,600 mn / 5.781 mn sq ft = Rs 7,888; mid: V-Mart FY25 Rs 710/sq ft/month × 12 = Rs 8,520; high: Vishal Mega Mart H1 FY26 revenue Rs 61,218 mn × 2 / 12.76 mn sq ft = Rs 9,595 (includes general merchandise and FMCG).",
-   "caveat": "Listed-retailer network averages, used only as a store-capacity fallback and a plausibility check; not a forecast of sales at a specific site."
-  },
-  "captureRate": {
-   "label": "Store capture of area revenue potential",
-   "unit": "fraction of area potentialRevenue",
-   "favorable": "high",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.05,
-    "mid": 0.1,
-    "high": 0.15
-   },
-   "rationale": "Share of the area's organised apparel revenue potential that one new store wins. low 5% ≈ one of ~20 comparable organised outlets serving the area; mid 10% ≈ one of ~10; high 15% ≈ an anchor store that also draws shoppers from neighbouring PINs (spend outside the area is not counted in potentialRevenue).",
-   "caveat": "No sourced store-level capture benchmark was found; model assumption. Replace with the brand's observed share in comparable catchments."
-  },
-  "grossMargin": {
-   "label": "Gross margin",
-   "unit": "fraction of revenue",
-   "favorable": "high",
-   "evidenceClass": "derived_estimate",
-   "value": {
-    "low": 0.283,
-    "mid": 0.314,
-    "high": 0.345
-   },
-   "sources": [
-    {
-     "publisher": "Vishal Mega Mart Ltd (NSE disclosure)",
-     "title": "Press release: financial results for the quarter and half year ended September 30, 2025",
-     "url": "https://nsearchives.nseindia.com/corporate/VMMP2024_13112025162954_Disclosure_Press_Release_VMM_November_2025.pdf",
-     "publicationDate": "2025-11-13",
-     "referencePeriod": "H1 FY2026 (April–September 2025)",
-     "sourceType": "company_disclosure",
-     "supportingPassage": "Gross Profit Margin (%) 28.3% 28.2% 28.3% 28.2%"
+    "captureRate": {
+      "label": "Store capture of area revenue potential",
+      "unit": "fraction of area potentialRevenue",
+      "favorable": "high",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.05,
+        "mid": 0.1,
+        "high": 0.15
+      },
+      "rationale": "Share of the area's organised apparel revenue potential that one new store wins. low 5% ≈ one of ~20 comparable organised outlets serving the area; mid 10% ≈ one of ~10; high 15% ≈ an anchor store that also draws shoppers from neighbouring PINs (spend outside the area is not counted in potentialRevenue).",
+      "caveat": "No sourced store-level capture benchmark was found; model assumption. Replace with the brand's observed share in comparable catchments."
     },
-    {
-     "publisher": "Nirmal Bang Equities (broker result update quoting V-Mart Retail disclosures)",
-     "title": "V-Mart Retail 4QFY25 Result Update",
-     "url": "https://www.nirmalbang.com/Upload/V-Mart-Retail---4QFY25-Result-Update---06-May-2025.pdf",
-     "publicationDate": "2025-05-06",
-     "referencePeriod": "FY2025",
-     "sourceType": "secondary_company_disclosure",
-     "supportingPassage": "For FY25, gross margin at 34.5% was flat YoY."
-    }
-   ],
-   "method": "low: Vishal Mega Mart H1 FY26 28.3%; high: V-Mart FY25 34.5%; mid: midpoint.",
-   "caveat": "Company-level retailer margins. A franchisee's trade margin depends on the brand agreement and is usually lower; override with the brand's margin."
-  },
-  "rentPerSqFtMonth": {
-   "label": "Rent",
-   "unit": "INR/sq ft/month",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "byTierClass": {
-    "X": {
-     "low": 80,
-     "mid": 120,
-     "high": 180
+    "grossMargin": {
+      "label": "Gross margin",
+      "unit": "fraction of revenue",
+      "favorable": "high",
+      "evidenceClass": "derived_estimate",
+      "value": {
+        "low": 0.283,
+        "mid": 0.314,
+        "high": 0.345
+      },
+      "sources": [
+        {
+          "publisher": "Vishal Mega Mart Ltd (NSE disclosure)",
+          "title": "Press release: financial results for the quarter and half year ended September 30, 2025",
+          "url": "https://nsearchives.nseindia.com/corporate/VMMP2024_13112025162954_Disclosure_Press_Release_VMM_November_2025.pdf",
+          "publicationDate": "2025-11-13",
+          "referencePeriod": "H1 FY2026 (April–September 2025)",
+          "sourceType": "company_disclosure",
+          "supportingPassage": "Gross Profit Margin (%) 28.3% 28.2% 28.3% 28.2%"
+        },
+        {
+          "publisher": "Nirmal Bang Equities (broker result update quoting V-Mart Retail disclosures)",
+          "title": "V-Mart Retail 4QFY25 Result Update",
+          "url": "https://www.nirmalbang.com/Upload/V-Mart-Retail---4QFY25-Result-Update---06-May-2025.pdf",
+          "publicationDate": "2025-05-06",
+          "referencePeriod": "FY2025",
+          "sourceType": "secondary_company_disclosure",
+          "supportingPassage": "For FY25, gross margin at 34.5% was flat YoY."
+        }
+      ],
+      "method": "low: Vishal Mega Mart H1 FY26 28.3%; high: V-Mart FY25 34.5%; mid: midpoint.",
+      "caveat": "Company-level retailer margins. A franchisee's trade margin depends on the brand agreement and is usually lower; override with the brand's margin."
     },
-    "Y": {
-     "low": 45,
-     "mid": 70,
-     "high": 100
+    "rentPerSqFtMonth": {
+      "label": "Rent",
+      "unit": "INR/sq ft/month",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "byTierClass": {
+        "X": {
+          "low": 80,
+          "mid": 120,
+          "high": 180
+        },
+        "Y": {
+          "low": 45,
+          "mid": 70,
+          "high": 100
+        },
+        "Z": {
+          "low": 25,
+          "mid": 40,
+          "high": 60
+        }
+      },
+      "sources": [
+        {
+          "publisher": "Cushman & Wakefield (reported by Storyboard18)",
+          "title": "Delhi's Khan Market rents rise 8% as demand lifts high-street retail",
+          "url": "https://storyboard18.com/brand-marketing/delhis-khan-market-rents-rise-8-as-demand-lifts-high-street-retail-91559.htm",
+          "publicationDate": "2026-03-09",
+          "referencePeriod": "Q4 2025",
+          "sourceType": "secondary_market_report",
+          "supportingPassage": "Q4 2025 Delhi high-street rents (INR/sq ft/month): Khan Market 1,700-1,800; Connaught Place Inner Circle 1,150-1,250; Lajpat Nagar 290-310; Rajouri Garden 255-265.",
+          "usage": "Context only: prime high-street rents are far above these bands and are not used in the calculation."
+        }
+      ],
+      "rationale": "Blended (ground + upper floor) rent bands for a large-format value apparel store outside prime high streets, by HRA city class.",
+      "caveat": "No sourced city-tier rent series for mass-format stores was found. These are model assumptions; replace with a site lease quote."
     },
-    "Z": {
-     "low": 25,
-     "mid": 40,
-     "high": 60
+    "fitOutPerSqFt": {
+      "label": "Fit-out and interiors",
+      "unit": "INR/sq ft",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 1200,
+        "mid": 1700,
+        "high": 2400
+      },
+      "sources": [
+        {
+          "publisher": "Cushman & Wakefield India",
+          "title": "Office Fit-Out Cost Guide — India",
+          "url": "https://www.cushmanwakefield.com/en/india/insights/office-fit-out-cost-guide",
+          "publicationDate": null,
+          "referencePeriod": "Current edition at retrieval",
+          "sourceType": "market_report",
+          "supportingPassage": "most markets clustering between INR 5,847 and INR 6,567 ... for a collaborative hybrid workplace",
+          "usage": "Context only: office fit-out, higher specification than value retail; not used in the calculation."
+        }
+      ],
+      "rationale": "Value-format apparel fit-out (flooring, lighting, fixtures, HVAC, IT/POS, signage).",
+      "caveat": "No sourced retail fit-out benchmark was found; model assumption. Replace with contractor quotes."
+    },
+    "staffMonthlyWage": {
+      "label": "Staff wage",
+      "unit": "INR/employee/month",
+      "favorable": "low",
+      "evidenceClass": "official_survey_estimate",
+      "value": {
+        "low": 13072,
+        "mid": 15829,
+        "high": 17302
+      },
+      "sources": [
+        {
+          "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
+          "title": "Annual Report, Periodic Labour Force Survey 2023-24 — Appendix A, Table (50): average wage/salary earnings during the preceding calendar month by NCO-2015 occupation division, all India",
+          "url": "https://mospi.gov.in/sites/default/files/publication_reports/AnnualReport_PLFS2023-24L2.pdf",
+          "referencePeriod": "July 2023–June 2024",
+          "page": "A-340 to A-341 (PDF pages 403–404; page footer reads 'Annual Report, PLFS, 2022-23' as printed)",
+          "sourceType": "official_survey",
+          "supportingPassage": "Average wage/salary earnings (Rs.), NCO division 5 (service and sales workers): rural person 13,072; urban person 15,829; urban male 17,302."
+        }
+      ],
+      "method": "PLFS 2023-24 Table 50, NCO-2015 division 5 (service and sales workers): low = rural person, mid = urban person, high = urban male.",
+      "caveat": "All-India average earnings in 2023-24 rupees; not state-specific and excludes employer statutory contributions (see employerOnCostRate)."
+    },
+    "employerOnCostRate": {
+      "label": "Employer on-costs (PF, ESI, bonus)",
+      "unit": "fraction of wages",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.1,
+        "mid": 0.13,
+        "high": 0.18
+      },
+      "rationale": "Employer provident fund and insurance contributions plus statutory bonus; applicability depends on establishment size and wage ceilings.",
+      "caveat": "Model assumption; confirm with payroll advisor."
+    },
+    "sqFtPerEmployee": {
+      "label": "Selling area per employee",
+      "unit": "sq ft/employee",
+      "favorable": "high",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 500,
+        "mid": 700,
+        "high": 900
+      },
+      "rationale": "Staffing density for an assisted-self-service value apparel floor including cashiers and stockroom.",
+      "caveat": "Model assumption; replace with the brand's staffing plan."
+    },
+    "utilitiesPerSqFtMonth": {
+      "label": "Utilities, maintenance and housekeeping",
+      "unit": "INR/sq ft/month",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 12,
+        "mid": 18,
+        "high": 25
+      },
+      "rationale": "Electricity, common-area maintenance, security and housekeeping.",
+      "caveat": "Model assumption; electricity tariffs vary by state DISCOM."
+    },
+    "marketingRate": {
+      "label": "Ongoing marketing",
+      "unit": "fraction of revenue",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.015,
+        "mid": 0.025,
+        "high": 0.035
+      },
+      "rationale": "Local and brand-fund marketing contribution.",
+      "caveat": "Model assumption; brand agreements may fix this."
+    },
+    "royaltyRate": {
+      "label": "Royalty / brand fee",
+      "unit": "fraction of revenue",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.03,
+        "mid": 0.05,
+        "high": 0.07
+      },
+      "rationale": "Ongoing franchise royalty or margin share.",
+      "caveat": "Brand-specific; replace with franchise disclosure terms."
+    },
+    "franchiseFee": {
+      "label": "Upfront franchise fee",
+      "unit": "INR",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 300000,
+        "mid": 500000,
+        "high": 1000000
+      },
+      "rationale": "One-time brand onboarding fee.",
+      "caveat": "Brand-specific model assumption."
+    },
+    "depositMonthsOfRent": {
+      "label": "Security deposit",
+      "unit": "months of rent",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 3,
+        "mid": 6,
+        "high": 10
+      },
+      "rationale": "Refundable lease deposit; Indian commercial leases commonly ask several months of rent.",
+      "caveat": "Model assumption; refundable deposit is treated as invested capital and not recovered within 5 years."
+    },
+    "inventoryTurnsPerYear": {
+      "label": "Inventory turns",
+      "unit": "turns/year at cost",
+      "favorable": "high",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 2.5,
+        "mid": 3.5,
+        "high": 4.5
+      },
+      "rationale": "Opening stock = benchmark-capacity annual cost of goods / turns.",
+      "caveat": "Model assumption; sale-or-return arrangements with the brand can reduce this materially."
+    },
+    "preOpeningCosts": {
+      "label": "Pre-opening marketing, training and licences",
+      "unit": "INR",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 200000,
+        "mid": 500000,
+        "high": 1000000
+      },
+      "rationale": "Launch marketing, staff training, trade licence and registrations.",
+      "caveat": "Model assumption."
+    },
+    "cashReserveMonths": {
+      "label": "Opening cash reserve",
+      "unit": "months of fixed costs",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 2,
+        "mid": 3,
+        "high": 4
+      },
+      "rationale": "Working-capital buffer during sales ramp-up.",
+      "caveat": "Model assumption."
+    },
+    "revenueScenarioFactor": {
+      "label": "Revenue scenario factor",
+      "unit": "multiplier",
+      "favorable": "high",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.75,
+        "mid": 1,
+        "high": 1.25
+      },
+      "rationale": "Same 0.75 / 1 / 1.25 scenario factors used by the existing store forecast (server/market-forecast.cjs).",
+      "caveat": "Model assumption."
+    },
+    "initialRampFraction": {
+      "label": "Month-1 sales vs steady state",
+      "unit": "fraction",
+      "favorable": "high",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.6,
+        "mid": 0.7,
+        "high": 0.8
+      },
+      "rationale": "New stores ramp to steady-state sales.",
+      "caveat": "Model assumption."
+    },
+    "rampMonths": {
+      "label": "Months to steady-state sales",
+      "unit": "months",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 4,
+        "mid": 6,
+        "high": 9
+      },
+      "rationale": "Linear ramp from the month-1 fraction.",
+      "caveat": "Model assumption."
+    },
+    "costInflation": {
+      "label": "Annual escalation of rent, wages and utilities",
+      "unit": "annual rate",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.04,
+        "mid": 0.05,
+        "high": 0.06
+      },
+      "sources": [
+        {
+          "publisher": "Reserve Bank of India",
+          "title": "Monetary Policy — overview (inflation target)",
+          "url": "https://www.rbi.org.in/Scripts/FS_Overview.aspx?fn=2752",
+          "referencePeriod": "Target retained for April 1, 2026 to March 31, 2031",
+          "sourceType": "official_policy",
+          "supportingPassage": "4 per cent Consumer Price Index (CPI) inflation as the target ... with the upper tolerance limit of 6 per cent and the lower tolerance limit of 2 per cent ... retained ... April 1, 2026 to March 31, 2031.",
+          "usage": "low end anchored on the CPI target; mid/high allow for typical lease escalations."
+        }
+      ],
+      "caveat": "Lease escalation clauses may differ."
+    },
+    "discountRate": {
+      "label": "Discount rate for NPV",
+      "unit": "annual rate",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 0.12,
+        "mid": 0.12,
+        "high": 0.12
+      },
+      "rationale": "Owner's required return for a small retail investment.",
+      "caveat": "Model assumption; set your own cost of capital."
+    },
+    "minimumStaff": {
+      "label": "Minimum store staff",
+      "unit": "people",
+      "favorable": "low",
+      "evidenceClass": "model_assumption",
+      "value": {
+        "low": 2,
+        "mid": 2,
+        "high": 3
+      },
+      "rationale": "A store open about 12 hours a day, 7 days a week needs at least two people for shifts and breaks, whatever its size.",
+      "caveat": "Staff = the larger of this minimum and area ÷ sq ft per employee."
     }
-   },
-   "sources": [
-    {
-     "publisher": "Cushman & Wakefield (reported by Storyboard18)",
-     "title": "Delhi's Khan Market rents rise 8% as demand lifts high-street retail",
-     "url": "https://storyboard18.com/brand-marketing/delhis-khan-market-rents-rise-8-as-demand-lifts-high-street-retail-91559.htm",
-     "publicationDate": "2026-03-09",
-     "referencePeriod": "Q4 2025",
-     "sourceType": "secondary_market_report",
-     "supportingPassage": "Q4 2025 Delhi high-street rents (INR/sq ft/month): Khan Market 1,700-1,800; Connaught Place Inner Circle 1,150-1,250; Lajpat Nagar 290-310; Rajouri Garden 255-265.",
-     "usage": "Context only: prime high-street rents are far above these bands and are not used in the calculation."
-    }
-   ],
-   "rationale": "Blended (ground + upper floor) rent bands for a large-format value apparel store outside prime high streets, by HRA city class.",
-   "caveat": "No sourced city-tier rent series for mass-format stores was found. These are model assumptions; replace with a site lease quote."
   },
-  "fitOutPerSqFt": {
-   "label": "Fit-out and interiors",
-   "unit": "INR/sq ft",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 1200,
-    "mid": 1700,
-    "high": 2400
-   },
-   "sources": [
-    {
-     "publisher": "Cushman & Wakefield India",
-     "title": "Office Fit-Out Cost Guide — India",
-     "url": "https://www.cushmanwakefield.com/en/india/insights/office-fit-out-cost-guide",
-     "publicationDate": null,
-     "referencePeriod": "Current edition at retrieval",
-     "sourceType": "market_report",
-     "supportingPassage": "most markets clustering between INR 5,847 and INR 6,567 ... for a collaborative hybrid workplace",
-     "usage": "Context only: office fit-out, higher specification than value retail; not used in the calculation."
-    }
-   ],
-   "rationale": "Value-format apparel fit-out (flooring, lighting, fixtures, HVAC, IT/POS, signage).",
-   "caveat": "No sourced retail fit-out benchmark was found; model assumption. Replace with contractor quotes."
-  },
-  "staffMonthlyWage": {
-   "label": "Staff wage",
-   "unit": "INR/employee/month",
-   "favorable": "low",
-   "evidenceClass": "official_survey_estimate",
-   "value": {
-    "low": 13072,
-    "mid": 15829,
-    "high": 17302
-   },
-   "sources": [
-    {
-     "publisher": "Ministry of Statistics and Programme Implementation (MoSPI)",
-     "title": "Annual Report, Periodic Labour Force Survey 2023-24 — Appendix A, Table (50): average wage/salary earnings during the preceding calendar month by NCO-2015 occupation division, all India",
-     "url": "https://mospi.gov.in/sites/default/files/publication_reports/AnnualReport_PLFS2023-24L2.pdf",
-     "referencePeriod": "July 2023–June 2024",
-     "page": "A-340 to A-341 (PDF pages 403–404; page footer reads 'Annual Report, PLFS, 2022-23' as printed)",
-     "sourceType": "official_survey",
-     "supportingPassage": "Average wage/salary earnings (Rs.), NCO division 5 (service and sales workers): rural person 13,072; urban person 15,829; urban male 17,302."
-    }
-   ],
-   "method": "PLFS 2023-24 Table 50, NCO-2015 division 5 (service and sales workers): low = rural person, mid = urban person, high = urban male.",
-   "caveat": "All-India average earnings in 2023-24 rupees; not state-specific and excludes employer statutory contributions (see employerOnCostRate)."
-  },
-  "employerOnCostRate": {
-   "label": "Employer on-costs (PF, ESI, bonus)",
-   "unit": "fraction of wages",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.1,
-    "mid": 0.13,
-    "high": 0.18
-   },
-   "rationale": "Employer provident fund and insurance contributions plus statutory bonus; applicability depends on establishment size and wage ceilings.",
-   "caveat": "Model assumption; confirm with payroll advisor."
-  },
-  "sqFtPerEmployee": {
-   "label": "Selling area per employee",
-   "unit": "sq ft/employee",
-   "favorable": "high",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 500,
-    "mid": 700,
-    "high": 900
-   },
-   "rationale": "Staffing density for an assisted-self-service value apparel floor including cashiers and stockroom.",
-   "caveat": "Model assumption; replace with the brand's staffing plan."
-  },
-  "utilitiesPerSqFtMonth": {
-   "label": "Utilities, maintenance and housekeeping",
-   "unit": "INR/sq ft/month",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 12,
-    "mid": 18,
-    "high": 25
-   },
-   "rationale": "Electricity, common-area maintenance, security and housekeeping.",
-   "caveat": "Model assumption; electricity tariffs vary by state DISCOM."
-  },
-  "marketingRate": {
-   "label": "Ongoing marketing",
-   "unit": "fraction of revenue",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.015,
-    "mid": 0.025,
-    "high": 0.035
-   },
-   "rationale": "Local and brand-fund marketing contribution.",
-   "caveat": "Model assumption; brand agreements may fix this."
-  },
-  "royaltyRate": {
-   "label": "Royalty / brand fee",
-   "unit": "fraction of revenue",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.03,
-    "mid": 0.05,
-    "high": 0.07
-   },
-   "rationale": "Ongoing franchise royalty or margin share.",
-   "caveat": "Brand-specific; replace with franchise disclosure terms."
-  },
-  "franchiseFee": {
-   "label": "Upfront franchise fee",
-   "unit": "INR",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 300000,
-    "mid": 500000,
-    "high": 1000000
-   },
-   "rationale": "One-time brand onboarding fee.",
-   "caveat": "Brand-specific model assumption."
-  },
-  "depositMonthsOfRent": {
-   "label": "Security deposit",
-   "unit": "months of rent",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 3,
-    "mid": 6,
-    "high": 10
-   },
-   "rationale": "Refundable lease deposit; Indian commercial leases commonly ask several months of rent.",
-   "caveat": "Model assumption; refundable deposit is treated as invested capital and not recovered within 5 years."
-  },
-  "inventoryTurnsPerYear": {
-   "label": "Inventory turns",
-   "unit": "turns/year at cost",
-   "favorable": "high",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 2.5,
-    "mid": 3.5,
-    "high": 4.5
-   },
-   "rationale": "Opening stock = benchmark-capacity annual cost of goods / turns.",
-   "caveat": "Model assumption; sale-or-return arrangements with the brand can reduce this materially."
-  },
-  "preOpeningCosts": {
-   "label": "Pre-opening marketing, training and licences",
-   "unit": "INR",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 200000,
-    "mid": 500000,
-    "high": 1000000
-   },
-   "rationale": "Launch marketing, staff training, trade licence and registrations.",
-   "caveat": "Model assumption."
-  },
-  "cashReserveMonths": {
-   "label": "Opening cash reserve",
-   "unit": "months of fixed costs",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 2,
-    "mid": 3,
-    "high": 4
-   },
-   "rationale": "Working-capital buffer during sales ramp-up.",
-   "caveat": "Model assumption."
-  },
-  "revenueScenarioFactor": {
-   "label": "Revenue scenario factor",
-   "unit": "multiplier",
-   "favorable": "high",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.75,
-    "mid": 1,
-    "high": 1.25
-   },
-   "rationale": "Same 0.75 / 1 / 1.25 scenario factors used by the existing store forecast (server/market-forecast.cjs).",
-   "caveat": "Model assumption."
-  },
-  "initialRampFraction": {
-   "label": "Month-1 sales vs steady state",
-   "unit": "fraction",
-   "favorable": "high",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.6,
-    "mid": 0.7,
-    "high": 0.8
-   },
-   "rationale": "New stores ramp to steady-state sales.",
-   "caveat": "Model assumption."
-  },
-  "rampMonths": {
-   "label": "Months to steady-state sales",
-   "unit": "months",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 4,
-    "mid": 6,
-    "high": 9
-   },
-   "rationale": "Linear ramp from the month-1 fraction.",
-   "caveat": "Model assumption."
-  },
-  "costInflation": {
-   "label": "Annual escalation of rent, wages and utilities",
-   "unit": "annual rate",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.04,
-    "mid": 0.05,
-    "high": 0.06
-   },
-   "sources": [
-    {
-     "publisher": "Reserve Bank of India",
-     "title": "Monetary Policy — overview (inflation target)",
-     "url": "https://www.rbi.org.in/Scripts/FS_Overview.aspx?fn=2752",
-     "referencePeriod": "Target retained for April 1, 2026 to March 31, 2031",
-     "sourceType": "official_policy",
-     "supportingPassage": "4 per cent Consumer Price Index (CPI) inflation as the target ... with the upper tolerance limit of 6 per cent and the lower tolerance limit of 2 per cent ... retained ... April 1, 2026 to March 31, 2031.",
-     "usage": "low end anchored on the CPI target; mid/high allow for typical lease escalations."
-    }
-   ],
-   "caveat": "Lease escalation clauses may differ."
-  },
-  "discountRate": {
-   "label": "Discount rate for NPV",
-   "unit": "annual rate",
-   "favorable": "low",
-   "evidenceClass": "model_assumption",
-   "value": {
-    "low": 0.12,
-    "mid": 0.12,
-    "high": 0.12
-   },
-   "rationale": "Owner's required return for a small retail investment.",
-   "caveat": "Model assumption; set your own cost of capital."
+  "revenueGrowth": {
+    "label": "Nominal same-store sales growth",
+    "unit": "annual rate",
+    "method": "low = RBI CPI target (4%, prices only); high = state per-capita NSDP nominal CAGR (full income pass-through); mid = average of the two. Falls back to 4% / 5% / 6% (model_assumption) when the state series is unavailable.",
+    "sources": [
+      {
+        "publisher": "Reserve Bank of India",
+        "title": "Monetary Policy — overview (inflation target)",
+        "url": "https://www.rbi.org.in/Scripts/FS_Overview.aspx?fn=2752",
+        "referencePeriod": "Target retained for April 1, 2026 to March 31, 2031",
+        "sourceType": "official_policy",
+        "supportingPassage": "4 per cent Consumer Price Index (CPI) inflation as the target ... with the upper tolerance limit of 6 per cent and the lower tolerance limit of 2 per cent ... retained ... April 1, 2026 to March 31, 2031."
+      }
+    ]
   }
- },
- "revenueGrowth": {
-  "label": "Nominal same-store sales growth",
-  "unit": "annual rate",
-  "method": "low = RBI CPI target (4%, prices only); high = state per-capita NSDP nominal CAGR (full income pass-through); mid = average of the two. Falls back to 4% / 5% / 6% (model_assumption) when the state series is unavailable.",
-  "sources": [
-   {
-    "publisher": "Reserve Bank of India",
-    "title": "Monetary Policy — overview (inflation target)",
-    "url": "https://www.rbi.org.in/Scripts/FS_Overview.aspx?fn=2752",
-    "referencePeriod": "Target retained for April 1, 2026 to March 31, 2031",
-    "sourceType": "official_policy",
-    "supportingPassage": "4 per cent Consumer Price Index (CPI) inflation as the target ... with the upper tolerance limit of 6 per cent and the lower tolerance limit of 2 per cent ... retained ... April 1, 2026 to March 31, 2031."
-   }
-  ]
- }
 }

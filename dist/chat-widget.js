@@ -217,8 +217,8 @@
     if (!HOW.test(text) || /\b[A-Z]{2,}-\d{2,}\b/i.test(text)) return null;
     const method = METHODS.find(item => item.topic.test(text));
     if (!method) return null;
-    const why = /\b(pay ?back|break[- ]?even|roi)\b/i.test(text) ? clean(doc?.querySelector?.('.analysis-why')?.textContent, 600).replace(/^Why this payback\?\s*/, '') : '';
-    return method.text.join('\n') + (why ? `\n\nFor ${ctx.geography?.name || 'this area'}: ${why}` : '');
+    const steps = /\b(pay ?back|break[- ]?even|roi)\b/i.test(text) ? [...(doc?.querySelectorAll?.('.analysis-why li') || [])].map(li => `• ${clean(li.textContent, 400)}`) : [];
+    return method.text.join('\n') + (steps.length ? `\n\nFor ${ctx.geography?.name || 'this area'}:\n${steps.join('\n')}` : '');
   }
 
   // Greetings and method questions first (instant), then the rule bot, page facts, and Gemini for a selected map area.

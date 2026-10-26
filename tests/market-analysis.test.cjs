@@ -63,20 +63,20 @@ test('ROI, payback and break-even match a hand-checked flat example', () => {
   const result = analyzeLocation({ geography: pin, overrides: { annualRevenue: 50000000, grossMargin: 0.35, royaltyRate: 0.05, marketingRate: 0.02 } });
   const mid = result.scenarios.mid;
   assert.equal(mid.contributionMargin, 0.28);
-  assert.equal(mid.breakEvenRevenueAnnual, Math.round(mid.monthlyFixedCosts * 12 / 0.28));
+  assert.ok(Math.abs(mid.breakEvenRevenueAnnual - mid.monthlyFixedCosts * 12 / 0.28) <= 12 / 0.28, 'break-even = fixed × 12 / margin (monthly fixed is rounded)');
   assert.equal(mid.annualRevenue, 50000000);
 });
 
 test('scenarios pair downside revenue with high costs and carry a 5-year projection', () => {
-  // Area potential ₹90 Cr × capture 5% / 10% / 15% = ₹4.5 / 9 / 13.5 Cr; capacity 8,652 sq ft × ₹7,888 / 8,520 / 9,595.
-  const result = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 900000000, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
+  // Area potential ₹4 Cr × capture 5% / 10% / 15% = ₹20 / 40 / 60 lakh; capacity 400 sq ft × ₹7,888 / 8,520 / 9,595 = ₹31.6 / 34.1 / 38.4 lakh.
+  const result = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 40000000, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } });
   const { low, mid, high } = result.scenarios;
   const cap = costs.assumptions.captureRate.value, density = costs.assumptions.revenuePerSqFtYear.value, area = costs.assumptions.areaSqFt.value.mid;
   assert.equal(result.revenueBasis.basis, 'potentialRevenue');
-  assert.equal(low.annualRevenue, Math.round(900000000 * cap.low));
+  assert.equal(low.annualRevenue, Math.round(40000000 * cap.low));
   assert.equal(low.revenueConstraint, 'demand_limited');
   assert.equal(mid.annualRevenue, area * density.mid);
-  assert.equal(mid.demandRevenue, Math.round(900000000 * cap.mid));
+  assert.equal(mid.demandRevenue, Math.round(40000000 * cap.mid));
   assert.equal(mid.revenueConstraint, 'store_capacity_limited');
   assert.equal(high.annualRevenue, area * density.high);
   assert.deepEqual(result.revenueBasis.constraint, { low: 'demand_limited', mid: 'store_capacity_limited', high: 'store_capacity_limited' });
@@ -87,8 +87,8 @@ test('scenarios pair downside revenue with high costs and carry a 5-year project
   for (const s of Object.values(areaWide.scenarios)) { assert.ok(s.annualRevenue <= s.capacityRevenue); assert.equal(s.revenueConstraint, 'store_capacity_limited'); }
   assert.ok(areaWide.warnings.some(w => /capped at store capacity/.test(w)));
   // Small demand binds below capacity; the capture rate is editable.
-  const small = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 2e8, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } , overrides: { captureRate: 0.2 } });
-  assert.equal(small.scenarios.mid.annualRevenue, 4e7);
+  const small = analyzeLocation({ geography: { ...pin, metrics: { potentialRevenue: { value: 1e7, unit: 'INR/year', evidenceClass: 'derived_estimate' } } } , overrides: { captureRate: 0.2 } });
+  assert.equal(small.scenarios.mid.annualRevenue, 2e6);
   assert.equal(small.scenarios.mid.revenueConstraint, 'demand_limited');
   assert.equal(small.assumptions.captureRate.evidenceClass, 'user_assumption');
   assert.throws(() => analyzeLocation({ geography: pin, overrides: { captureRate: 1.2 } }), /fraction/);
@@ -224,4 +224,15 @@ test('PIN and district rows from Neon resolve tiers from district names, India P
   // A metro PIN gets metro rent in the full analysis.
   const metro = analyzeLocation({ geography: neonPin('560058', 'Karnataka', 'district:IN-KA-bangalore', { metrics: {} }) });
   assert.deepEqual(metro.assumptions.rentPerSqFtMonth.value, costs.assumptions.rentPerSqFtMonth.byTierClass.X);
+});
+
+test('a PIN catchment (PINs within 3 km) is the demand base, and staff never drop below the minimum', () => {
+  const geography = { ...pin, metrics: { potentialRevenue: { value: 1e7, unit: 'INR/year', evidenceClass: 'derived_estimate' } },
+    catchment: { radiusKm: 3, pins: 4, population: 210000, potentialRevenue: 2.6e8 } };
+  const result = analyzeLocation({ geography });
+  assert.equal(result.revenueBasis.areaPotential, 2.6e8);
+  assert.match(result.revenueBasis.label, /4 PINs within 3 km/);
+  assert.equal(result.scenarios.mid.revenueConstraint, 'store_capacity_limited');
+  assert.equal(result.assumptions.areaSqFt.value.mid, 400);
+  assert.ok(result.costRange.headcount.low >= 2 && result.costRange.headcount.mid >= 2);
 });

@@ -99,11 +99,12 @@
 
   function pageHTML(model) {
     const cards = model.territories.map(t => territoryCard(t, model.applications)).join('');
-    const stores = model.stores.map(s => `<tr><td>${escape(s[0])}</td><td>${escape(s[1])}</td><td>${escape(s[2])}</td><td>${escape(s[3])}</td></tr>`).join('');
+    // Stores arrive as {id, city, pin, year}; older callers passed [id, city, pin, year].
+    const stores = model.stores.map(s => Array.isArray(s) ? { id: s[0], city: s[1], pin: s[2], year: s[3] } : s).map(s => `<tr><td>${escape(s.id)}</td><td>${escape(s.city)}</td><td>${escape(s.pin)}</td><td>${escape(s.year)}</td></tr>`).join('');
     const summary = territorySummary(model);
     return `<div class="page-heading"><div><div class="eyebrow">GEO-SELECTION</div><h1>Make room for the right partner.</h1><p>One store per pin code. Recommendations always respect territory capacity.</p></div></div>
       <div class="te-grid">${cards ? cards + summary : '<div class="empty">Upload territories to map your expansion.</div>'}</div>
-      <section class="panel section-gap"><div class="panel-top"><div><h2>Existing store footprint</h2><div class="panel-subtitle">Fixed brand list from the case · these 10 pin codes are unavailable.</div></div></div><div class="table-wrap"><table><thead><tr><th>Store</th><th>City</th><th>Pin code</th><th>Opened</th></tr></thead><tbody>${stores}</tbody></table></div></section>`;
+      <section class="panel section-gap"><div class="panel-top"><div><h2>Existing store footprint</h2><div class="panel-subtitle">Fixed brand list from the case · applications in these ${model.stores.length} pin codes are not accepted.</div></div></div><div class="table-wrap"><table><thead><tr><th>Store</th><th>City</th><th>Pin code</th><th>Opened</th></tr></thead><tbody>${stores}</tbody></table></div></section>`;
   }
 
   function setCollapse(el, open) {

@@ -22,7 +22,7 @@
     return abs >= 1e7 ? `${sign}₹${(abs / 1e7).toFixed(2)} Cr` : abs >= 1e5 ? `${sign}₹${(abs / 1e5).toFixed(1)} L` : `${sign}₹${Math.round(abs).toLocaleString('en-IN')}`;
   }
   const pct = (value, digits = 1) => value === null || value === undefined || !Number.isFinite(value) ? '—' : `${value.toFixed(digits)}%`;
-  const months = value => value === null || value === undefined ? '> 60 mo' : `${value} mo`;
+  const months = value => value === null || value === undefined ? 'over 5 years' : value < 24 ? `${value} months` : `${(value / 12).toFixed(1).replace(/\.0$/, '')} years`;
   const numeric = value => typeof value === 'number' && Number.isFinite(value);
   const chip = cls => `<span class="analysis-chip analysis-chip--${escape(cls || 'unknown')}">${escape(CLASS_LABEL[cls] || cls || 'Unclassified')}</span>`;
 
@@ -61,17 +61,25 @@
       <p class="hint">Downside pairs low revenue with high costs; upside pairs high revenue with low costs. Revenue basis: ${escape(result.revenueBasis.label)} ${chip(result.revenueBasis.evidenceClass)}${result.revenueBasis.areaPotential ? ` Area potential ${money(result.revenueBasis.areaPotential)} a year; store capacity ${money(s.mid.capacityRevenue)} (base).` : ''}${result.revenueBasis.basis === 'store_capacity_benchmark' ? ' *No area demand data: revenue is the store-capacity benchmark.' : ''}</p>`;
   }
 
-  // Plain-language payback: what one store sells, what it must sell to cover fixed costs, and the store format behind both.
+  // Plain-language breakdown, one step per line: demand, store sales, running costs, margin, break-even, payback.
   function paybackHTML(result) {
-    const mid = result.scenarios?.mid, area = result.assumptions?.areaSqFt?.value?.mid, capture = result.assumptions?.captureRate?.value?.mid;
+    const mid = result.scenarios?.mid, a = result.assumptions || {}, basis = result.revenueBasis || {};
     if (!mid) return '';
-    const fixedYear = numeric(mid.monthlyFixedCosts) ? mid.monthlyFixedCosts * 12 : null;
-    const sales = result.revenueBasis?.basis === 'potentialRevenue' && numeric(capture) && mid.revenueConstraint === 'demand_limited'
-      ? `${money(mid.annualRevenue)} a year (${Math.round(capture * 100)}% of the area's ${money(result.revenueBasis.areaPotential)} potential revenue)` : `${money(mid.annualRevenue)} a year`;
-    const verdict = numeric(mid.paybackMonths) ? `It recovers the ${money(mid.investment)} investment in ${months(mid.paybackMonths)}.`
-      : numeric(mid.breakEvenRevenueAnnual) && mid.annualRevenue < mid.breakEvenRevenueAnnual ? `That is below the ${money(mid.breakEvenRevenueAnnual)} a year it needs to break even, so it does not pay back.`
-      : 'Cash flow is positive but does not recover the investment within 5 years.';
-    return `<p class="analysis-why"><strong>Why this payback?</strong> In the base case one ${numeric(area) ? `${Math.round(area).toLocaleString('en-IN')} sq ft ` : ''}store sells ${sales}. After margin, royalty and marketing it must cover ${fixedYear === null ? 'its fixed costs' : `${money(fixedYear)} a year of rent, staff and utilities`}. ${verdict}</p>`;
+    const area = a.areaSqFt?.value?.mid, density = a.revenuePerSqFtYear?.value?.mid, capture = a.captureRate?.value?.mid;
+    const gm = a.grossMargin?.value?.mid, royalty = a.royaltyRate?.value?.mid, marketing = a.marketingRate?.value?.mid;
+    const monthly = Object.fromEntries((result.costRange?.monthlyFixedCosts || []).map(row => [row.item, row.mid]));
+    const staff = result.costRange?.headcount?.mid, c = basis.catchment;
+    const steps = [];
+    if (numeric(basis.areaPotential)) steps.push(`<strong>Area demand:</strong> ${c ? `${c.pins} PIN${c.pins === 1 ? '' : 's'} within ${c.radiusKm} km (${Number(c.population).toLocaleString('en-IN')} people)` : 'this area'} could spend ${money(basis.areaPotential)} a year in organised apparel stores${numeric(capture) ? `; one store might win ${Math.round(capture * 100)}% of that, ${money(mid.demandRevenue)}` : ''}.`);
+    if (numeric(area) && numeric(density)) steps.push(`<strong>Store sales:</strong> a ${Math.round(area).toLocaleString('en-IN')} sq ft store can sell up to ${money(mid.capacityRevenue)} a year (${Math.round(area).toLocaleString('en-IN')} sq ft × ₹${Math.round(density).toLocaleString('en-IN')} per sq ft, a value-retail benchmark). Expected sales are the smaller of the two: <strong>${money(mid.annualRevenue)}</strong>${mid.revenueConstraint === 'store_capacity_limited' ? ', limited by the store’s size' : mid.revenueConstraint === 'demand_limited' ? ', limited by local demand' : ''}.`);
+    if (numeric(monthly.fixedMonthly)) steps.push(`<strong>Running costs:</strong> rent ${money(monthly.rentMonthly * 12)}, ${numeric(staff) ? `${staff} staff ` : 'staff '}${money(monthly.staffMonthly * 12)} and utilities ${money(monthly.utilitiesMonthly * 12)}: <strong>${money(monthly.fixedMonthly * 12)} a year</strong>.`);
+    if (numeric(mid.contributionMargin)) steps.push(`<strong>What each sale leaves:</strong> ${numeric(gm) ? `${Math.round(gm * 1000) / 10}% gross margin − ${Math.round(royalty * 1000) / 10}% royalty − ${Math.round(marketing * 1000) / 10}% marketing = ` : ''}₹${(mid.contributionMargin * 100).toFixed(1)} of every ₹100 sold.`);
+    if (numeric(mid.breakEvenRevenueAnnual)) steps.push(`<strong>Break-even:</strong> the store must sell ${money(mid.breakEvenRevenueAnnual)} a year just to cover running costs (running costs ÷ what each sale leaves). This is a sales target, not a cost, so it can be larger than the investment.`);
+    const verdict = numeric(mid.paybackMonths) ? `Selling ${money(mid.annualRevenue)} leaves cash each year that recovers the ${money(mid.investment)} investment in <strong>${months(mid.paybackMonths)}</strong>.`
+      : mid.annualRevenue < (mid.breakEvenRevenueAnnual ?? Infinity) ? `Expected sales of ${money(mid.annualRevenue)} are below break-even, so the store loses money each year and <strong>never recovers</strong> the ${money(mid.investment)} investment.`
+      : `Expected sales are only ${money(mid.annualRevenue - mid.breakEvenRevenueAnnual)} above break-even, leaving about ${money((mid.annualRevenue - mid.breakEvenRevenueAnnual) * mid.contributionMargin)} of cash a year: <strong>not enough to recover</strong> the ${money(mid.investment)} investment within 5 years.`;
+    steps.push(`<strong>Payback:</strong> ${verdict}${numeric(result.scenarios.high?.paybackMonths) ? ` In the upside case (higher sales per sq ft and margin, lower costs) it pays back in ${months(result.scenarios.high.paybackMonths)}.` : ''}`);
+    return `<div class="analysis-why"><strong class="analysis-why-title">How the payback is worked out</strong><ol>${steps.map(step => `<li>${step}</li>`).join('')}</ol></div>`;
   }
 
   function projectionHTML(result) {

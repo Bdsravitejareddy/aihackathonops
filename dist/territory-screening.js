@@ -105,8 +105,8 @@
     if (!root) throw new Error('Territory Screening root is required');
     const doc = root.ownerDocument, win = doc.defaultView;
     let selected = location, market = marketContext, records = list(applicants), workspaceTerritories=list(territories), filter = 'all', scenarioResult = null, scenarioBusy = false;
-    const shell = doc.createElement('section'); shell.className = 'territory-screening'; shell.setAttribute('aria-label','Territory screening');
-    shell.innerHTML = `<header class="ts-heading"><div><p class="ts-eyebrow">TERRITORY SCREENING</p><h1>One territory. A clear next step.</h1><p>Review supported market evidence and compare applicants for the selected postal area.</p></div><span class="ts-separation">Eligibility is not franchise approval</span></header>
+    const shell = doc.createElement('section'); shell.className = 'territory-screening'; shell.setAttribute('aria-label','Simulator');
+    shell.innerHTML = `<header class="ts-heading"><div><p class="ts-eyebrow">SIMULATOR</p><h1>One territory. A clear next step.</h1><p>Review supported market evidence and compare applicants for the selected postal area.</p></div><span class="ts-separation">Eligibility is not franchise approval</span></header>
       <form class="ts-pin-form" data-pin-form><label for="ts-pin">Six-digit PIN code</label><div class="ts-pin-controls"><input id="ts-pin" name="pin" inputmode="numeric" autocomplete="postal-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter PIN code" aria-describedby="ts-pin-message"><button type="submit">View territory</button></div><p class="ts-message" id="ts-pin-message" data-pin-message aria-live="polite"></p></form>
       <details class="ts-cascade"><summary>Browse uploaded territories · State → City → PIN</summary><div class="ts-cascade-grid"><label>State<select data-cascade-state><option value="">Select state</option></select></label><label>City<select data-cascade-city disabled><option value="">Select city</option></select></label><label>PIN code<select data-cascade-pin disabled><option value="">Select PIN</option></select></label></div><p class="ts-message">Options come from the workspace territory list. This identifies an uploaded territory; it does not supply population or economic data.</p></details>
       <div class="ts-location" data-location aria-live="polite"></div><div class="ts-market" data-market></div>
@@ -174,7 +174,9 @@
       section.append(title);
       const cards=doc.createElement('div');cards.className='ts-market-grid';
       const order=['population','targetPopulation','monthlyPerCapitaSpend','annualPerCapitaSpend','tam','apparelExpenditure','sam','som','incomeProxy','competitorCount','saturation','storeRevenueLow','storeRevenueBase','storeRevenueHigh'];
-      for(const key of order) cards.append(metricCard(key,metrics[key]));
+      // Only derived figures are shown; a metric with no value at this geography is left out, and TAM appears once.
+      const shown=order.filter(key=>metricValue(metrics[key])!==null&&!(key==='apparelExpenditure'&&metricValue(metrics.tam)!==null));
+      for(const key of shown) cards.append(metricCard(key,metrics[key]));
       if(metricValue(metrics.population)===null){const empty=doc.createElement('p');empty.className='ts-empty';empty.textContent='PIN-level population is unavailable. No substitute city or regional population has been applied.';section.append(empty);}
       section.append(cards);
       const explanation=doc.createElement('p'); explanation.className='ts-explanation';

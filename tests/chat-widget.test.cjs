@@ -183,12 +183,6 @@ test('overview, applications, rules and map summaries are clean bullets with no 
   }
 });
 
-test('CEO view summary reads each card as title and value', () => {
-  const doc = dom('<div data-ceo-card="a"><span class="ceo-title">Grow in Bengaluru</span><div class="ceo-value"><strong>12</strong><span>stores</span></div><p class="ceo-headline">Strong demand</p></div>');
-  const out = bulletsOf(Chat.summarise(Chat.buildPageContext({ tab: 'ceo', state: terrState, results: [], doc })));
-  assert.deepEqual(out, ['Grow in Bengaluru: 12 stores']);
-});
-
 test('map summary lists popup KPIs as title and value and reports missing KPIs once', () => {
   const doc = dom(`<div data-map-place-title>560058</div><div class="maplibregl-popup-content"><div class="expansion-popup"><header><strong>560058</strong></header>
     <div class="expansion-popup-grid"><div class="expansion-popup-kpi"><span>Annual TAM</span><strong>₹55Cr /year</strong><small>x</small></div><div class="expansion-popup-kpi"><span>Ideal investment</span><strong>Not estimated</strong><small>y</small></div><div class="expansion-popup-kpi"><span>Revenue growth</span><strong>—</strong><small>z</small></div></div>

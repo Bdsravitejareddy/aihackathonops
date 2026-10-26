@@ -32,33 +32,33 @@ async function appHarness(t,{deferWorkspaceSave=false}={}){
 
 test('refreshes a PIN applicant query that raced the initial Neon workspace save',async t=>{
   const h=await appHarness(t,{deferWorkspaceSave:true}),{w,requests}=h;
-  const rows=JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')).apps.filter(a=>a.pin==='560101').slice(0,2);
+  const rows=JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')).apps.filter(a=>a.pin==='560048').slice(0,2);
   h.setApplicants(rows);
   w.document.querySelector('[data-tab="screening"]').click();
   await new Promise(r=>setImmediate(r));
-  w.document.querySelector('#ts-pin').value='560101';
+  w.document.querySelector('#ts-pin').value='560048';
   w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
   for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
   assert.match(w.document.querySelector('[data-applicants]').textContent,/No applicants were supplied/);
-  assert.equal(requests.filter(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560101')).length,0);
+  assert.equal(requests.filter(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560048')).length,0);
   h.releaseWorkspaceSave();
   for(let i=0;i<10;i++)await new Promise(r=>setImmediate(r));
   assert.match(w.document.querySelector('[data-applicants]').textContent,/APP-022/,JSON.stringify({urls:requests.map(r=>r.url),badge:w.document.querySelector('.local-badge')?.textContent,location:w.document.querySelector('[data-location]')?.textContent,crumb:w.document.querySelector('#crumb')?.textContent}));
-  assert.equal(requests.filter(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560101')).length,1);
+  assert.equal(requests.filter(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560048')).length,1);
 });
 
 test('screening entry queries Neon by selected PIN, ranks using unchanged eligibility results, and opens existing assessment',async t=>{
   const h=await appHarness(t);const {w,requests}=h;
   w.document.querySelector('[data-tab="screening"]').click();await new Promise(r=>setImmediate(r));
-  const input=w.document.querySelector('#ts-pin');assert.ok(input,'screening page is mounted');input.value='560101';
-  const demo=JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')).apps.filter(a=>a.pin==='560101');
+  const input=w.document.querySelector('#ts-pin');assert.ok(input,'screening page is mounted');input.value='560048';
+  const demo=JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')).apps.filter(a=>a.pin==='560048');
   h.setApplicants(demo.slice(0,2));
   w.document.querySelector('[data-pin-form]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
   await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
-  assert.ok(requests.some(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560101')));
+  assert.ok(requests.some(r=>r.url.includes('/api/screening/applications')&&r.url.includes('pin=560048')));
   const ids=[...w.document.querySelectorAll('.ts-applicant')].map(x=>x.dataset.applicantId);
   const source=JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8'));
-  const expected=source.apps.map((a,i)=>w.Engine.normalize(a,`demo-${i}`)).filter(a=>a.pin==='560101');
+  const expected=source.apps.map((a,i)=>w.Engine.normalize(a,`demo-${i}`)).filter(a=>a.pin==='560048');
   const allApps=source.apps.map((a,i)=>w.Engine.normalize(a,`demo-${i}`));
   const reference=w.Engine.benchmarks(allApps);
   const ranked=w.Engine.assess(expected,source.territories,[],reference,w.Engine.defaultPolicy).sort((a,b)=>b.score-a.score||a.launch-b.launch||a.id.localeCompare(b.id)).map(a=>a.id);
@@ -74,9 +74,9 @@ test('map PIN selection and Territories view preserve the chosen location into s
   await new Promise(r=>setImmediate(r));
   assert.equal(w.location.hash,'#screening');assert.equal(w.document.querySelector('#ts-pin').value,'570009');
   w.document.querySelector('[data-tab="territories"]').click();await new Promise(r=>setImmediate(r));
-  const button=w.document.querySelector('[data-screen-pin="570101"]');
+  const button=w.document.querySelector('[data-screen-pin="570010"]');
   assert.ok(button,'territory PIN is directly selectable');button.click();await new Promise(r=>setImmediate(r));
-  assert.equal(w.location.hash,'#screening');assert.equal(w.document.querySelector('#ts-pin').value,'570101');
+  assert.equal(w.location.hash,'#screening');assert.equal(w.document.querySelector('#ts-pin').value,'570010');
 });
 
 test('PIN 560026 loads postal and HCES evidence into the integrated territory snapshot without inventing TAM',async t=>{
@@ -91,8 +91,7 @@ test('PIN 560026 loads postal and HCES evidence into the integrated territory sn
   assert.match(w.document.querySelector('[data-location]').textContent,/Government Electric Factory S\.O/);
   assert.match(market.textContent,/374\.22/);
   assert.match(w.document.querySelector('[data-evidence]').textContent,/HCES 2023-24 Karnataka urban/);
-  const tam=[...market.querySelectorAll('.ts-metric')].find(card=>/TAM/.test(card.textContent));
-  assert.match(tam.textContent,/Unavailable/);
+  assert.equal([...market.querySelectorAll('.ts-metric')].find(card=>/TAM/.test(card.textContent)),undefined,'TAM with no value is left out, not invented');
   assert.match(market.textContent,/No substitute city or regional population/);
   w.document.querySelector('[data-tab="market"]').click();
   for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));

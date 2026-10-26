@@ -133,7 +133,7 @@ test('verified India Post PIN search attaches regional HCES benchmarks while lea
 
 test('PIN applicant lookup returns exact synthetic territory records for six distinct dataset PINs', async () => {
   const rows=require('../dist/demo.json').apps;
-  const pins=['560101','570102','575103','580101','590102','572103'];
+  const pins=['560048','570011','575004','580029','590010','572103'];
   const {call}=harness({applicationRows:rows});
   for(const pin of pins){
     const response=await call('GET',`/api/screening/applications?workspaceId=${workspaceId}&pin=${pin}`);

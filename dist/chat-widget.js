@@ -5,7 +5,7 @@
 // selected map area. mount() owns the floating launcher, glass drawer, history and accessibility.
 (function (root) {
   const MAX_FACTS = 24, MAX_TEXT = 180, HISTORY_KEY = 'franchiseos-chat-widget-v1', HISTORY_LIMIT = 60;
-  const PAGE_TITLES = { overview: 'Overview', ceo: 'CEO view', applications: 'Applications', review: 'Data review', territories: 'Territories', screening: 'Territory Screening', market: 'Market Intelligence', expansion: 'Expansion Intelligence', onboarding: 'Onboarding', assistant: 'Franchise bot', rules: 'Scoring & rules', upload: 'Upload' };
+  const PAGE_TITLES = { overview: 'Overview', applications: 'Applications', review: 'Data review', territories: 'Territories', screening: 'Simulator', market: 'Market Intelligence', expansion: 'Expansion Intelligence', onboarding: 'Onboarding', assistant: 'Franchise bot', rules: 'Scoring & rules', upload: 'Upload' };
   const GENERIC_FALLBACK = /^I can explain the current workbook/;
   const clean = (value, max = MAX_TEXT) => { const text = String(value ?? '').replace(/\s+/g, ' ').trim(); return text.length > max ? text.slice(0, max - 1) + '…' : text; };
   const textOf = (el, selector) => clean(selector ? el?.querySelector(selector)?.textContent : el?.textContent);
@@ -22,7 +22,7 @@
   const fieldOf = (label, value, note) => isGap(value) ? null : { label: clean(label, 80), value: clean(value, 120), ...(isGap(note) ? {} : { note: clean(note, 140) }) };
   const gapsOf = (...pairs) => pairs.filter(([, value]) => isGap(value)).map(([label]) => label);
 
-  // Overview, applications and CEO view read the workbook state and the cards the page already computed.
+  // Overview and applications read the workbook state and the cards the page already computed.
   function overviewData({ state = {}, results = [] }) {
     const count = status => results.filter(a => a.status === status).length;
     const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
@@ -40,15 +40,7 @@
     const data = { total: results.length, byStatus, held, top: top ? { id: top.id, name: clean(top.name || top.id, 60), score: Math.round(top.score), grade: top.grade || null } : null };
     return { data, facts: [fieldOf('Total applications', data.total), ...Object.entries(byStatus).map(([s, n]) => fieldOf(s, n)), top && fieldOf('Highest score', `${top.name || top.id} · ${Math.round(top.score)}`)].filter(Boolean), gaps: [] };
   }
-  function ceoData({ main }) {
-    const cards = [...(main?.querySelectorAll('[data-ceo-card]') || [])].map(card => ({
-      title: clean(card.querySelector('.ceo-title')?.textContent, 80),
-      value: clean(card.querySelector('.ceo-value strong')?.textContent, 40),
-      unit: clean(card.querySelector('.ceo-value span')?.textContent, 40),
-      headline: clean(card.querySelector('.ceo-headline')?.textContent, 160)
-    })).filter(card => card.title && !isGap(card.value));
-    return { data: { cards }, facts: cards.map(c => fieldOf(c.title, `${c.value}${c.unit ? ' ' + c.unit : ''}`, c.headline)).filter(Boolean), gaps: cards.length ? [] : ['CEO insight cards are still loading'] };
-  }
+
   function territoriesData({ state = {}, results = [], economics = null }) {
     const rows = (state.territories || []).map(t => {
       const apps = results.filter(a => a.territory === t.id), econ = economics?.[t.id] || null, agg = econ?.aggregate || null;
@@ -99,7 +91,7 @@
     const main = doc?.querySelector?.('#main') || doc?.body || null;
     const base = { state, results, stores, doc, location, main, economics };
     const built = page === 'overview' ? overviewData(base) : page === 'applications' || page === 'review' || page === 'onboarding' ? applicationsData(base)
-      : page === 'ceo' ? ceoData(base) : page === 'territories' ? territoriesData(base) : page === 'expansion' || page === 'market' || page === 'screening' ? expansionData(base)
+      : page === 'territories' ? territoriesData(base) : page === 'expansion' || page === 'market' || page === 'screening' ? expansionData(base)
       : page === 'rules' ? rulesData(base) : { data: {}, facts: [], gaps: [] };
     const applicant = applicantInView({ results, doc, botContext });
     if (applicant) built.facts.unshift(fieldOf('Applicant in view', `${applicant.id} · ${applicant.status}`));
@@ -114,7 +106,6 @@
     const area = ctx.geography?.name;
     const byPage = {
       overview: ['Summarise this page', 'Who should move forward?', 'What needs my attention?'],
-      ceo: ['Summarise this page', 'Where should we grow next?', 'What is the top insight?'],
       applications: ['Who should move forward?', held && `Why is ${held.id} on hold?`, 'Summarise this page'],
       review: ['What needs my attention?', 'How are scores calculated?', 'Summarise this page'],
       territories: ['Summarise this page', 'Who should move forward?', 'How are territories allocated?'],
@@ -150,8 +141,6 @@
       out.push(`${plural(d.total, 'application')}${statuses.length ? `: ${statuses.join(', ')}` : ''}`);
       if (d.top) out.push(`Highest score: ${d.top.name} (${d.top.id}, ${d.top.score}${d.top.grade ? `, grade ${d.top.grade}` : ''})`);
       if (d.held) out.push(`${plural(d.held, 'application')} missing details before scoring can finish`);
-    } else if (ctx.page === 'ceo') {
-      for (const card of (d.cards || []).slice(0, 5)) out.push(`${card.title}: ${card.value}${card.unit ? ` ${card.unit}` : ''}`);
     } else if (ctx.page === 'territories') {
       const rows = d.territories || [];
       if (rows.length) {
@@ -196,7 +185,7 @@
     const text = String(question || '').trim();
     if (!text) return null;
     if (/\bsummar|\boverview of (?:this|the) page\b|\bwhat am i (?:looking at|seeing)\b|\b(?:on|about) this page\b/i.test(text)) return { text: summary(ctx), source: 'page' };
-    const mapPage = ['expansion', 'market', 'ceo', 'screening'].includes(ctx.page);
+    const mapPage = ['expansion', 'market', 'screening'].includes(ctx.page);
     const facts = matchFacts(text, ctx);
     if (mapPage && facts.length && LOOKUP.test(text) && !/\b(why|should|good|best|compare|risk)\b/i.test(text)) return { text: `From this page:\n${factLines(facts)}`, source: 'page' };
     let ruled = null;

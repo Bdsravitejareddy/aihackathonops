@@ -14,7 +14,7 @@ function harness(options = {}) {
   return { dom, root, controller, events, opened };
 }
 
-test('renders supplied market evidence and explicit missing values without deriving unsupported figures', t => {
+test('renders supplied market evidence, leaves out metrics with no value and derives no unsupported figures', t => {
   const h = harness({ location: { id:'pin:560001', name:'Bengaluru · 560001', level:'pin', pin:'560001' }, marketContext: {
     metrics: { population:{value:12000,evidenceClass:'modeled_estimate',referenceYear:2011}, monthlyPerCapitaSpend:{value:340,evidenceClass:'survey_estimate',referenceYear:2024}, tam:{value:48960000,evidenceClass:'derived_estimate'}, som:null },
     spend: { rural:{value:240,referenceYear:2024}, urban:{value:340,referenceYear:2024}, incomeAdjustment:{formula:'regional spend × (local proxy / regional proxy)^1',evidenceClass:'modelled_estimate'} },
@@ -24,7 +24,7 @@ test('renders supplied market evidence and explicit missing values without deriv
   t.after(() => h.dom.window.close());
   assert.match(h.root.textContent, /₹4,89,60,000/);
   assert.match(h.root.textContent, /modelled estimate/i);
-  assert.match(h.root.textContent, /Unavailable/);
+  assert.doesNotMatch(h.root.querySelector('[data-market]').textContent, /Unavailable|Capturable market/);
   assert.match(h.root.textContent, /scenario/i);
   assert.match(h.root.textContent, /HCES/);
   h.root.querySelector('.ts-details summary').click();

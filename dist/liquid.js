@@ -5,9 +5,9 @@
 (function (root) {
   const doc = root.document;
   const reduced = root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const REVEAL = '.page-heading,.stat,.panel,.callout,.ceo-card,.territory-card,.mi-card,.attention-row';
-  const COUNT = '.stat-value,.ceo-value strong';
-  const GLASS = '.lq-glass,.stat,.panel,.ceo-card,.callout';
+  const REVEAL = '.page-heading,.stat,.panel,.callout,.territory-card,.mi-card,.attention-row';
+  const COUNT = '.stat-value';
+  const GLASS = '.lq-glass,.stat,.panel,.callout';
 
   // Animates the first number in an element's text, keeping its prefix, suffix, grouping and decimals.
   function countUp(el) {

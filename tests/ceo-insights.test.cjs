@@ -119,24 +119,3 @@ test('CEO endpoint validates input and reports an unavailable catalog', async ()
   await failing(req2, { writeHead(code) { status = code; }, setHeader() {}, end() {} });
   assert.equal(status, 503);
 });
-
-test('CEO view renders server cards plus the pipeline card and opens an area on the map', async () => {
-  const { JSDOM } = require('jsdom');
-  const dom = new JSDOM('<div id="root"></div>', { runScripts: 'outside-only' });
-  dom.window.eval(fs.readFileSync(path.join(__dirname, '..', 'dist', 'ceo-view.js'), 'utf8'));
-  const insights = await buildCeoInsights({ features, loadGeography: async id => features.find(f => f.id === id), stores: 4 });
-  const requested = [], opened = [];
-  const fetch = async url => { requested.push(url); return { ok: true, json: async () => insights }; };
-  const view = dom.window.CeoView.mount({ container: dom.window.document.getElementById('root'), fetch, pipeline: { total: 10, recommended: 4, siteNeeded: 3, clarification: 2 }, onOpenArea: id => opened.push(id) });
-  await new Promise(resolve => setTimeout(resolve, 10));
-  assert.deepEqual(requested, ['/api/insights/ceo?stores=4']);
-  const doc = dom.window.document;
-  assert.equal(doc.querySelectorAll('.ceo-card').length, insights.cards.length + 1);
-  assert.match(doc.querySelector('[data-ceo-card="pipeline"]').textContent, /4 partners are recommended; 3 still need a confirmed site/);
-  assert.match(doc.querySelector('[data-ceo-card="top-markets"] .ceo-badge').textContent, /Estimate/);
-  assert.match(doc.querySelector('[data-ceo-card="income-growth"] .ceo-badge').textContent, /Official data/);
-  doc.querySelector('[data-ceo-card="top-markets"] [data-ceo-open]').click();
-  assert.deepEqual(opened, ['state:IN-BR']);
-  assert.match(doc.querySelector('[data-ceo-foot]').textContent, /2 left out for missing data/);
-  view.destroy();
-});

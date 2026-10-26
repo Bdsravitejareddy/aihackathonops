@@ -329,7 +329,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const storePins = new Set((url.searchParams.get('storePins') || '').split(',').map(pin => pin.trim()).filter(pin => /^[1-9]\d{5}$/.test(pin)));
             let sector;
             try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
-            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000 })).map(feature => withSector(feature, sector));
+            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000, largestFirst: true })).map(feature => withSector(feature, sector));
             const km = (a, b) => { const r = Math.PI / 180, x = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), y = (b[1] - a[1]) * r; return 6371 * Math.hypot(x, y); };
             const stores = features.filter(f => storePins.has(String(f.pin)) && f.anchor).map(f => f.anchor);
             const ranked = features.filter(f => f.anchor && Number.isFinite(f.metrics.potentialRevenue?.value) && !storePins.has(String(f.pin)) && !stores.some(s => km(s, f.anchor) < spacingKm))

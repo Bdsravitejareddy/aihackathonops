@@ -177,8 +177,8 @@ function createMarketMapStore(pool) {
       } finally { client.release(); }
     },
 
-    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {}, includeGeometry = true, maxRows = null } = {}) {
-      const cacheKey=JSON.stringify([this.sourceVersion,parentId,level,bbox,metricKey,scenario,includeGeometry,maxRows]);
+    async listMapGeographies({ parentId = null, level = null, bbox = null, metric: metricKey, scenario = {}, includeGeometry = true, maxRows = null, largestFirst = false } = {}) {
+      const cacheKey=JSON.stringify([this.sourceVersion,parentId,level,bbox,metricKey,scenario,includeGeometry,maxRows,largestFirst]);
       return cachedList(cacheKey, async () => {
       const wanted = level || (parentId ? null : 'state');
       if (wanted && !LEVELS.includes(wanted)) return [];
@@ -197,7 +197,7 @@ function createMarketMapStore(pool) {
       }
       params.push(Number.isInteger(maxRows) && maxRows > 0 ? Math.min(maxRows, 6000) : MAX_BY_LEVEL[wanted || 'district']);
       const geometrySql=includeGeometry ? 'CASE WHEN g.geom IS NULL THEN NULL ELSE ST_AsGeoJSON(g.geom)::jsonb END' : 'NULL::jsonb';
-      const sql = `SELECT g.external_id, g.kind, g.name, g.properties, ${geometrySql} AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id = g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id = r.parent_id WHERE ${where.length ? where.join(' AND ') : 'TRUE'} ORDER BY g.name, g.external_id LIMIT $${params.length}`;
+      const sql = `SELECT g.external_id, g.kind, g.name, g.properties, ${geometrySql} AS geometry, CASE WHEN g.geom IS NULL THEN NULL ELSE ST_Area(g.geom::geography) / 1000000 END AS area_km2, p.external_id AS parent_external_id FROM market_geographies g LEFT JOIN market_geo_relationships r ON r.child_id = g.id AND r.relationship='contains' LEFT JOIN market_geographies p ON p.id = r.parent_id WHERE ${where.length ? where.join(' AND ') : 'TRUE'} ORDER BY ${largestFirst ? "NULLIF(g.properties->>'annualApparelExpenditure','')::float8 DESC NULLS LAST, " : ''}g.name, g.external_id LIMIT $${params.length}`;
       const result = await pool.query(sql, params);
       const rows=result.rows.map(row => normalizeFeature(row, metricKey, scenario));
       if (parentId) for (const place of priorityPlaces.filter(place=>place.parentId===parentId && (!wanted || place.level===wanted))) {

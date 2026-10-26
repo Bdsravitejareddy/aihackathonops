@@ -76,6 +76,17 @@ test('map metrics apply configurable income elasticity and preserve missing evid
   assert.equal(missing.metrics.incomeProxy.value, null);
 });
 
+test('commercial popup metrics preserve sourced customers and scoped per-store investment components',()=>{
+  const source={sourceId:'cost-benchmark',metric:'idealInvestmentPerStore',url:'https://example.org/benchmark'};
+  const result=normalizeFeature({external_id:'city:test',kind:'city',properties:{potentialCustomers:4200,potentialCustomersEvidenceClass:'derived_estimate',idealInvestmentPerStore:18000000,idealInvestmentEvidenceClass:'comparable_store_benchmark',idealInvestmentScope:'category-level',investmentComponents:{fitOut:6000000,openingInventory:7000000,workingCapital:5000000},evidence:[source]}},'tam');
+  assert.equal(result.metrics.potentialCustomers.value,4200);
+  assert.equal(result.metrics.idealInvestmentPerStore.value,18000000);
+  assert.equal(result.metrics.idealInvestmentPerStore.scope,'category-level');
+  assert.equal(result.metrics.idealInvestmentPerStore.components.workingCapital,5000000);
+  const missing=normalizeFeature({external_id:'city:missing',kind:'city',properties:{idealInvestmentPerStore:18000000}},'tam');
+  assert.equal(missing.metrics.idealInvestmentPerStore.scope,null);
+});
+
 test('capture and investment assumptions recalculate projected SOM without relabeling market spend as sales', () => {
   const row={external_id:'560001',kind:'pin',area_km2:2,properties:{population:500,apparelSpendPerPersonMonthly:1000,addressabilityFactor:0.4,accessibilityFactor:0.5}};
   const low=normalizeFeature(row,'revenue',{captureRate:0.02});

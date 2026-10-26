@@ -140,7 +140,8 @@
     const basemap=options.basemap||root.FRANCHISEOS_BASEMAP_CONFIG||{};
     const tileUrl=typeof basemap.tileUrl==='string'&&/^https:\/\//i.test(basemap.tileUrl)&&/\{z\}.*\{x\}.*\{y\}/.test(basemap.tileUrl)?basemap.tileUrl:'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const attribution=typeof basemap.attribution==='string'&&basemap.attribution.trim()?basemap.attribution:'© OpenStreetMap contributors';
-    let features = [], metric = options.metric || 'apparelExpenditure', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, dataSignature=null, scaleMeta=null, basemapMode='street';
+    let features = [], metric = options.metric || 'apparelExpenditure', popupYear=Number(options.year)||2026, popupSegment=options.segment||'Apparel & fashion', legend = normalizeLegend(options.legend), colorMode='linear', scaleScope='national', selected = null, ready = false, destroyed = false, popup, lastPopup=null, dataSignature=null, scaleMeta=null, basemapMode='street';
+    const popupContexts=new Map();
     const map = new lib.Map({ container, center: [79,22], zoom: ZOOMS[0], minZoom: 2, maxZoom: 17, pitch:0, bearing:0,
       style: { version: 8, sources: { openStreetMap:{type:'raster',tiles:[tileUrl],tileSize:256,attribution} }, layers: [
         { id: 'background', type: 'background', paint: { 'background-color': '#edf2f1' } },
@@ -176,12 +177,50 @@
         scaleMeta=null; map.setPaintProperty('market-fill','fill-color',MISSING); map.setPaintProperty('market-points','circle-color',MISSING);
       }
     };
+    const popupLevel=level=>({state:'State',district:'District',city:'City',pin:'PIN code',catchment:'Catchment',national:'National'})[level]||'Geography';
+    const popupValue=item=>metricValue(item)===null?'Not estimated':display(item);
+    function popupHtml(geo) {
+      const context=popupContexts.get(String(geo.id))||{}, selectedGeo=context.geography||geo, metrics=selectedGeo.metrics||geo.metrics||{}, estimate=context.estimate;
+      const customerValue=estimate?.metrics?.potentialCustomers;
+      const tamValue=estimate?.metrics?.customerTAM;
+      const somValue=estimate?.metrics?.customerSOM;
+      const tam=metricValue(tamValue)!==null?{...tamValue,unit:tamValue.unit||'INR/year'}:metrics.tam||metrics.apparelExpenditure;
+      const som=metricValue(somValue)!==null?{...somValue,unit:somValue.unit||'INR/year'}:metrics.som;
+      const customers=metricValue(customerValue)!==null?{...customerValue,unit:customerValue.unit||'people'}:metrics.potentialCustomers;
+      const population=metrics.population;
+      const catchment=metricValue(customers)!==null?{label:'Estimated customers',metric:customers}:
+        metricValue(population)!==null?{label:selectedGeo.level==='catchment'?'Catchment population':'Area population',metric:population}:
+        {label:'Customers / population',metric:null};
+      const investment=metrics.idealInvestmentPerStore;
+      const scope=String(investment?.scope||investment?.investmentScope||selectedGeo.investmentScope||'').toLowerCase();
+      const validScope=['brand/store-format-specific','brand_store_format','category-level','category_level'].includes(scope);
+      const investmentLabel=scope.startsWith('category')||scope==='category_level'?'Category-level estimate':'Per-store estimate';
+      const investmentDisplay=validScope&&metricValue(investment)!==null?popupValue({...investment,unit:investment.unit||'INR/store'}):'Not estimated';
+      const componentNames={fitOut:'fit-out',fitout:'fit-out',openingInventory:'opening inventory',inventory:'opening inventory',workingCapital:'working capital',deposit:'deposit',franchiseFee:'franchise fee'};
+      const componentSource=investment?.components||selectedGeo.investmentComponents||{};
+      const componentSummary=validScope&&componentSource&&typeof componentSource==='object'?Object.entries(componentNames).filter(([key])=>metricValue(componentSource[key])!==null||Number.isFinite(componentSource[key])).map(([key,name])=>`${name} ${display(typeof componentSource[key]==='number'?{value:componentSource[key],unit:'INR'}:componentSource[key])}`):[];
+      const growth=metricValue(metrics.growthPotential3Year)!==null?{label:'3-year projected revenue growth',metric:metrics.growthPotential3Year}:
+        metricValue(metrics.growthPotential5Year)!==null?{label:'5-year projected revenue growth',metric:metrics.growthPotential5Year}:
+        {label:'Revenue growth · forecast',metric:null};
+      const classifications=[tam?.evidenceClass,som?.evidenceClass,catchment.metric?.evidenceClass,investment?.evidenceClass,growth.metric?.evidenceClass].filter(Boolean);
+      const modelled=classifications.some(value=>['derived_estimate','model_assumption','forecast','estimated'].includes(String(value).toLowerCase()));
+      const confidence=String(selectedGeo.confidence||'confidence unavailable');
+      const shortConfidence=confidence.length>42?`${confidence.slice(0,39)}…`:confidence;
+      const segmentLabel=String(popupSegment).replace(/-/g,' ').replace(/\b[a-z]/g,char=>char.toUpperCase());
+      const growthDisplay=metricValue(growth.metric)===null?'Not estimated':`${Number(metricValue(growth.metric)).toLocaleString('en-IN',{maximumFractionDigits:2})}% ${String(growth.metric.unit||'growth').replace(/^%\s*/,'')}`;
+      const kpi=(title,value,sub='',prominent=false)=>`<div class="expansion-popup-kpi${prominent?' is-prominent':''}"><span>${escape(title)}</span><strong>${escape(value)}</strong>${sub?`<small>${escape(sub)}</small>`:''}</div>`;
+      const status=modelled?'Modelled estimate':classifications.length?'Source-backed estimate':'Evidence unavailable';
+      const investmentSub=validScope?[investmentLabel,...componentSummary].join(' · '):'Store-format cost evidence unavailable';
+      return `<div class="expansion-popup" data-popup-geography="${escape(geo.id)}"><header><strong>${escape(selectedGeo.name||geo.name)}</strong><small>${escape(popupLevel(selectedGeo.level||geo.level))} · ${escape(segmentLabel)} · ${escape(popupYear)} view</small></header><div class="expansion-popup-grid">${kpi('Annual TAM',popupValue(tam),'Apparel category market',true)}${kpi('Annual SOM',popupValue(som),'Territory capture estimate',true)}${kpi(catchment.label,popupValue(catchment.metric),metricValue(customerValue)!==null?'Estimated unique customers · not footfall':'People in selected geography')}${kpi('Ideal investment',investmentDisplay,investmentSub)}${kpi(growth.label,growthDisplay,growth.metric?'Modelled forecast · horizon shown':'No supported growth forecast')}${kpi('Current map layer',popupValue(metrics[metric]),label(metric))}</div><div class="expansion-popup-status"><span>${status}</span><small>${escape(shortConfidence)}</small></div><button type="button" class="button small primary" data-map-popup-detail="${escape(geo.id)}">View detailed analysis</button></div>`;
+    }
+    function refreshPopup() {
+      if(!lastPopup)return;
+      const geo=features.find(item=>String(item.id)===String(lastPopup.id));if(!geo)return;
+      popup?.remove();popup=new lib.Popup({closeButton:true,maxWidth:'380px'}).setLngLat(lastPopup.lngLat).setHTML(popupHtml(geo)).addTo(map);
+    }
     function showPopup(event) {
-      const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id, geo = features.find(f => String(f.id) === String(id));
-      if (!geo) return;
-      const item=geo.metrics?.[metric], evidence=list(item?.evidence||geo.evidence), url=safeUrl(evidence[0]?.url||evidence[0]?.sourceUrl);
-      popup?.remove(); popup = new lib.Popup({ closeButton: true, maxWidth: '270px' }).setLngLat(event.lngLat)
-        .setHTML(`<div class="expansion-popup"><strong>${escape(geo.name)}</strong><p>${escape(label(metric))}: <b>${escape(display(item))}</b></p><small>${escape(item?.evidenceClass||'Evidence classification unavailable')} · Confidence: ${escape(geo.confidence||'unavailable')}</small>${url?`<p><a href="${escape(url)}" target="_blank" rel="noopener noreferrer">View source ↗</a></p>`:''}</div>`).addTo(map);
+      const id=event.features?.[0]?.properties?.id??event.features?.[0]?.id,geo=features.find(f=>String(f.id)===String(id));
+      if(!geo)return;lastPopup={id:String(id),lngLat:event.lngLat};refreshPopup();
     }
     map.on('load', () => {
       if (destroyed) return;
@@ -201,20 +240,26 @@
       }
       update(); paint();
     });
+    map.on('click', event => {
+      const hit=event.features?.[0]||map.queryRenderedFeatures?.(event.point,{layers:['market-fill','market-points']})?.[0];
+      const id=hit?.properties?.id??hit?.id;
+      if(id!==undefined){selected=id;highlight();showPopup({...event,features:[hit]});onSelect(String(id));}
+    });
     for (const layer of ['market-fill','market-points']) {
-      map.on('click', layer, event => { const id = event.features?.[0]?.properties?.id ?? event.features?.[0]?.id; if (id !== undefined) { selected = id; highlight(); showPopup(event); onSelect(String(id)); } });
       map.on('mouseenter', layer, event => { map.getCanvas().style.cursor = 'pointer'; showPopup(event); });
       map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
     }
     map.on('moveend', () => { if (!destroyed) onViewport({ zoom: map.getZoom(), bounds: map.getBounds().toArray() }); });
     map.on('error', event => options.onError?.(event.error || Error('Map rendering failed.')));
     return {
-      setMetric(value) { metric = value; popup?.remove(); paint(); },
-      setColorMode(value){if(!['linear','log','percentile'].includes(value))return; colorMode=value; popup?.remove(); paint();},
-      setScaleScope(value){if(!['national','local'].includes(value))return; scaleScope=value; popup?.remove(); paint();},
-      setYear() { popup?.remove(); }, setScenario() { popup?.remove(); },
-      setLegend(value) { legend = normalizeLegend(value); paint(); },
-      refreshDisplay() { popup?.remove(); paint(); },
+      setMetric(value) { metric = value; paint(); refreshPopup(); },
+      setColorMode(value){if(!['linear','log','percentile'].includes(value))return; colorMode=value; paint(); refreshPopup();},
+      setScaleScope(value){if(!['national','local'].includes(value))return; scaleScope=value; paint(); refreshPopup();},
+      setYear(value) { if(Number.isInteger(Number(value)))popupYear=Number(value);refreshPopup(); }, setScenario() { refreshPopup(); },
+      setSegment(value){if(typeof value==='string'&&value.trim())popupSegment=value.trim();refreshPopup();},
+      setLegend(value) { legend = normalizeLegend(value); paint(); refreshPopup(); },
+      refreshDisplay() { paint(); refreshPopup(); },
+      setPopupContext(id,value){popupContexts.set(String(id),value||{});refreshPopup();},
       setBasemap(value){
         if(!['street','satellite','terrain'].includes(value))return;
         basemapMode=value;
@@ -229,10 +274,10 @@
       resize(){map.resize?.();},
       getScaleMetadata(){return scaleMeta;},
       setFeatures(value,meta) {
-        features = Array.isArray(value) ? value : []; popup?.remove();
+        features = Array.isArray(value) ? value : [];
         const signature=meta ? JSON.stringify([meta.sourceVersion,meta.group,features.map(f=>[f.id,Object.entries(f.metrics||{}).map(([key,item])=>[key,metricValue(item)])])]) : null;
         if (!signature || signature!==dataSignature) { dataSignature=signature; update(); }
-        paint();
+        paint();refreshPopup();
       },
       selectGeography(id) { selected = id; highlight(); },
       focusGeography(geo, zoom) {
@@ -240,7 +285,7 @@
         const bounds = boundsFor(geo?.geometry); if (bounds) map.fitBounds(bounds, { padding: 48, maxZoom: zoom, zoom, duration: 600 });
       },
       reset() { map.fitBounds([[67,6],[98,37]], { padding: 20, zoom: ZOOMS[0], maxZoom: ZOOMS[0], duration: 0 }); },
-      destroy() { destroyed = true; popup?.remove(); map.remove(); }
+      destroy() { destroyed = true; popup?.remove();popupContexts.clear();lastPopup=null; map.remove(); }
     };
   }
 
@@ -286,7 +331,7 @@
           </div>
           <p class="expansion-narrative" data-map-narrative>Select an area to review available market evidence. Customer participation, store visits and sales are distinct and will remain unestimated without supporting evidence.</p>
           <div class="market-actions"><button class="button small" data-map-drill disabled>Explore next level ↘</button><button class="button small" data-map-add-compare disabled>Add comparison</button></div>
-          <details class="expansion-drawer"><summary>How this estimate was calculated</summary><div data-map-detail aria-live="polite"><p class="hint">Select a state or city.</p></div></details>
+          <details class="expansion-drawer"><summary>Detailed evidence & methodology</summary><div data-map-detail aria-live="polite"><p class="hint">Select a state or city.</p></div></details>
           <details class="expansion-drawer"><summary>Compare locations <span data-map-compare-count></span></summary><p class="hint">Compare 2–4 places. Overlapping catchments can double-count residents.</p><div data-map-compare-list></div><button class="button small" data-map-compare disabled>Compare selected</button><div data-map-comparison aria-live="polite"></div></details>
           <details class="expansion-drawer"><summary>Grounded local research</summary><div data-map-research aria-live="polite"><p>Select a location to load public research.</p></div><button class="button small" type="button" data-map-refresh-research disabled>Refresh research</button><form data-map-ask-form><label>Ask Market Intelligence<textarea class="input" name="question" rows="2" maxlength="2000" required placeholder="What evidence supports this estimate?"></textarea></label><button class="button small" type="submit" data-map-ask disabled>Ask</button></form><div data-map-answer aria-live="polite"></div></details>
           <details class="expansion-drawer"><summary>Advanced financial scenario</summary><p class="hint">Optional store-level forecast inputs. This does not alter verified market observations.</p>${scenarioFormHTML()}</details>
@@ -500,6 +545,7 @@
     }
     async function selectGeography(id) {
       selected = String(id); selectedDetail = null; selectedRecord=null; selectedEstimate=null; const revision = ++detailRevision, context = contextRevision;
+      map?.setPopupContext(selected,{geography:features.find(feature=>String(feature.id)===selected)||null});
       map?.selectGeography(selected); renderAreas();
       $('[data-map-drill]').disabled = true; $('[data-map-add-compare]').disabled = true;
       $('[data-map-detail]').innerHTML = '<p>Loading geography evidence…</p>';
@@ -515,6 +561,7 @@
         selectedRecord=result; selectedDetail = result.geography || result;
         const loaded = features.find(f => String(f.id) === selected);
         selectedDetail = { ...loaded, ...selectedDetail, id: selected };
+        map?.setPopupContext(selected,{geography:selectedDetail});
         $('[data-map-detail]').innerHTML = geographyHTML({ ...result, geography: selectedDetail });
         renderOverview(selectedDetail,null);
         updateSelectionActions();
@@ -529,8 +576,8 @@
         try{
           const estimate=await request('estimate',`/api/market/map/geographies/${encodeURIComponent(id)}/market-estimate?year=${year}`);
           if(destroyed||revision!==detailRevision||context!==contextRevision||selected!==String(id))return;
-          selectedEstimate=estimate;renderOverview(selectedDetail,selectedEstimate);
-        }catch(error){if(error.name!=='AbortError'&&!destroyed&&revision===detailRevision){selectedEstimate={confidence:'estimate cache unavailable',explanation:`Customer estimate service unavailable: ${error.message}`};renderOverview(selectedDetail,selectedEstimate);}}
+          selectedEstimate=estimate;map?.setPopupContext(selected,{geography:selectedDetail,estimate:selectedEstimate});renderOverview(selectedDetail,selectedEstimate);
+        }catch(error){if(error.name!=='AbortError'&&!destroyed&&revision===detailRevision){selectedEstimate={confidence:'estimate cache unavailable',explanation:`Customer estimate service unavailable: ${error.message}`};map?.setPopupContext(selected,{geography:selectedDetail,estimate:selectedEstimate});renderOverview(selectedDetail,selectedEstimate);}}
         loadResearch(selected);
       } catch (error) {
         if (!destroyed && revision === detailRevision && context === contextRevision && error.name !== 'AbortError') $('[data-map-detail]').innerHTML = `<p>${escape(error.message)}</p><button class="text-button" type="button" data-map-retry-detail>Retry detail</button>`;
@@ -590,12 +637,13 @@
         while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
         if (changed) { selected = null; invalidate(); }
         loadLevels(); options.onViewport?.(view);
-      }, options: { ...options, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+      }, options: { ...options, year, segment:$('[name="apparelSegment"]').value, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
     container.addEventListener('click', onClick);
     function onClick(event) {
       const button = event.target.closest('button'); if (!button) return;
       const d = button.dataset;
+      if('mapPopupDetail'in d){const id=String(d.mapPopupDetail);if(selected!==id)void selectGeography(id);const side=container.querySelector('.expansion-side'),toggle=container.querySelector('[data-map-sidebar-toggle]');if(side?.classList.contains('is-collapsed')){side.classList.remove('is-collapsed');if(toggle){toggle.textContent='Hide insights';toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Collapse market insights');}setTimeout(()=>map?.resize(),180);}const details=container.querySelector('[data-map-detail]')?.closest('details');if(details){details.open=true;setTimeout(()=>details.scrollIntoView?.({behavior:'smooth',block:'nearest'}),0);}return;}
       if('mapExit'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'overview',label:'Workspace overview',execute:false,permission:'read'}}));return;}
       if('mapOpenMarket'in d){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'market',sectionId:'market-form',label:'Market Intelligence',execute:false,permission:'read'}}));return;}
       if('mapScreenPin'in d&&selectedDetail?.level==='pin'){root.dispatchEvent(new root.CustomEvent('franchiseos:navigate',{detail:{type:'navigate',route:'screening',sectionId:'territory-screening-root',label:'Territory Screening',execute:false,permission:'read'}}));return;}
@@ -655,6 +703,7 @@
       const { name, value } = event.target;
       if (name === 'metric') setMetric(value);
       else if (name === 'year') setYear(Number(value));
+      else if(name==='apparelSegment')map?.setSegment(value);
       else if(event.target.matches('[data-map-color-mode]')){map?.setColorMode(value);renderLegend();}
       else if(event.target.matches('[data-map-scale-scope]')){map?.setScaleScope(value);renderLegend();}
       else if(event.target.matches('[data-map-basemap]'))map?.setBasemap(value);

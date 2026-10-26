@@ -43,8 +43,10 @@ function mapDouble() {
   }
   Map.instances = [];
   class Popup {
-    constructor() { Popup.instances.push(this); } setLngLat() { return this; }
-    setHTML(html) { this.html = html; return this; } addTo() { return this; } remove() { this.removed = true; }
+    constructor(options) { this.options=options;Popup.instances.push(this); } setLngLat(value) { this.lngLat=value;return this; }
+    setHTML(html) { this.html = html;if(this.element)this.element.innerHTML=html;return this; }
+    addTo(map) { this.element=map.options.container.ownerDocument.createElement('div');this.element.innerHTML=this.html;map.options.container.append(this.element);return this; }
+    remove() { this.removed = true;this.element?.remove(); }
   }
   Popup.instances = [];
   return { Map, Popup, NavigationControl: class {} };
@@ -175,7 +177,7 @@ test('click loads workspace detail, evidence popup is escaped, and unsupported m
   const f = feature('a',120); f.metrics.incomeProxy={value:null,unit:'INR/person/month',missing:{cause:'source_unavailable',nextAction:'Add a compatible cited local income source.'}}; f.evidence[0].title = '<img src=x onerror=alert(1)>'; f.evidence.push({ title: 'Unsafe', url: 'javascript:alert(1)' });
   const h = setup(url => url.includes('/geographies/') ? f : levels([f]));
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
-  h.map.fire('click', { features: [{ id: 'a', properties: { id: 'a' } }], lngLat: { lng:76, lat:21 } }, 'market-fill'); await tick();
+  h.map.fire('click', { features: [{ id: 'a', properties: { id: 'a' } }], lngLat: { lng:76, lat:21 } }); await tick();
   const detailRequest = h.requests.find(r => r.url.includes('/geographies/a'));
   assert.ok(detailRequest.url.includes('workspaceId=test-workspace'));
   const detail = h.host.querySelector('[data-map-detail]');
@@ -186,7 +188,62 @@ test('click loads workspace detail, evidence popup is escaped, and unsupported m
   assert.equal(detail.querySelector('a[href="https://example.org/source"]').textContent.includes('<img'),true);
   assert.equal(detail.querySelector('img'),null); assert.equal(detail.querySelector('[href^="javascript:"]'),null);
   const popup = h.window.maplibregl.Popup.instances.at(-1);
-  assert.match(popup.html, /derived_estimate/); assert.doesNotMatch(popup.html, /<img/);
+  assert.match(popup.html, /Test area a/); assert.match(popup.html, /State/);
+  assert.match(popup.html, /View detailed analysis/); assert.doesNotMatch(popup.html, /<img|areal_interpolation|https:\/\/example\.org\/source|Fixture publisher|referenceYear/);
+});
+
+test('commercial popup shows sourced TAM/SOM, separates customers from population, and keeps details in the sidebar', async t => {
+  const f=feature('popup-market',120,'city');
+  f.metrics.tam={value:224532000,unit:'INR/year',evidenceClass:'derived_estimate'};
+  f.metrics.som={value:24700000,unit:'INR/year',evidenceClass:'model_assumption'};
+  f.metrics.potentialCustomers={value:4200,unit:'people',evidenceClass:'derived_estimate'};
+  f.metrics.idealInvestmentPerStore={value:18000000,unit:'INR/store',evidenceClass:'model_assumption',scope:'category-level',components:{fitOut:6000000,openingInventory:7000000,workingCapital:5000000}};
+  f.metrics.growthPotential3Year={value:18,unit:'% nominal / 3 years',evidenceClass:'forecast'};
+  const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f],'city'));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();h.controller.setFeatures([f]);h.window.eval(read('dist/display-format.js'));
+  h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});await tick();
+  const popup=h.window.maplibregl.Popup.instances.at(-1);
+  assert.equal(popup.options.maxWidth,'380px');
+  assert.match(popup.html,/Annual TAM/);assert.match(popup.html,/₹224\.5M/);
+  assert.match(popup.html,/Annual SOM/);assert.match(popup.html,/₹24\.7M/);
+  assert.match(popup.html,/Estimated customers/);assert.match(popup.html,/4\.2K people/);
+  assert.match(popup.html,/Ideal investment/);assert.match(popup.html,/Category-level estimate/);assert.match(popup.html,/fit-out ₹6M · opening inventory ₹7M · working capital ₹5M/);
+  assert.match(popup.html,/3-year projected revenue growth/);assert.match(popup.html,/18\s*%/);
+  assert.match(popup.html,/Modelled/);assert.doesNotMatch(popup.html,/Test source|Fixture publisher|areal_interpolation|referenceYear|https:\/\/example\.org/);
+  const details=h.host.querySelector('[data-map-detail]').closest('details');
+  h.click('[data-map-sidebar-toggle]');assert.ok(h.host.querySelector('.expansion-side').classList.contains('is-collapsed'));
+  h.click('[data-map-popup-detail="popup-market"]');
+  assert.equal(details.open,true);assert.ok(!h.host.querySelector('.expansion-side').classList.contains('is-collapsed'));
+  h.change('[name="apparelSegment"]','value-fashion');
+  assert.match(h.window.maplibregl.Popup.instances.at(-1).html,/Value Fashion/);
+  h.controller.setYear(2025);
+  assert.match(h.window.maplibregl.Popup.instances.at(-1).html,/2025 view/);
+  const previousPopupHtml=popup.html;
+  h.controller.setMetric('population');await tick();
+  assert.notEqual(h.window.maplibregl.Popup.instances.at(-1).html,previousPopupHtml);
+  h.window.FranchiseDisplay.setMode('crores');h.controller.refreshDisplay();
+  const refreshed=h.window.maplibregl.Popup.instances.at(-1);
+  assert.match(refreshed.html,/₹22\.45 Cr/);
+});
+
+test('commercial popup labels each supported geography level without turning population into customers or footfall',async t=>{
+  const h=setup();t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();
+  for(const level of ['state','district','city','catchment']){
+    const f=feature(`level-${level}`,250,level);h.controller.setFeatures([f]);
+    h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
+    const html=h.window.maplibregl.Popup.instances.at(-1).html;
+    assert.match(html,new RegExp(`<small>${level==='pin'?'PIN code':level[0].toUpperCase()+level.slice(1)}`));
+    assert.match(html,/Area population|Catchment population/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
+  }
+});
+
+test('popup never presents unsupported investment or growth as available',async t=>{
+  const f=feature('missing-market',500,'catchment');f.metrics.tam={value:null,unit:'INR/year'};f.metrics.som={value:null,unit:'INR/year'};f.metrics.idealInvestmentPerStore={value:28000000,unit:'INR/store',evidenceClass:'model_assumption'};f.metrics.growthPotential3Year={value:null,unit:'% nominal / 3 years'};
+  const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f],'catchment'));
+  t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();h.controller.setFeatures([f]);h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
+  const html=h.window.maplibregl.Popup.instances.at(-1).html;
+  assert.match(html,/Catchment/);assert.match(html,/Catchment population/);assert.match(html,/Not estimated/);assert.doesNotMatch(html,/₹2\.8 Cr/);
+  assert.match(html,/no supported growth forecast/i);
 });
 
 test('explicit drill-down scopes district, city, PIN and catchment loads; national reset clears parent', async t => {

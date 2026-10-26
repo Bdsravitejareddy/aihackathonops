@@ -3,7 +3,7 @@
 const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
 const CHILD = { state: 'district', district: 'city', city: 'pin', pin: 'catchment' };
 const MAX_BY_LEVEL = { state: 40, district: 250, city: 750, pin: 1200, catchment: 500 };
-const ALLOWED_METRICS = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+const ALLOWED_METRICS = new Set(['population','potentialCustomers','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','idealInvestmentPerStore','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
 const canonicalId = (kind, id) => String(id).startsWith(`${kind}:`) ? String(id) : `${kind}:${id}`;
 const priorityCatalog = require('../data/india-geography/karnataka-priority-places.json');
 const priorityPlaces = priorityCatalog.places;
@@ -75,6 +75,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
   const revenue = Number.isFinite(Number(p.expectedRevenueAnnual)) ? Number(p.expectedRevenueAnnual) : som;
   const metrics = {
     population: metric(population, 'people', evidenceClass, sourceFor('population')),
+    potentialCustomers: metric(Number.isFinite(Number(p.potentialCustomers)) && p.potentialCustomers !== null ? Number(p.potentialCustomers) : null, 'people', p.potentialCustomersEvidenceClass || evidenceClass, sourceFor('potentialCustomers'), ['Estimated relevant customers require a sourced participation rate; population is not substituted.']),
     populationDensity: metric(density, 'people/km²', density === null ? null : 'derived_estimate', sourceFor('population'), ['Density is population divided by geodesic polygon area; population vintage follows its source.']),
     households: metric(Number.isFinite(Number(p.households)) && p.households !== null ? Number(p.households) : null, 'households', evidenceClass, sourceFor('households')),
     malePopulation: metric(Number.isFinite(Number(p.malePopulation)) && p.malePopulation !== null ? Number(p.malePopulation) : null, 'people', evidenceClass, sourceFor('malePopulation')),
@@ -86,6 +87,7 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     tam: metric(tam, 'INR/year', 'derived_estimate', sourceFor('apparelSpendPerPersonMonthly'), ['Annual market expenditure = population × monthly per-capita apparel expenditure × 12; not store sales.']),
     sam: metric(sam, 'INR/year', 'derived_estimate', sourceFor('addressabilityFactor'), ['Requires evidenced category/brand addressability and accessibility factors.']),
     som: metric(som, 'INR/year', 'model_assumption', sourceFor('captureRate'), ['Scenario capture rate applied to SAM; not observed store revenue.']),
+    idealInvestmentPerStore: { ...metric(Number.isFinite(Number(p.idealInvestmentPerStore)) && p.idealInvestmentPerStore !== null ? Number(p.idealInvestmentPerStore) : null, 'INR/store', p.idealInvestmentEvidenceClass || 'model_assumption', sourceFor('idealInvestmentPerStore'), ['Must be tied to a brand/store format or explicitly identified as category-level.']), scope: p.idealInvestmentScope || null, components: p.investmentComponents || null },
     competitorCount: metric(Number.isFinite(Number(p.competitorCount)) && p.competitorCount !== null ? Number(p.competitorCount) : null, 'stores', 'official_observed', sourceFor('competitorCount')),
     saturation: metric(Number.isFinite(Number(p.saturation)) && p.saturation !== null ? Number(p.saturation) : null, 'index', 'derived_estimate', sourceFor('saturation')),
     revenue: metric(revenue, 'INR/year', revenue === null ? null : 'model_assumption', sourceFor('expectedRevenueAnnual'), ['Expected franchise revenue is a scenario projection, not observed sales.']),

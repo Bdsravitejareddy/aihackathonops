@@ -62,6 +62,9 @@
     return { data, facts: facts.filter(Boolean), gaps };
   }
   function expansionData({ location, main, doc }) {
+    const popupEl = doc?.querySelector?.('.maplibregl-popup-content [data-popup-geography]');
+    const popupId = popupEl?.dataset?.popupGeography;
+    if (popupId && popupId !== String(location?.id || '')) location = { id: popupId, name: clean(popupEl.querySelector('header strong')?.textContent || popupId, 80), level: /^pin:/.test(popupId) ? 'pin' : null, metrics: {} };
     const area = location?.id ? { id: String(location.id), name: clean(location.name || location.id, 80), level: location.level || null,
       metrics: Object.entries(location.metrics || {}).filter(([, m]) => Number.isFinite(m?.value)).slice(0, 12).map(([key, m]) => ({ label: key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(), value: formatMetric(m) })) } : null;
     const popupKpis = [...(doc?.querySelectorAll('.maplibregl-popup-content .expansion-popup-kpi') || [])].map(kpi => ({
@@ -180,11 +183,52 @@
     return `${Number(metric.value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}${unit ? ' ' + unit : ''}`;
   };
 
-  // Rule bot first (instant), then page facts, then Gemini for a selected map area.
-  async function answer(question, { ctx, env, bot = root.FranchiseBot, fetch = root.fetch?.bind(root), segment = 'mass-market-family-apparel' } = {}) {
+  const GREETING = /^(?:hi|hello|hey|hiya|namaste|good (?:morning|afternoon|evening)|thanks|thank you|ok(?:ay)?|cool)[\s!.?]*$/i;
+  const HOW = /\b(how|why|what|criteria|method|methodology|calculat|formula|explain|mean|means|work out|derived?)\b/i;
+  // How the app calculates each figure, in plain words. These follow the deterministic models, not web research.
+  const METHODS = [
+    { topic: /\b(pay ?back|break[- ]?even|roi|return on investment)\b/i, text: [
+      'Payback is how many months it takes a store\'s cash flow to cover its opening investment.',
+      '• Sales: one store sells the area\'s potential revenue × a capture rate (10% in the base case), capped at what its floor space can sell.',
+      '• Monthly cash: sales × (gross margin − royalty − marketing), minus rent, staff and utilities.',
+      '• Investment: fit-out, rent deposit, opening stock, franchise fee, pre-opening costs and a cash reserve, priced for the city tier.',
+      '• Payback is the first month the running total turns positive. If that does not happen within 5 years, the app shows "> 5 yrs".'] },
+    { topic: /\b(potential revenue|organi[sz]ed (?:store )?demand)\b/i, text: [
+      'Potential revenue is the yearly apparel spend that organised physical stores can win in an area.',
+      '• Population (modelled 2020) × monthly clothing and footwear spend per person (HCES 2023–24, rural and urban) × 12.',
+      '• × the organised physical-store share: 41% organised × 78% offline (CareEdge FY25).',
+      '• It is demand for the whole area, not one store\'s sales.'] },
+    { topic: /\b(tam|total addressable|market size|category spend)\b/i, text: [
+      'TAM is everything residents spend on clothing and footwear in a year.',
+      '• Population × monthly spend per person (HCES 2023–24, rural and urban weighted) × 12.',
+      '• It covers every channel, online included, so it is larger than potential revenue.'] },
+    { topic: /\b(investment|capex|set ?up cost|cost to open)\b/i, text: [
+      'Investment required is the cost to open one store in the base case:',
+      '• fit-out per sq ft, a rent deposit, opening stock, the franchise fee, pre-opening costs and a few months of fixed costs as a reserve.',
+      '• Rent and wages follow the city tier (HRA class X, Y or Z). The range runs from the cheapest to the most expensive end of each cost.'] },
+    { topic: /\b(categor(?:y|ies)|classif\w*|data required|future expansion)\b/i, text: [
+      'Every application falls into one of three categories:',
+      '• Recommended: meets the requirements and has a territory slot.',
+      '• Data required: something is missing, conflicting or below a requirement (funding, area, site, floor, launch timing).',
+      '• Future expansion: a good application where the location does not fit right now (slot taken, existing store, or a territory the brand is not opening).'] }
+  ];
+  function methodAnswer(text, ctx, doc) {
+    // A question about a named application belongs to the rule bot, which knows that applicant's reasons.
+    if (!HOW.test(text) || /\b[A-Z]{2,}-\d{2,}\b/i.test(text)) return null;
+    const method = METHODS.find(item => item.topic.test(text));
+    if (!method) return null;
+    const why = /\b(pay ?back|break[- ]?even|roi)\b/i.test(text) ? clean(doc?.querySelector?.('.analysis-why')?.textContent, 600).replace(/^Why this payback\?\s*/, '') : '';
+    return method.text.join('\n') + (why ? `\n\nFor ${ctx.geography?.name || 'this area'}: ${why}` : '');
+  }
+
+  // Greetings and method questions first (instant), then the rule bot, page facts, and Gemini for a selected map area.
+  async function answer(question, { ctx, env, bot = root.FranchiseBot, fetch = root.fetch?.bind(root), segment = 'mass-market-family-apparel', doc = root.document } = {}) {
     const text = String(question || '').trim();
     if (!text) return null;
+    if (GREETING.test(text)) return { text: `Hi! I answer from the page you are on.${ctx.suggestions?.length ? ` Try: ${ctx.suggestions.slice(0, 2).map(item => `"${item}"`).join(' or ')}.` : ''}`, source: 'page' };
     if (/\bsummar|\boverview of (?:this|the) page\b|\bwhat am i (?:looking at|seeing)\b|\b(?:on|about) this page\b/i.test(text)) return { text: summary(ctx), source: 'page' };
+    const method = methodAnswer(text, ctx, doc);
+    if (method) return { text: method, source: 'page' };
     const mapPage = ['expansion', 'market', 'screening'].includes(ctx.page);
     const facts = matchFacts(text, ctx);
     if (mapPage && facts.length && LOOKUP.test(text) && !/\b(why|should|good|best|compare|risk)\b/i.test(text)) return { text: `From this page:\n${factLines(facts)}`, source: 'page' };
@@ -274,7 +318,7 @@
       const log = $('[data-fc-log]'), thinking = doc.createElement('div');
       thinking.className = 'fc-msg fc-thinking'; thinking.innerHTML = '<span class="fc-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fc-sr">Thinking…</span>'; log.append(thinking); scroll();
       let reply;
-      try { reply = await answer(text, { ctx, env, fetch }); } catch (error) { reply = { text: `Something went wrong: ${error.message}`, source: 'notice' }; }
+      try { reply = await answer(text, { ctx, env, fetch, doc }); } catch (error) { reply = { text: `Something went wrong: ${error.message}`, source: 'notice' }; }
       if (reply?.contextKey !== undefined) app.setBotContext?.(reply.contextKey);
       pending = reply?.proposal || null;
       const message = { role: 'bot', page: ctx.page, ...reply };

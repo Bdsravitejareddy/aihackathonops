@@ -252,3 +252,9 @@ test('an answer without any grounding search is retried once with an explicit se
   assert.match(bodies[1].contents[0].parts[0].text, /Run Google Search before answering/);
   assert.equal(result.citations.length, 1);
 });
+
+test('Gemini gets rounded, human-readable figures instead of raw floats', () => {
+  const { readableFigures } = require('../server/market-research.cjs');
+  const out = readableFigures({ metrics: { populationDensity: { value: 554.0943640537497, unit: 'people/km²' }, apparelExpenditure: { value: 291698337916.8, unit: 'INR/year' }, population: { value: 72147030, unit: 'people' } } });
+  assert.deepEqual(out, ['population density: 554 people/km²', 'apparel expenditure: ₹29,169.83 crore per year', 'population: 7.21 crore people']);
+});

@@ -263,6 +263,18 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
                 scenarios:Object.fromEntries(Object.entries(forecast.scenarios || {}).map(([key,value])=>[key,{roiPercent:value.roiPercent,paybackMonths:value.paybackMonths,annualRevenue:value.years?.[0]?.nominalRevenue ?? null,year5Revenue:value.years?.at(-1)?.nominalRevenue ?? null,npv:value.npv}])) };
             } catch { return { error:{ status:400, message:'Financial assumptions are invalid.' } }; }
           }
+          // The store cost model's base case (what the Analysis panel shows), so answers about payback use the same figures.
+          let storeEconomics = null;
+          try {
+            const analysisGeography = await loadAnalysisGeography(geographyId);
+            if (analysisGeography) {
+              const analysis = analyzeLocation({ geography: analysisGeography }), mid = analysis.scenarios.mid, high = analysis.scenarios.high;
+              storeEconomics = { model: 'base case, one store', storeArea: { value: analysis.assumptions.areaSqFt.value.mid, unit: 'sq ft' },
+                investment: { value: mid.investment, unit: 'INR' }, storeSales: { value: mid.annualRevenue, unit: 'INR/year' }, breakEvenSales: { value: mid.breakEvenRevenueAnnual, unit: 'INR/year' },
+                fixedCosts: { value: mid.monthlyFixedCosts * 12, unit: 'INR/year' }, payback: mid.paybackMonths === null ? 'does not pay back within 5 years' : { value: mid.paybackMonths, unit: 'months' },
+                upsidePayback: high.paybackMonths === null ? 'does not pay back within 5 years' : { value: high.paybackMonths, unit: 'months' } };
+            }
+          } catch { /* Answers fall back to market metrics when the cost model cannot run for this area. */ }
           let extra = null;
           try { extra = await marketMapStore.getMapEvidence?.(geographyId); }
           catch { /* The location catalog's own evidence remains valid when supplemental PostGIS evidence is unavailable. */ }
@@ -270,7 +282,7 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
           const context = {
             location:{ id:geography.id, name:geography.name, level:geography.level, pin:geography.pin || null, city:geography.city || null, state:geography.state || null, sourceVersion:geography.sourceVersion || marketMapStore.sourceVersion || 'india-geography-1.1.2' },
             targetApparelSegment:segmentOf(payload.segment),
-            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:compactMetrics(geography.metrics), demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
+            deterministicAssessment:{ modelVersion:'india-fashion-market-v1', ...(assessment ? { id:assessment.id, version:assessment.version } : {}), metrics:compactMetrics(geography.metrics), demographics:geography.demographics, financialForecast:deterministicFinancialForecast, storeEconomics, storedAssessmentResults:snapshot.results || null, storedForecast:snapshot.forecast || null },
             assumptions:scenario,
             sourceEvidence:[...(geography.evidence || []), ...(extra?.evidence || [])].filter((item, index, all) => all.findIndex(candidate => candidate.sourceId === item.sourceId && candidate.url === item.url) === index).slice(0,20),
             dataWarnings:[...(geography.warnings || []), ...(extra?.warnings || [])]

@@ -193,3 +193,22 @@ test('map summary lists popup KPIs as title and value and reports missing KPIs o
   assert.equal((text.match(/Not available/g) || []).length, 1);
   assert.doesNotMatch(text, /—|Not estimated/);
 });
+
+test('greetings and method questions are answered instantly without Gemini', async () => {
+  const fetched = [];
+  const fetch = async (...args) => { fetched.push(args); return { ok: true, json: async () => ({ answer: 'remote' }) }; };
+  const doc = dom('<div class="analysis-why"><strong>Why this payback?</strong> Store sales are below break-even.</div>');
+  const ctx = { ...Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location }), geography: { id: 'pin:524003', name: 'PIN 524003' } };
+  const hi = await Chat.answer('hi', { ctx, fetch, doc });
+  assert.equal(hi.source, 'page'); assert.match(hi.text, /^Hi!/);
+  const payback = await Chat.answer("What's the criteria and methodology to calculate payback period", { ctx, fetch, doc });
+  assert.equal(payback.source, 'page');
+  assert.match(payback.text, /capture rate/); assert.match(payback.text, /For PIN 524003: Store sales are below break-even/);
+  assert.equal(fetched.length, 0);
+});
+
+test('the open PIN popup is the area in context, not an older map selection', () => {
+  const doc = dom('<div class="maplibregl-popup-content"><div class="expansion-popup is-pin" data-popup-geography="pin:524003"><header><strong>PIN 524003</strong></header></div></div>');
+  const ctx = Chat.buildPageContext({ tab: 'expansion', state: terrState, results: [], doc, location: { id: 'state:IN-TN', name: 'Tamil Nadu', level: 'state', metrics: {} } });
+  assert.equal(ctx.geography.id, 'pin:524003'); assert.equal(ctx.geography.name, 'PIN 524003');
+});

@@ -216,3 +216,24 @@ test('storePins option marks listed PINs as stores and is sent with the opportun
   assert.equal(h.adapter.hasStore('560059'), true);
   assert.equal(h.adapter.hasStore('560058'), false);
 });
+
+test('pins sit inside a wrapper MapLibre positions, so pin styles cannot move them', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const elements = h.lib.Marker.instances.filter(marker => !marker.removed).map(marker => marker.options.element);
+  assert.ok(elements.length > 0);
+  for (const el of elements) { assert.equal(el.className, 'expansion-pin-anchor'); assert.ok(el.querySelector('.expansion-pin')); }
+});
+
+test('next-best PINs are ranked once across India and stay fixed when the map moves', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const ranking = () => h.requests.filter(url => url.includes('/api/market/map/opportunities'));
+  assert.equal(ranking().length, 1);
+  assert.equal(new URL(ranking()[0], 'http://localhost').searchParams.get('bbox'), '60,5,100,38');
+  h.map.fire('moveend'); await loadPins();
+  assert.equal(ranking().length, 1);
+  assert.deepEqual([...h.container.querySelectorAll('.expansion-pin--next')].map(el => el.dataset.mapPin), ['pin:560059', 'pin:560060']);
+});

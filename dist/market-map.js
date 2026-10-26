@@ -391,21 +391,22 @@
     const shapePin = (item, extra = {}) => ({ ...item, ...extra, id: String(item.id || `pin:${item.pin}`), pin: String(item.pin || pinCode(item.id)) });
     function setOpportunityState(state, message = '') {
       oppState = state;
-      options.onOpportunities?.({ state, stores: storePins.length || allStores().length, opportunities: opportunities.length, message });
+      options.onOpportunities?.({ state, stores: storePins.length || allStores().length, opportunities: opportunities.length, region: region.name, message });
     }
     function requestOpportunities() {
       clearTimeout(oppTimer);
       if (!ready || destroyed || !fetcher) return;
       oppTimer = setTimeout(loadOpportunities, debounceMs);
     }
-    // One ranking across India, spaced apart so pins do not pile up on one neighbourhood. It does not follow the
-    // viewport, so the next-best PINs stay fixed while the user zooms and pans.
-    const INDIA_BBOX = [60, 5, 100, 38];
+    // One ranking for the region the brand operates in (options.rankRegion, else all of India), spaced apart so pins
+    // do not pile up on one neighbourhood. It does not follow the viewport, so the pins stay fixed on zoom and pan.
+    const region = options.rankRegion || { bbox: [60, 5, 100, 38], state: null, name: 'India' };
     async function loadOpportunities() {
       oppTimer = null;
-      const bbox = INDIA_BBOX;
+      const bbox = region.bbox;
       const query = new URLSearchParams({ bbox: bbox.join(','), limit: String(OPPORTUNITY_LIMIT), spacingKm: String(OPPORTUNITY_SPACING_KM), sector: sectorId() });
       if (storePins.length) query.set('storePins', storePins.join(','));
+      if (region.state) query.set('state', region.state);
       const key = query.toString(); if (key === oppKey) return;
       oppAbort?.abort(); oppAbort = typeof AbortController === 'function' ? new AbortController() : null; const revision = ++oppRevision;
       setOpportunityState('loading');
@@ -649,7 +650,7 @@
       const legend=pinLegend||{thresholds:[25e6,45e6,70e6,120e6],colors:['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019']};
       const money=value=>display({value,unit:'INR'});
       const scale=pinView?`<strong class="expansion-legend-sub">PIN potential revenue / year</strong><div class="expansion-legend-items">${legend.colors.map((color,i)=>`<span><i class="expansion-swatch" style="background:${escape(color)}" aria-hidden="true"></i>${i===0?`Under ${money(legend.thresholds[0])}`:i===legend.colors.length-1?`${money(legend.thresholds[i-1])}+`:`${money(legend.thresholds[i-1])} – ${money(legend.thresholds[i])}`}</span>`).join('')}<span><i class="expansion-swatch" style="background:#6b7280" aria-hidden="true"></i>Not available</span></div>`:'';
-      $('[data-map-legend]').innerHTML=`<strong>Expansion pins</strong><div class="expansion-legend-items"><span><i class="expansion-dot expansion-dot--store" aria-hidden="true"></i>Existing store</span><span><i class="expansion-dot expansion-dot--next" aria-hidden="true"></i>Next-best PIN to open, ranked</span></div><small>Top PINs across India by potential revenue, spaced 3 km apart. Fixed while you zoom and pan.</small>${scale}`;
+      $('[data-map-legend]').innerHTML=`<strong>Expansion pins</strong><div class="expansion-legend-items"><span><i class="expansion-dot expansion-dot--store" aria-hidden="true"></i>Existing store</span><span><i class="expansion-dot expansion-dot--next" aria-hidden="true"></i>Next-best PIN to open, ranked</span></div><small>Top PINs in ${escape(options.rankRegion?.name || 'India')} by potential revenue, at least 3 km from a store and from each other. Fixed while you zoom and pan.</small>${scale}`;
     }
     // PIN view: loads the PIN polygons in view once the map is close enough to read them.
     const PIN_VIEW_MIN_ZOOM=8.5;
@@ -913,7 +914,7 @@
         while (path.length && zoom < ZOOMS[childIndex()] - 0.5) { path.pop(); changed = true; }
         if (changed) { selected = null; invalidate(); }
         loadLevels(); schedulePinAreas(); options.onViewport?.(view);
-      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onOpportunities(info){ if(destroyed)return; status(info.state==='loading'?'Ranking next-best PINs…':info.state==='error'?`Next-best PINs unavailable: ${info.message}`:`${info.opportunities} next-best PINs across India · ${info.stores} existing stores`); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
+      }, options: { ...options, metric, year, segment:$('[name="apparelSegment"]').value, onOpportunities(info){ if(destroyed)return; status(info.state==='loading'?'Ranking next-best PINs…':info.state==='error'?`Next-best PINs unavailable: ${info.message}`:`${info.opportunities} next-best PINs in ${info.region || 'India'} · ${info.stores} existing stores`); }, onError(error) { status(`Map rendering unavailable: ${error.message}. Use the loaded area list to inspect evidence.`); } } });
     } catch (error) { $('[data-map-canvas]').innerHTML = `<div class="expansion-map-unavailable">${escape(error.message)} Use the area list below to inspect sourced data.</div>`; }
     container.addEventListener('click', onClick);
     function onClick(event) {

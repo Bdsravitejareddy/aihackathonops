@@ -358,19 +358,24 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const storePins = new Set((url.searchParams.get('storePins') || '').split(',').map(pin => pin.trim()).filter(pin => /^[1-9]\d{5}$/.test(pin)));
             let sector;
             try { sector = await sectorFor(url.searchParams.get('sector')); } catch (error) { return reply(res, error.status, { error: error.message }); }
-            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000, largestFirst: true })).map(feature => withSector(feature, sector));
+            // ?state= limits the ranking to the states the brand operates in (Karnataka in the case).
+            const stateFilter = (url.searchParams.get('state') || '').trim().toLowerCase();
+            const features = (await marketMapStore.listMapGeographies({ level: 'pin', bbox, metric: 'potentialRevenue', scenario: { captureRate: null }, includeGeometry: false, maxRows: 6000, largestFirst: true }))
+              .filter(feature => !stateFilter || String(feature.state || '').toLowerCase() === stateFilter).map(feature => withSector(feature, sector));
             const km = (a, b) => { const r = Math.PI / 180, x = (b[0] - a[0]) * r * Math.cos((a[1] + b[1]) / 2 * r), y = (b[1] - a[1]) * r; return 6371 * Math.hypot(x, y); };
-            const stores = features.filter(f => storePins.has(String(f.pin)) && f.anchor).map(f => f.anchor);
+            // Every store's anchor, looked up directly when the ranked rows do not include it, so the 3 km rule covers all stores.
+            const storeRows = await Promise.all([...storePins].map(async pin => features.find(f => String(f.pin) === pin) || await marketMapStore.getMapGeography(`pin:${pin}`, 'potentialRevenue', { captureRate: null }).catch(() => null)));
+            const stores = storeRows.filter(f => f?.anchor).map(f => f.anchor);
             const ranked = features.filter(f => f.anchor && Number.isFinite(f.metrics.potentialRevenue?.value) && !storePins.has(String(f.pin)) && !stores.some(s => km(s, f.anchor) < spacingKm))
               .sort((a, b) => b.metrics.potentialRevenue.value - a.metrics.potentialRevenue.value);
             const chosen = [];
             for (const f of ranked) { if (chosen.length >= limit) break; if (!chosen.some(c => km(c.anchor, f.anchor) < spacingKm)) chosen.push(f); }
             const value = key => f => f.metrics[key]?.value ?? null;
             return reply(res, 200, { sector: sectorSummary(sector), spacingKm, considered: features.length, truncated: features.length >= 6000,
-              stores: features.filter(f => storePins.has(String(f.pin))).map(f => ({ pin: f.pin, id: f.id, anchor: f.anchor, district: f.district, state: f.state })),
+              stores: storeRows.filter(f => f?.anchor).map(f => ({ pin: f.pin, id: f.id, anchor: f.anchor, district: f.district, state: f.state })),
               opportunities: chosen.map((f, index) => ({ rank: index + 1, id: f.id, pin: f.pin, anchor: f.anchor, district: f.district, state: f.state,
                 potentialRevenue: value('potentialRevenue')(f), tam: value('apparelExpenditure')(f), population: value('population')(f), spendPerPersonMonthly: value('monthlyPerCapitaSpend')(f) })),
-              method: `Top PINs by potential revenue in the view, excluding PINs with a store and anything within ${spacingKm} km of a store or of a higher-ranked pick.` });
+              method: `Top PINs by potential revenue${stateFilter ? ` in ${url.searchParams.get('state').trim()}` : ' in the view'}, excluding PINs with a store and anything within ${spacingKm} km of a store or of a higher-ranked pick.` });
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/levels') {
             const metric = url.searchParams.get('metric') || 'apparelExpenditure';

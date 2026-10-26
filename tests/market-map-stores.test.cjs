@@ -61,7 +61,7 @@ function mapDouble() {
 }
 
 // Direct map-adapter harness: the adapter returned by MarketMap.mount, which owns PIN markers and popups.
-function mountAdapter({ responder = () => levels([], 'state'), storePins = [] } = {}) {
+function mountAdapter({ responder = () => levels([], 'state'), storePins = [], rankRegion = undefined } = {}) {
   const dom = new JSDOM('<main id="host"></main>', { url: 'http://localhost/', runScripts: 'outside-only' });
   const { window } = dom;
   const lib = mapDouble(), requests = [];
@@ -75,7 +75,7 @@ function mountAdapter({ responder = () => levels([], 'state'), storePins = [] } 
   window.eval(read('dist/market-color-scale.js'));
   window.eval(read('dist/market-map.js'));
   const container = window.document.getElementById('host');
-  const adapter = window.MarketMap.mount({ container, options: { opportunityDebounceMs: 0, storePins } });
+  const adapter = window.MarketMap.mount({ container, options: { opportunityDebounceMs: 0, storePins, rankRegion } });
   const map = lib.Map.instances[0];
   map.fire('load');
   return { dom, window, lib, container, adapter, map, requests };
@@ -237,4 +237,12 @@ test('next-best PINs are ranked once across India and stay fixed when the map mo
   h.map.fire('moveend'); await loadPins();
   assert.equal(ranking().length, 1);
   assert.deepEqual([...h.container.querySelectorAll('.expansion-pin--next')].map(el => el.dataset.mapPin), ['pin:560059', 'pin:560060']);
+});
+
+test('the ranking is limited to the brand region when one is given', async t => {
+  const h = mountAdapter({ responder: pinApi(), rankRegion: { name: 'Karnataka', state: 'Karnataka', bbox: [74, 11.5, 78.6, 18.5] } });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const query = new URL(h.requests.find(url => url.includes('/api/market/map/opportunities')), 'http://localhost').searchParams;
+  assert.equal(query.get('bbox'), '74,11.5,78.6,18.5'); assert.equal(query.get('state'), 'Karnataka');
 });

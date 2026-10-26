@@ -155,7 +155,8 @@
         }
       ],
       "rationale": "Blended (ground + upper floor) rent bands for a large-format value apparel store outside prime high streets, by HRA city class.",
-      "caveat": "No sourced city-tier rent series for mass-format stores was found. These are model assumptions; replace with a site lease quote."
+      "caveat": "No sourced city-tier rent series for small apparel shops was found. These are model assumptions; replace with the applicant's lease or a local quote.",
+      "method": "Rent bands per sq ft per month for a small high-street or neighbourhood apparel shop (ground or upper floor), by HRA city class."
     },
     "fitOutPerSqFt": {
       "label": "Fit-out and interiors",

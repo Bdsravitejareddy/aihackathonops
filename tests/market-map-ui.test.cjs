@@ -7,6 +7,13 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
+const settle = () => new Promise(resolve => setTimeout(resolve, 10));
+const competitorsPayload = {
+  geographyId: 'pin:560058', sector: 'apparel', sectorName: 'Apparel & fashion',
+  observed: { source: 'OpenStreetMap', totalStores: 12, brandedStores: 5, brands: [{ name: 'Zudio', count: 3 }], categories: { clothes: 12 }, retrievedAt: '2026-10-26', license: 'ODbL' },
+  majorCompetitors: [{ name: 'Trends', parent: 'Reliance Retail', format: 'Value fashion', priceTier: 'value', presence: 'city', citation: { title: 'Src', url: 'https://example.org/a' } }],
+  warnings: [], cached: false
+};
 const polygon = { type: 'Polygon', coordinates: [[[75,20],[77,20],[77,22],[75,22],[75,20]]] };
 // Deliberately synthetic test geographies; never loaded by production code.
 const feature = (id, value, level = 'state', parentId = null) => ({
@@ -49,7 +56,14 @@ function mapDouble() {
     remove() { this.removed = true;this.element?.remove(); }
   }
   Popup.instances = [];
-  return { Map, Popup, NavigationControl: class {} };
+  class Marker {
+    constructor(options) { this.options = options; Marker.instances.push(this); }
+    setLngLat(value) { this.lngLat = value; return this; }
+    addTo(map) { map.options.container.append(this.options.element); return this; }
+    remove() { this.removed = true; this.options.element?.remove(); return this; }
+  }
+  Marker.instances = [];
+  return { Map, Popup, Marker, NavigationControl: class {} };
 }
 function setup(responder = url => url.includes('/geographies/') ? feature('a',120) : levels()) {
   const dom = new JSDOM('<main id="host"></main>', { url: 'http://localhost/', runScripts: 'outside-only' });
@@ -96,30 +110,18 @@ test('Expansion Intelligence opens as a map-first full screen with an always-vis
   await tick(); await tick(); w.document.querySelector('[data-tab="expansion"]').click(); await tick();
   assert.ok(w.document.body.classList.contains('expansion-fullscreen'));
   assert.ok(w.document.querySelector('[data-map-overview]'));
-  for (const key of ['tam','sam','som','customers','spending','competition','opportunity']) assert.ok(w.document.querySelector(`[data-market-metric="${key}"]`));
+  for (const key of ['tam','population','spending']) assert.ok(w.document.querySelector(`[data-market-metric="${key}"]`));
   assert.ok(w.document.querySelector('[data-map-basemap]'));
-  assert.ok(w.document.querySelector('[data-map-color-mode]'));
   assert.equal(w.document.querySelector('[data-map-scenario-form]')?.closest('details')?.open,false);
   w.document.querySelector('[data-tab="applications"]').click(); await tick();
   assert.ok(!w.document.body.classList.contains('expansion-fullscreen'));
 });
 
-test('continuous metric scale and 3D tilt controls update the persistent map without refetching geometry', async t => {
+test('3D tilt control updates the persistent map without refetching geometry', async t => {
   const h=setup(); t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
   const count=h.requests.length, map=h.map;
-  h.change('[data-map-color-mode]','log'); h.change('[data-map-scale-scope]','local'); h.click('[data-map-tilt]');
+  h.click('[data-map-tilt]');
   assert.equal(map.pitch,58); assert.equal(h.requests.length,count); assert.equal(h.maplibregl.Map.instances.length,1);
-  assert.equal(require('../dist/market-color-scale.js').MISSING_COLOR,'#b9c1c5');
-});
-
-test('automated estimate keeps unsupported unique-customer demand visibly unavailable', async t => {
-  const f=feature('a',120); f.metrics.apparelExpenditure={value:1200000,unit:'INR/year',evidenceClass:'derived_estimate',referenceYear:2011};
-  f.metrics.tam={value:1200000,unit:'INR/year',evidenceClass:'derived_estimate'}; f.metrics.sam={value:null,unit:'INR/year',evidenceClass:'unavailable',missing:{cause:'source_unavailable',nextAction:'Add a category participation benchmark.'}};
-  const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f]));
-  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick(); h.click('[data-map-result]'); await tick();
-  assert.match(h.host.querySelector('[data-market-metric="tam"]').textContent,/12,00,000|₹/);
-  assert.match(h.host.querySelector('[data-market-metric="customers"]').textContent,/not estimated|unavailable/i);
-  assert.match(h.host.querySelector('[data-market-metric="sam"]').textContent,/not available|unavailable/i);
 });
 
 test('panning and zooming the loaded state layer reuses its geometry request', async t => {
@@ -129,48 +131,13 @@ test('panning and zooming the loaded state layer reuses its geometry request', a
   assert.equal(h.map.getSource('market-geographies').data.features.length,2);
 });
 
-test('fixed national legend survives local extrema; null stays gray while zero is a measured value', async t => {
-  const h = setup(); t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
-  const data = h.map.getSource('market-geographies').data;
-  assert.equal(data.features.find(f => f.id === 'a').properties.v_apparelExpenditure,120);
-  assert.equal(data.features.find(f => f.id === 'b').properties.v_apparelExpenditure,undefined);
-  assert.equal(h.map.layers['market-fill'].paint['fill-color'][0],'case');
-  assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
-  const legend = h.host.querySelector('[data-map-legend]').textContent;
-  h.controller.setFeatures([feature('zero',0),feature('large',900),feature('missing',undefined)]);
-  assert.equal(h.host.querySelector('[data-map-legend]').textContent, legend);
-  const changed = h.map.getSource('market-geographies').data.features;
-  assert.equal(changed[0].properties.v_apparelExpenditure,0);
-  assert.equal(changed[1].properties.v_apparelExpenditure,900);
-  assert.equal(changed[2].properties.v_apparelExpenditure,undefined);
-  assert.match(legend, /100/); assert.match(legend, /200/); assert.match(legend, /national/i);assert.match(legend,/linear/i);
-});
-
-test('changing INR display units refreshes map labels without fetching geography again', async t => {
-  const h = setup(url => url.includes('/geographies/') ? feature('a',120) : {
-    ...levels([feature('a',120)]),
-    legend: { metric:'potentialRevenue', year:2026, scope:'national', thresholds:[10000000,100000000], colors:['#d9eee1','#6ba688','#185a44'], unit:'INR/year' }
-  });
-  t.after(() => { h.controller.destroy(); h.dom.window.close(); });
-  await tick();
-  h.window.eval(read('dist/display-format.js'));
-  h.window.FranchiseDisplay.setMode('millions');
-  h.controller.refreshDisplay();
-  assert.match(h.host.querySelector('[data-map-legend]').textContent, /₹10M/);
-  const before = h.requests.length;
-  h.window.FranchiseDisplay.setMode('crores');
-  h.controller.refreshDisplay();
-  assert.match(h.host.querySelector('[data-map-legend]').textContent, /₹1 Cr/);
-  assert.equal(h.requests.length, before);
-});
-
-test('visible fill layer accepts sourced MultiPolygon state boundaries', async t => {
+test('state outlines accept sourced MultiPolygon boundaries and the fill excludes only point features', async t => {
   const h = setup(); t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
   const multi = feature('multi-state', 120);
   multi.geometry = { type:'MultiPolygon', coordinates:[[[[75,19],[80,19],[80,25],[75,25],[75,19]]]] };
   h.controller.setFeatures([multi]);
   assert.equal(h.map.getSource('market-geographies').data.features[0].geometry.type, 'MultiPolygon');
-  assert.equal(h.map.layers['market-fill'].filter, undefined, 'the fill layer must not exclude MultiPolygon features');
+  assert.equal(JSON.stringify(h.map.layers['market-fill'].filter), JSON.stringify(['!=',['geometry-type'],'Point']), 'the fill layer must not exclude MultiPolygon features');
 });
 
 test('click loads workspace detail, evidence popup is escaped, and unsupported metrics remain unavailable', async t => {
@@ -189,78 +156,60 @@ test('click loads workspace detail, evidence popup is escaped, and unsupported m
   assert.equal(detail.querySelector('img'),null); assert.equal(detail.querySelector('[href^="javascript:"]'),null);
   const popup = h.window.maplibregl.Popup.instances.at(-1);
   assert.match(popup.html, /Test area a/); assert.match(popup.html, /State/);
-  assert.match(popup.html, /View detailed analysis/); assert.doesNotMatch(popup.html, /<img|areal_interpolation|https:\/\/example\.org\/source|Fixture publisher|referenceYear/);
+  assert.match(popup.html, /View full details/); assert.doesNotMatch(popup.html, /<img|areal_interpolation|https:\/\/example\.org\/source|Fixture publisher|referenceYear/);
 });
 
-test('commercial popup shows sourced TAM/SOM, separates customers from population, and keeps details in the sidebar', async t => {
+test('area popup shows category, potential and catchment figures, and its detail button opens the sidebar', async t=>{
   const f=feature('popup-market',120,'city');
-  f.metrics.tam={value:224532000,unit:'INR/year',evidenceClass:'derived_estimate'};
-  f.metrics.som={value:24700000,unit:'INR/year',evidenceClass:'model_assumption'};
-  f.metrics.potentialCustomers={value:4200,unit:'people',evidenceClass:'derived_estimate'};
-  f.metrics.idealInvestmentPerStore={value:18000000,unit:'INR/store',evidenceClass:'model_assumption',scope:'category-level',components:{fitOut:6000000,openingInventory:7000000,workingCapital:5000000}};
-  f.metrics.growthPotential3Year={value:18,unit:'% nominal / 3 years',evidenceClass:'forecast'};
   const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f],'city'));
   t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();h.controller.setFeatures([f]);h.window.eval(read('dist/display-format.js'));
   h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});await tick();
   const popup=h.window.maplibregl.Popup.instances.at(-1);
-  assert.equal(popup.options.maxWidth,'380px');
-  assert.match(popup.html,/Annual TAM/);assert.match(popup.html,/₹224\.5M/);
-  assert.match(popup.html,/Annual SOM/);assert.match(popup.html,/₹24\.7M/);
-  assert.match(popup.html,/Estimated customers/);assert.match(popup.html,/4\.2K people/);
-  assert.match(popup.html,/Ideal investment/);assert.match(popup.html,/Category-level estimate/);assert.match(popup.html,/fit-out ₹6M · opening inventory ₹7M · working capital ₹5M/);
-  assert.match(popup.html,/3-year projected revenue growth/);assert.match(popup.html,/18\s*%/);
-  assert.match(popup.html,/Modelled/);assert.doesNotMatch(popup.html,/Test source|Fixture publisher|areal_interpolation|referenceYear|https:\/\/example\.org/);
+  assert.equal(popup.options.maxWidth,'340px');
+  assert.match(popup.html,/Annual category spend/);assert.match(popup.html,/Potential revenue/);assert.match(popup.html,/Catchment/);
+  assert.doesNotMatch(popup.html,/Annual SOM|Estimated customers|Ideal investment|growth|Test source|areal_interpolation|https:\/\/example\.org/i);
   const details=h.host.querySelector('[data-map-detail]').closest('details');
   h.click('[data-map-sidebar-toggle]');assert.ok(h.host.querySelector('.expansion-side').classList.contains('is-collapsed'));
   h.click('[data-map-popup-detail="popup-market"]');
   assert.equal(details.open,true);assert.ok(!h.host.querySelector('.expansion-side').classList.contains('is-collapsed'));
-  h.change('[name="apparelSegment"]','value-fashion');
-  assert.match(h.window.maplibregl.Popup.instances.at(-1).html,/Value Fashion/);
-  h.controller.setYear(2025);
-  assert.match(h.window.maplibregl.Popup.instances.at(-1).html,/2025 view/);
-  const previousPopupHtml=popup.html;
-  h.controller.setMetric('population');await tick();
-  assert.notEqual(h.window.maplibregl.Popup.instances.at(-1).html,previousPopupHtml);
-  h.window.FranchiseDisplay.setMode('crores');h.controller.refreshDisplay();
-  const refreshed=h.window.maplibregl.Popup.instances.at(-1);
-  assert.match(refreshed.html,/₹22\.45 Cr/);
 });
 
-test('commercial popup labels each supported geography level without turning population into customers or footfall',async t=>{
+test('area popup labels each supported geography level and keeps population as catchment, not customers or footfall',async t=>{
   const h=setup();t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();
   for(const level of ['state','district','city','catchment']){
     const f=feature(`level-${level}`,250,level);h.controller.setFeatures([f]);
     h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
     const html=h.window.maplibregl.Popup.instances.at(-1).html;
-    assert.match(html,new RegExp(`<small>${level==='pin'?'PIN code':level[0].toUpperCase()+level.slice(1)}`));
-    assert.match(html,/Area population|Catchment population/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
+    assert.match(html,new RegExp(`<small>${level[0].toUpperCase()+level.slice(1)}</small>`));
+    assert.match(html,/<span>Catchment<\/span>/);assert.doesNotMatch(html,/Estimated customers|footfall/i);
   }
 });
 
-test('popup never presents unsupported investment or growth as available',async t=>{
-  const f=feature('missing-market',500,'catchment');f.metrics.tam={value:null,unit:'INR/year'};f.metrics.som={value:null,unit:'INR/year'};f.metrics.idealInvestmentPerStore={value:28000000,unit:'INR/store',evidenceClass:'model_assumption'};f.metrics.growthPotential3Year={value:null,unit:'% nominal / 3 years'};
+test('area popup never presents unsupported investment or growth as available',async t=>{
+  const f=feature('missing-market',500,'catchment');f.metrics.apparelExpenditure={value:null,unit:'INR/year'};f.metrics.tam={value:null,unit:'INR/year'};f.metrics.som={value:null,unit:'INR/year'};f.metrics.idealInvestmentPerStore={value:28000000,unit:'INR/store',evidenceClass:'model_assumption'};f.metrics.growthPotential3Year={value:null,unit:'% nominal / 3 years'};
   const h=setup(url=>url.includes('/geographies/')?{geography:f,evidence:f.evidence,confidence:'low'}:levels([f],'catchment'));
   t.after(()=>{h.controller.destroy();h.dom.window.close();});await tick();h.controller.setFeatures([f]);h.map.fire('click',{features:[{id:f.id,properties:{id:f.id}}],lngLat:{lng:76,lat:21}});
   const html=h.window.maplibregl.Popup.instances.at(-1).html;
-  assert.match(html,/Catchment/);assert.match(html,/Catchment population/);assert.match(html,/Not estimated/);assert.doesNotMatch(html,/₹2\.8 Cr/);
-  assert.match(html,/no supported growth forecast/i);
+  assert.match(html,/Catchment/);assert.doesNotMatch(html,/Annual category spend/);assert.doesNotMatch(html,/₹2\.8 Cr|Investment|growth|Not estimated/i);
 });
 
-test('explicit drill-down scopes district, city, PIN and catchment loads; national reset clears parent', async t => {
+test('explicit drill-down scopes district and city loads; PIN drill is a status message; national reset clears parent', async t => {
   const h = setup((url) => {
     if (url.includes('/geographies/')) return feature('a',120);
     const p = new URL(url,'http://localhost').searchParams.get('parentId');
     if (p === 'a') return levels([feature('d',120,'district','a')], 'district');
     if (p === 'd') return levels([feature('c',120,'city','d')], 'city');
-    if (p === 'c') return levels([feature('p',120,'pin','c')], 'pin');
-    if (p === 'p') return levels([], 'catchment');
     return levels();
   }); t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
-  for (const id of ['a','d','c','p']) {
+  const lastParent = () => new URL(h.requests.filter(r => r.url.includes('/levels')).at(-1).url,'http://localhost').searchParams.get('parentId');
+  for (const id of ['a','d']) {
     h.controller.selectGeography(id); await tick(); h.click('[data-map-drill]'); await tick();
-    assert.equal(new URL(h.requests.filter(r => r.url.includes('/levels')).at(-1).url,'http://localhost').searchParams.get('parentId'),id);
+    assert.equal(lastParent(), id);
   }
-  assert.match(h.host.querySelector('[data-map-status]').textContent,/catchment/i);
+  const levelRequests = h.requests.filter(r => r.url.includes('/levels')).length;
+  h.controller.selectGeography('c'); await tick(); h.click('[data-map-drill]'); await tick();
+  assert.equal(h.requests.filter(r => r.url.includes('/levels')).length, levelRequests, 'drilling to the PIN level requests no child level');
+  assert.match(h.host.querySelector('[data-map-status]').textContent,/Next-best PINs/);
   h.click('[data-map-national]'); await tick();
   assert.equal(h.host.querySelector('[data-map-path]').textContent,'India');
   assert.equal(h.map.getSource('market-geographies').data.features[0].id,'a','cached national geography returns immediately');
@@ -295,7 +244,6 @@ test('scenario controls post explicit assumptions, keep blanks missing and synch
   assert.equal(req.body.assumptions.evidenceClass,'user_assumption');
   assert.match(h.host.textContent,/routing|route source/i);
   assert.match(h.host.querySelector('[data-map-forecast]').textContent,/Hypothetical test forecast/);
-  assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
 });
 
 test('late map and detail responses cannot overwrite a new year or selected geography', async t => {
@@ -317,7 +265,7 @@ test('API failure retains old sourced geography and offers retry without fabrica
   let fail = false;
   const h = setup(() => { if(fail) throw Error('API offline'); return levels(); });
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick(); fail = true;
-  h.controller.setMetric('tam'); await tick();
+  h.controller.setYear(2027); await tick();
   assert.equal(h.map.getSource('market-geographies').data.features.length,2);
   assert.match(h.host.querySelector('[data-map-status]').textContent,/API offline/);
   assert.ok(h.host.querySelector('[data-map-retry]'));
@@ -352,23 +300,11 @@ test('Expansion Intelligence navigation preserves classic applicant flow and loa
   assert.ok(fs.existsSync(path.join(root,'dist/vendor/maplibre-LICENSE.txt')));
 });
 
-test('additional investment layers request their own metric and show missing evidence, vintage and resolution', async t => {
+test('selected geography shows evidence vintage, resolution and missing evidence', async t => {
   const f = feature('a',120); f.metrics.apparelExpenditure = { value:null, evidenceClass:'unavailable' }; f.metrics.incomeProxy = { value:null, evidenceClass:'unavailable', warnings:['No compatible income proxy evidence'] };
   f.evidence[0].geographicResolution = 'state survey';
   const h = setup(url => url.includes('/geographies/') ? f : levels([f]));
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
-  const expected = [
-    ['apparelExpenditure', /annual clothing.*footwear expenditure/i],
-    ['incomeProxy', /purchasing power|income proxy/i], ['revenuePerKm2', /revenue.*km/i],
-    ['saturation', /saturation/i], ['growthPotential3Year', /3.year growth/i], ['growthPotential5Year', /5.year growth/i]
-  ];
-  for (const [key, title] of expected) {
-    const option = h.host.querySelector(`[name="metric"] option[value="${key}"]`);
-    assert.ok(option,`Layer ${key} must be selectable`); assert.match(option.textContent,title);
-    h.change('[name="metric"]',key); await tick();
-    assert.equal(new URL(h.requests.at(-1).url,'http://localhost').searchParams.get('metric'),key);
-    assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('interpolate'));
-  }
   h.controller.selectGeography('a'); await tick();
   const detail = h.host.querySelector('[data-map-detail]');
   assert.match(detail.textContent,/Source year.*2011/s); assert.match(detail.textContent,/Geographic resolution.*state survey/s);
@@ -439,42 +375,6 @@ test('global result can drill after detail arrives before its sibling geometry l
   assert.equal(h.host.querySelector('[data-map-drill]').disabled,false);
 });
 
-test('layer changes keep sourced polygons visible and reuse one map instance while data loads', async t => {
-  let release;
-  const h = setup(url => {
-    if (url.includes('metric=population')) return new Promise(resolve => { release = resolve; });
-    return levels([feature('a',120)]);
-  });
-  t.after(() => { h.controller.destroy(); h.dom.window.close(); });
-  await tick();
-  const originalSource = h.map.getSource('market-geographies');
-  h.change('[name="metric"]','population');
-  assert.equal(h.window.maplibregl.Map.instances.length,1);
-  assert.equal(h.map.getSource('market-geographies'),originalSource);
-  assert.equal(originalSource.data.features.length,1,'the old geometry remains visible during the request');
-  release({ ...levels([feature('a',120)]), legend:{ metric:'population', year:2026, scope:'national', thresholds:[100,200], colors:['#d9eee1','#6ba688','#185a44'], unit:'people' } });
-  await tick();
-  assert.equal(originalSource.data.features.length,1);
-});
-
-test('metric paint changes do not reparse the same GeoJSON geometry', async t => {
-  const h=setup(()=>levels([feature('a',120)]));
-  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
-  const source=h.map.getSource('market-geographies'), count=source.setDataCount;
-  h.change('[name="metric"]','population'); await tick();
-  assert.equal(source.setDataCount,count,'metric change updates paint, preserving geometry source');
-  assert.ok(h.map.layers['market-fill'].paint['fill-color']);
-});
-
-test('repeat metric navigation reuses loaded boundaries without another geometry response', async t => {
-  const h=setup(() => levels([feature('a',120)]));
-  t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
-  h.change('[name="metric"]','population'); await tick();
-  h.change('[name="metric"]','potentialRevenue'); await tick();
-  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,2,'return to a loaded metric is served from memory');
-  assert.equal(h.map.getSource('market-geographies').data.features.length,1);
-});
-
 test('selected geography dispatches the shared sourced location contract', async t => {
   const h=setup(url=>url.includes('/geographies/')?feature('a',120):levels([feature('a',120)]));
   t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
@@ -491,11 +391,10 @@ test('a source version change invalidates prior level cache entries', async t =>
   let version='fixture-v1';
   const h=setup(()=>({...levels([feature('a',120)]),sourceVersion:version}));
   t.after(()=>{h.controller.destroy();h.dom.window.close();}); await tick();
-  h.change('[name="metric"]','population'); await tick();
   version='fixture-v2';
   h.change('[name="year"]','2027'); await tick();
   h.change('[name="year"]','2026'); await tick();
-  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,4,'old source responses are not reused after a version change');
+  assert.equal(h.requests.filter(r=>r.url.includes('/levels')).length,3,'old source responses are not reused after a version change');
 });
 
 test('city search shows its hierarchy and flies to a verified point without an economic value', async t => {
@@ -543,7 +442,6 @@ function mountAdapter({ responder = () => levels([], 'state'), reducedMotion = f
   const moveTo = async zoom => { map.zoom = zoom; map.fire('moveend'); await new Promise(resolve => setTimeout(resolve, 5)); await tick(); };
   return { dom, window, container, adapter, map, requests, moveTo, visible: id => map.layers[id]?.layout?.visibility !== 'none' };
 }
-const pinFeature = (id, revenue) => ({ ...feature(id, 50, 'pin'), metrics: { potentialRevenue: { value: revenue, unit: 'INR/year', evidenceClass: 'derived_estimate' }, apparelExpenditure: { value: revenue / 2, unit: 'INR/year', evidenceClass: 'derived_estimate' } } });
 
 test('map opens as a satellite globe with keyless terrarium terrain, hillshade and sky', t => {
   const h = mountAdapter(); t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
@@ -572,114 +470,34 @@ test('reduced motion starts on India without the globe fly-in', t => {
   assert.equal(h.map.options.zoom, 3.5);
 });
 
-test('potential revenue renders as 3D columns with colour and height from one scale, falling back to expenditure', t => {
-  const h = mountAdapter(); t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  const expenditureOnly = (id, value) => { const item = feature(id, value); delete item.metrics.potentialRevenue; return item; };
-  h.adapter.setFeatures([expenditureOnly('a', 100), expenditureOnly('b', 300)]);
-  assert.equal(h.adapter.getMetric(), 'apparelExpenditure', 'falls back until the API supplies potentialRevenue');
-  const extrusion = h.map.layers['market-extrusion'];
-  assert.equal(extrusion.type, 'fill-extrusion');
-  assert.ok(JSON.stringify(extrusion.paint['fill-extrusion-height']).includes('v_apparelExpenditure'));
-  assert.ok(JSON.stringify(extrusion.paint['fill-extrusion-color']).includes('interpolate'));
-  assert.ok(h.visible('market-extrusion')); assert.ok(!h.visible('market-fill'));
-  const revenue = (id, value) => ({ ...feature(id, value), metrics: { ...feature(id, value).metrics, potentialRevenue: { value: value * 10, unit: 'INR/year', evidenceClass: 'derived_estimate' } } });
-  h.adapter.setFeatures([revenue('a', 100), revenue('b', 300)]);
-  assert.equal(h.adapter.getMetric(), 'potentialRevenue');
-  assert.ok(JSON.stringify(h.map.layers['market-extrusion'].paint['fill-extrusion-height']).includes('v_potentialRevenue'));
-  assert.ok(JSON.stringify(h.map.layers['market-fill'].paint['fill-color']).includes('v_potentialRevenue'));
+
+
+test('major competitors show in the side panel for a selected PIN only when the list is non-empty', async t => {
+  const pin = feature('pin:560058', 120, 'pin');
+  const panel = async competitors => {
+    const h = setup(url => url.includes('/api/market/competitors') ? competitors() : url.includes('/geographies/') ? pin : levels([pin], 'pin'));
+    t.after(() => { h.controller.destroy(); h.dom.window.close(); });
+    await tick(); h.controller.selectGeography('pin:560058'); await settle(); await tick();
+    return h.host.querySelector('.expansion-competitors');
+  };
+  const shown = await panel(() => competitorsPayload);
+  assert.equal(shown.hidden, false); assert.match(shown.textContent, /Trends/);
+  const empty = await panel(() => ({ ...competitorsPayload, majorCompetitors: [], observed: { ...competitorsPayload.observed, brands: [] } }));
+  assert.equal(empty.hidden, true);
+  const failed = await panel(() => { throw Error('down'); });
+  assert.equal(failed.hidden, true);
 });
 
-test('the 3D/2D heatmap control is a keyboard-reachable toggle button', t => {
-  const h = mountAdapter(); t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  const control = h.map.controls.find(item => typeof item.onAdd === 'function' && item.onAdd.length === 0);
-  const group = control.onAdd(); h.container.append(group);
-  const button = group.querySelector('button[data-map-extrusion]');
-  assert.equal(button.type, 'button'); assert.equal(button.getAttribute('aria-pressed'), 'true'); assert.ok(button.getAttribute('aria-label'));
-  button.click();
-  assert.equal(button.getAttribute('aria-pressed'), 'false'); assert.equal(h.adapter.isExtruded(), false);
-  assert.ok(h.visible('market-fill')); assert.ok(!h.visible('market-extrusion'));
-});
-
-test('zooming past the PIN threshold loads only viewport PIN polygons and zooming out hides them', async t => {
-  const h = mountAdapter({ responder: url => url.includes('level=pin') ? { ...levels([pinFeature('560001', 5e8), pinFeature('560002', 9e8)], 'pin'), legend: undefined } : levels() });
-  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  await h.moveTo(5);
-  assert.equal(h.requests.length, 0, 'state view never requests PINs');
-  await h.moveTo(9);
-  assert.equal(h.requests.length, 1);
-  const url = new URL(h.requests[0], 'http://localhost');
-  assert.equal(url.pathname, '/api/market/map/levels'); assert.equal(url.searchParams.get('level'), 'pin');
-  const bbox = url.searchParams.get('bbox').split(',').map(Number);
-  assert.equal(bbox.length, 4); assert.ok(bbox[0] <= 77.51 && bbox[2] >= 77.72 && bbox[2] - bbox[0] < 1, 'bbox covers just the viewport');
-  assert.equal(h.map.sources['market-pins'].data.features.length, 2);
-  assert.equal(h.adapter.getPinState(), 'loaded');
-  assert.ok(h.visible('market-pin-extrusion'));
-  assert.ok(JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-height']).includes('v_potentialRevenue'));
-  assert.match(h.container.querySelector('[data-map-pin-status]').textContent, /2 postcode/);
-  const pinColor = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-color']);
-  assert.ok(pinColor.includes('500000000') && pinColor.includes('900000000'), 'PIN colours rescale to the PIN values in view, not the state domain');
-  await h.moveTo(9.2);
-  assert.equal(h.requests.length, 1, 'small moves reuse the snapped viewport request');
-  await h.moveTo(6);
-  assert.ok(!h.visible('market-pin-extrusion')); assert.ok(h.container.querySelector('[data-map-pin-status]').hidden);
-});
-
-test('missing PIN data keeps state geography and says postcode data is unavailable instead of faking it', async t => {
-  const h = mountAdapter({ responder: () => levels() }); t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setFeatures([feature('a', 120)]);
-  await h.moveTo(9);
-  assert.equal(h.adapter.getPinState(), 'unavailable');
-  assert.equal(h.map.sources['market-pins'].data.features.length, 0, 'state features returned for a PIN request are not drawn as PINs');
-  assert.equal(h.map.sources['market-geographies'].data.features.length, 1);
-  assert.ok(h.visible('market-extrusion')); assert.ok(!h.visible('market-pin-extrusion'));
-  const status = h.container.querySelector('[data-map-pin-status]');
-  assert.equal(status.getAttribute('role'), 'status'); assert.match(status.textContent, /unavailable/i);
-});
-
-test('an unsupported potentialRevenue metric retries the PIN request with expenditure', async t => {
-  const h = mountAdapter({ responder: url => url.includes('metric=potentialRevenue') ? { status: 400, error: 'Unsupported map metric' } : levels([pinFeature('560001', 5e8)], 'pin') });
-  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  await h.moveTo(10);
-  assert.equal(h.requests.length, 2); assert.match(h.requests[1], /metric=apparelExpenditure/);
-  assert.equal(h.adapter.getPinState(), 'loaded');
-});
-
-const pinLegend = { metric: 'potentialRevenue', level: 'pin', year: 2026, scope: 'national', thresholds: [2.5e7, 4.5e7, 7e7, 1.2e8], colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'], unit: 'INR/year' };
-
-test('PINs colour and size against the PIN legend from their response, never state thresholds', async t => {
-  const h = mountAdapter({ responder: () => ({ ...levels([pinFeature('560058', 6e7), pinFeature('560059', 9e7)], 'pin'), legend: pinLegend }) });
-  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setLegend({ ...levels().legend, thresholds: [2.5e9, 9e10] });
-  h.adapter.setFeatures([feature('state-a', 3e10)]);
-  await h.moveTo(10);
-  const color = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-color']);
-  const height = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-height']);
-  assert.ok(color.includes('25000000') && color.includes('120000000'), 'PIN colour domain comes from the PIN legend');
-  assert.ok(height.includes('25000000') && height.includes('120000000'), 'PIN column heights use the same PIN legend');
-  assert.ok(!color.includes('2500000000') && !color.includes('90000000000'), 'state thresholds never colour PINs');
-  assert.deepEqual([...h.adapter.getScaleMetadata().domain], [2.5e7, 1.2e8]); assert.equal(h.adapter.getScaleMetadata().level, 'pin');
-  await h.moveTo(5);
-  assert.deepEqual([...h.adapter.getScaleMetadata().domain], [2.5e9, 9e10], 'zooming out restores the state scale');
-});
-
-test('page legend switches to the PIN range at PIN zoom and back to the state range when zooming out', async t => {
-  const h = setup(url => url.includes('/geographies/') ? feature('a',120) : url.includes('level=pin') ? { ...levels([pinFeature('560058', 6e7)], 'pin'), legend: pinLegend } : levels());
+test('drilling to the PIN level shows a status message and never requests PIN or zoom 12 levels', async t => {
+  const city = feature('c', 120, 'city', 'd');
+  const h = setup(url => url.includes('/geographies/') ? city : levels());
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
-  const legendText = () => h.host.querySelector('[data-map-legend]').textContent;
-  assert.match(legendText(), /100/); assert.match(legendText(), /state-level/);
-  h.map.zoom = 10; h.map.fire('moveend'); await new Promise(resolve => setTimeout(resolve, 300)); await tick();
-  assert.ok(h.requests.some(r => r.url.includes('level=pin')));
-  assert.match(legendText(), /PIN-level/); assert.match(legendText(), /2,50,00,000/); assert.match(legendText(), /12,00,00,000/);
-  h.map.zoom = 4; h.map.fire('moveend'); await tick();
-  assert.match(legendText(), /state-level/); assert.match(legendText(), /100/); assert.doesNotMatch(legendText(), /2,50,00,000/);
-});
-
-test('PIN popup shows potential revenue', async t => {
-  const h = mountAdapter({ responder: () => ({ ...levels([pinFeature('560058', 6e7)], 'pin'), legend: pinLegend }) });
-  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  await h.moveTo(10);
-  h.map.fire('mouseenter', { features: [{ properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } }, 'market-pin-extrusion');
-  const popup = h.container.querySelector('.expansion-popup');
-  assert.match(popup.textContent, /PIN code/); assert.match(popup.textContent, /Potential revenue/);
-  assert.match(popup.textContent, /6,00,00,000|60M|6 Cr/);
+  h.controller.setFeatures([city]);
+  h.controller.selectGeography('c'); await tick();
+  const before = h.requests.filter(r => r.url.includes('/levels')).length;
+  h.click('[data-map-drill]'); await tick();
+  const levelUrls = h.requests.map(r => r.url).filter(url => url.includes('/levels'));
+  assert.equal(levelUrls.length, before, 'no child level request for a PIN drill');
+  for (const url of levelUrls) { assert.doesNotMatch(url, /level=pin/); assert.doesNotMatch(url, /zoom=12(?!\d)/); }
+  assert.match(h.host.querySelector('[data-map-status]').textContent, /Next-best PINs/);
 });

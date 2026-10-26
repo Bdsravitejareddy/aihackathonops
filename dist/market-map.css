@@ -283,3 +283,25 @@ body.expansion-fullscreen .bot-launcher:focus-visible{outline:2px solid var(--lq
 @media(max-width:560px){.expansion-legend-ramp{grid-template-columns:78px 1fr;gap:6px;margin-top:4px}.expansion-legend-ramp>span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.expansion-skeleton span,.expansion-popup-chips li{animation:none!important}}
 /* ==== end store-aware heatmap ==== */
+
+/* ==== Expansion pins: existing stores (green) and ranked next-best PINs (grey) ============= */
+.expansion-pin{position:relative;display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #fff;cursor:pointer;
+  font:600 11px/1 var(--lq-sans);color:#fff;font-variant-numeric:tabular-nums;box-shadow:0 6px 16px -6px rgba(6,4,20,.7);
+  transition:transform .35s var(--lq-ease),box-shadow .35s var(--lq-ease)}
+.expansion-pin:hover,.expansion-pin:focus-visible{transform:scale(1.14);outline:none;box-shadow:0 0 0 4px rgba(207,224,67,.45),0 8px 18px -6px rgba(6,4,20,.7)}
+.expansion-pin--store{background:linear-gradient(160deg,#2fb873,#0b6b3f);width:24px;height:24px}
+.expansion-pin--store::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;opacity:.9}
+.expansion-pin--next{background:linear-gradient(160deg,#9aa3ad,#5c6670)}
+.expansion-pin.is-selected{box-shadow:0 0 0 3px #cfe043,0 8px 18px -6px rgba(6,4,20,.7);transform:scale(1.12)}
+.expansion-pin--next.is-selected{background:linear-gradient(160deg,#b9c0c7,#6f7a85)}
+.expansion-legend-items{display:grid;gap:6px;margin:8px 0 6px;font-size:11px;color:var(--mx-text)}
+.expansion-legend-items span{display:flex;align-items:center;gap:8px}
+.expansion-dot{display:inline-block;flex:none;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.expansion-dot--store{background:linear-gradient(160deg,#2fb873,#0b6b3f)}
+.expansion-dot--next{background:linear-gradient(160deg,#9aa3ad,#5c6670)}
+.expansion-popup-rank{display:inline-flex;margin:-4px 0 10px;padding:4px 12px;border-radius:999px;background:#eceff2;color:#3d4650;font-size:11px;font-weight:600}
+@media(prefers-reduced-motion:reduce){.expansion-pin{transition:none}.expansion-pin:hover,.expansion-pin:focus-visible{transform:none}}
+/* ==== end expansion pins ==== */
+
+/* Tiles with no reliable figure are hidden rather than shown as Unavailable. */
+.market-kpi[hidden]{display:none}

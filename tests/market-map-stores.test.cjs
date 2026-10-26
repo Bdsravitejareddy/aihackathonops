@@ -25,7 +25,7 @@ function mapDouble() {
     constructor(options) { this.options = options; this.zoom = options.zoom; this.events = []; this.sources = {}; this.layers = {}; Map.instances.push(this); }
     on(name, layer, fn) { this.events.push({ name, layer: typeof layer === 'string' ? layer : null, fn: fn || layer }); return this; }
     fire(name, event = {}, layer = null) { for (const e of this.events) if (e.name === name && e.layer === layer) e.fn(event); }
-    addSource(id, source) { this.sources[id] = { ...source, setData(data) { this.data = data; this.setDataCount=(this.setDataCount||0)+1; } }; }
+    addSource(id, source) { this.sources[id] = { ...source, setData(data) { this.data = data; } }; }
     getSource(id) { return this.sources[id]; }
     addLayer(layer) { this.layers[layer.id] = layer; }
     getLayer(id) { return this.layers[id]; }
@@ -33,9 +33,9 @@ function mapDouble() {
     setPaintProperty(id,key,value) { this.layers[id].paint[key]=value; }
     setLayoutProperty(id,key,value) { this.layers[id].layout ||= {}; this.layers[id].layout[key]=value; }
     setTerrain(value) { this.terrain=value; } resize() { this.resizeCount=(this.resizeCount||0)+1; }
-    addControl() {} getZoom() { return this.zoom; }
+    addControl(control) { (this.controls ||= []).push(control); } getZoom() { return this.zoom; }
     setPitch(value) { this.pitch = value; } getPitch() { return this.pitch || 0; }
-    setLayoutProperty() {} setStyle(style) { this.options.style = style; }
+    setStyle(style) { this.options.style = style; }
     getBounds() { return { toArray: () => [[70,10],[90,30]] }; }
     getCanvas() { return { style: {} }; }
     fitBounds(bounds, options) { this.zoom = options.zoom || options.maxZoom; this.bounds = bounds; }
@@ -50,124 +50,169 @@ function mapDouble() {
     remove() { this.removed = true;this.element?.remove(); }
   }
   Popup.instances = [];
-  return { Map, Popup, NavigationControl: class {} };
+  class Marker {
+    constructor(options) { this.options = options; Marker.instances.push(this); }
+    setLngLat(value) { this.lngLat = value; return this; }
+    addTo(map) { map.options.container.append(this.options.element); return this; }
+    remove() { this.removed = true; this.options.element?.remove(); return this; }
+  }
+  Marker.instances = [];
+  return { Map, Popup, Marker, NavigationControl: class {} };
 }
 
-// Direct map-adapter harness (copied from market-map-ui.test.cjs, which does not export it).
-function mountAdapter({ responder = () => levels([], 'state'), reducedMotion = false } = {}) {
+// Direct map-adapter harness: the adapter returned by MarketMap.mount, which owns PIN markers and popups.
+function mountAdapter({ responder = () => levels([], 'state'), storePins = [] } = {}) {
   const dom = new JSDOM('<main id="host"></main>', { url: 'http://localhost/', runScripts: 'outside-only' });
   const { window } = dom;
   const lib = mapDouble(), requests = [];
   Object.assign(lib.Map.prototype, {
-    setLayoutProperty(id,key,value) { this.layers[id].layout ||= {}; this.layers[id].layout[key]=value; },
-    addControl(control) { (this.controls ||= []).push(control); },
-    getBounds() { return { toArray: () => this.boundsArray || [[77.51,12.88],[77.72,13.04]] }; },
-    flyTo(options) { this.flights=(this.flights||0)+1; this.zoom=options.zoom; this.center=options.center; this.pitch=options.pitch; }
+    getBounds() { return { toArray: () => [[77.51,12.88],[77.72,13.04]] }; },
+    flyTo(options) { this.zoom=options.zoom; this.center=options.center; this.pitch=options.pitch; }
   });
   window.maplibregl = lib;
-  window.matchMedia = query => ({ matches: reducedMotion && /reduce/.test(query) });
-  window.fetch = async url => { requests.push(String(url)); const data = await responder(String(url)); return { ok: !data?.status, status: data?.status || 200, json: async () => data }; };
+  window.matchMedia = () => ({ matches: false });
+  window.fetch = async url => { requests.push(String(url)); const data = await responder(String(url)); return { ok: true, status: 200, json: async () => data }; };
   window.eval(read('dist/market-color-scale.js'));
   window.eval(read('dist/market-map.js'));
   const container = window.document.getElementById('host');
-  const adapter = window.MarketMap.mount({ container, options: { pinDebounceMs: 0 } });
+  const adapter = window.MarketMap.mount({ container, options: { opportunityDebounceMs: 0, storePins } });
   const map = lib.Map.instances[0];
   map.fire('load');
-  const moveTo = async zoom => { map.zoom = zoom; map.fire('moveend'); await new Promise(resolve => setTimeout(resolve, 5)); await tick(); };
-  return { dom, window, container, adapter, map, requests, moveTo, visible: id => map.layers[id]?.layout?.visibility !== 'none' };
+  return { dom, window, lib, container, adapter, map, requests };
 }
-const pinFeature = (id, revenue) => ({ ...feature(id, 50, 'pin'), metrics: { potentialRevenue: { value: revenue, unit: 'INR/year', evidenceClass: 'derived_estimate' }, apparelExpenditure: { value: revenue / 2, unit: 'INR/year', evidenceClass: 'derived_estimate' } } });
-const pinLegend = { metric: 'potentialRevenue', level: 'pin', year: 2026, scope: 'national', thresholds: [2.5e7, 4.5e7, 7e7, 1.2e8], colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'], unit: 'INR/year' };
-const pinResponse = (features = [pinFeature('560058', 6e7), pinFeature('560059', 9e7)]) => ({ ...levels(features, 'pin'), legend: pinLegend });
+
+// Fixtures: one existing store and two ranked next-best PINs, as the opportunity API returns them.
+const storePin = { pin: '560058', anchor: [77.6, 12.9], tam: 6e7, potentialRevenue: 6e7, population: 120000, spendPerPersonMonthly: 450, district: 'Bengaluru Urban', state: 'Karnataka' };
+const nextPin = (rank, pin, revenue) => ({ pin, rank, anchor: [77.6 + rank / 100, 12.9 + rank / 100], tam: revenue / 2, potentialRevenue: revenue, population: 200000, spendPerPersonMonthly: 520, district: 'Bengaluru Urban', state: 'Karnataka' });
+const opportunityFixture = { stores: [storePin], opportunities: [nextPin(1, '560059', 9e7), nextPin(2, '560060', 7e7)] };
+const economics = paybackMonths => ({ scenarios: { low: { investment: 1e7, paybackMonths: 20 }, mid: { investment: 1.5e7, paybackMonths }, high: { investment: 2e7, paybackMonths: 40 } } });
 const competitorsPayload = {
-  geographyId: '560058', sector: 'apparel', sectorName: 'Apparel & fashion',
+  geographyId: 'pin:560058', sector: 'apparel', sectorName: 'Apparel & fashion',
   observed: { source: 'OpenStreetMap', totalStores: 12, brandedStores: 5, brands: [{ name: 'Zudio', count: 3 }], categories: { clothes: 12 }, retrievedAt: '2026-10-26', license: 'ODbL' },
   majorCompetitors: [{ name: 'Trends', parent: 'Reliance Retail', format: 'Value fashion', priceTier: 'value', presence: 'city', citation: { title: 'Src', url: 'https://example.org/a' } }],
   warnings: [], cached: false
 };
-const isCompetitorUrl = url => url.includes('/api/market/competitors');
-const competitorRequests = h => h.requests.filter(isCompetitorUrl);
-
-test('store-aware colours use the opportunity ramp without stores and the green ramp for store areas', () => {
-  const colorLib = require('../dist/market-color-scale.js');
-  const { OPPORTUNITY_COLORS, STORE_COLORS, MISSING_COLOR, storeAwareColor, createColorScale } = colorLib;
-  const scale = createColorScale({ mode: 'linear', scope: 'national', domain: [0, 100], colors: OPPORTUNITY_COLORS });
-  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
-  assert.ok(same(storeAwareColor(0, scale, false), OPPORTUNITY_COLORS[0]), 'opportunity low end');
-  assert.ok(same(storeAwareColor(100, scale, false), OPPORTUNITY_COLORS.at(-1)), 'opportunity high end');
-  assert.ok(same(storeAwareColor(0, scale, true), STORE_COLORS[0]), 'store low end');
-  assert.ok(same(storeAwareColor(100, scale, true), STORE_COLORS.at(-1)), 'store high end');
-  const midOpportunity = storeAwareColor(50, scale, false);
-  const midStore = storeAwareColor(50, scale, true);
-  for (const endpoint of [OPPORTUNITY_COLORS[0], OPPORTUNITY_COLORS.at(-1)]) assert.notEqual(midOpportunity.toLowerCase(), endpoint.toLowerCase(), 'opportunity mid is a continuous blend');
-  for (const endpoint of [STORE_COLORS[0], STORE_COLORS.at(-1)]) assert.notEqual(midStore.toLowerCase(), endpoint.toLowerCase(), 'store mid is a continuous blend');
-  for (const value of [0, 25, 50, 75, 100]) assert.notEqual(storeAwareColor(value, scale, false).toLowerCase(), storeAwareColor(value, scale, true).toLowerCase(), `store and non-store colours differ at ${value}`);
-  assert.equal(storeAwareColor(null, scale, true), MISSING_COLOR);
-  assert.equal(storeAwareColor(null, scale, false), MISSING_COLOR);
-});
-
-test('PIN fill and extrusion expressions colour store PINs with the store ramp and expose s_store', async t => {
-  const h = mountAdapter({ responder: () => pinResponse() });
-  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setStoreAreas(['560058']);
-  await h.moveTo(10);
-  const { STORE_COLORS, OPPORTUNITY_COLORS } = require('../dist/market-color-scale.js');
-  const color = JSON.stringify(h.map.layers['market-pin-extrusion'].paint['fill-extrusion-color']).toLowerCase();
-  assert.ok(color.includes('"s_store"'), 'expression branches on s_store');
-  for (const hex of [STORE_COLORS[0], STORE_COLORS.at(-1), OPPORTUNITY_COLORS[0], OPPORTUNITY_COLORS.at(-1)]) {
-    assert.ok(color.includes(hex.toLowerCase()), `expression contains ${hex}`);
-  }
-  const features = h.map.sources['market-pins'].data.features;
-  assert.equal(features.find(f => f.id === '560058').properties.s_store, 1);
-  assert.equal(features.find(f => f.id === '560059').properties.s_store, 0);
-  assert.equal(h.adapter.hasStore('560058'), true);
-  assert.equal(h.adapter.hasStore('560059'), false);
-});
+// Routes the PIN APIs; a value may be a function so a test can make the request fail.
+function pinApi({ analysis = economics(30), competitors = competitorsPayload } = {}) {
+  return url => {
+    if (url.includes('/api/market/map/opportunities')) return opportunityFixture;
+    if (url.includes('/api/market/analysis')) return analysis;
+    if (url.includes('/api/market/competitors')) return typeof competitors === 'function' ? competitors() : competitors;
+    return levels([], 'state');
+  };
+}
+const competitorRequests = h => h.requests.filter(url => url.includes('/api/market/competitors'));
+const popupOf = h => h.container.querySelector('.expansion-popup');
+async function loadPins() { await settle(); await tick(); }
+async function clickPin(h, id) { h.container.querySelector(`[data-map-pin="${id}"]`).click(); await settle(); await tick(); }
 
 test('PIN popup loads competitors once on click and shows the store note and KPIs', async t => {
-  const h = mountAdapter({ responder: url => isCompetitorUrl(url) ? competitorsPayload : pinResponse([pinFeature('560058', 6e7)]) });
+  const h = mountAdapter({ storePins: ['560058'], responder: pinApi() });
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setStoreAreas(['560058']);
-  await h.moveTo(10);
-  h.map.fire('mouseenter', { features: [{ properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } }, 'market-pin-extrusion');
-  const popup = h.container.querySelector('.expansion-popup');
-  assert.ok(popup, 'popup is rendered');
-  for (const text of ['Potential TAM', 'Potential revenue', 'Consumer spend', 'You have a store here']) assert.match(popup.textContent, new RegExp(text));
+  await loadPins();
+  h.container.querySelector('[data-map-pin="pin:560058"]').dispatchEvent(new h.window.Event('mouseenter'));
+  const hover = popupOf(h);
+  assert.ok(hover, 'popup is rendered on hover');
+  for (const text of ['Annual category spend', 'Potential revenue', 'Consumer spend', 'You have a store here']) assert.match(hover.textContent, new RegExp(text));
   assert.equal(competitorRequests(h).length, 0, 'no competitor request on hover before click');
 
-  h.map.fire('click', { features: [{ id: '560058', properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } });
-  await settle(); await tick();
-  let requests = competitorRequests(h);
+  await clickPin(h, 'pin:560058');
+  const requests = competitorRequests(h);
   assert.equal(requests.length, 1, 'exactly one competitor request after click');
   const query = new URL(requests[0], 'http://localhost').searchParams;
-  assert.equal(query.get('geographyId'), '560058');
+  assert.equal(query.get('geographyId'), 'pin:560058');
   assert.equal(query.get('sector'), 'apparel');
   assert.match(h.window.maplibregl.Popup.instances.at(-1).html, /Trends/);
 
-  h.map.fire('click', { features: [{ id: '560058', properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } });
-  await settle(); await tick();
+  await clickPin(h, 'pin:560058');
   assert.equal(competitorRequests(h).length, 1, 'repeat click uses the client cache');
 });
 
-test('competitor failure shows a graceful unavailable message in the PIN popup', async t => {
-  const h = mountAdapter({ responder: url => isCompetitorUrl(url) ? { status: 503, error: 'down' } : pinResponse([pinFeature('560058', 6e7)]) });
+test('competitor failure leaves the PIN popup without a competitor block and keeps its figures', async t => {
+  const h = mountAdapter({ responder: pinApi({ competitors: () => { throw Error('down'); } }) });
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  h.adapter.setStoreAreas(['560058']);
-  await h.moveTo(10);
-  h.map.fire('click', { features: [{ id: '560058', properties: { id: '560058' } }], lngLat: { lng: 77.6, lat: 12.9 } });
-  await settle(); await tick();
+  await loadPins();
+  await clickPin(h, 'pin:560058');
   assert.equal(competitorRequests(h).length, 1);
-  assert.match(h.window.maplibregl.Popup.instances.at(-1).html, /Competitor research unavailable/);
+  assert.doesNotMatch(popupOf(h).textContent, /Major competitors/);
+  assert.match(popupOf(h).textContent, /Annual category spend/);
 });
 
-test('a PIN without a store area shows no store note on hover', async t => {
-  const h = mountAdapter({ responder: () => pinResponse() });
+test('an empty competitor list leaves the PIN popup without a competitor block', async t => {
+  const h = mountAdapter({ responder: pinApi({ competitors: { ...competitorsPayload, majorCompetitors: [], observed: { ...competitorsPayload.observed, brands: [] } } }) });
   t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
-  await h.moveTo(10);
-  h.map.fire('mouseenter', { features: [{ properties: { id: '560059' } }], lngLat: { lng: 77.6, lat: 12.9 } }, 'market-pin-extrusion');
-  const popup = h.container.querySelector('.expansion-popup');
+  await loadPins();
+  await clickPin(h, 'pin:560059');
+  assert.equal(competitorRequests(h).length, 1);
+  assert.doesNotMatch(popupOf(h).textContent, /Major competitors/);
+  assert.match(popupOf(h).textContent, /Potential revenue/);
+});
+
+test('a next-best PIN shows no store note on hover and is not a store', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  h.container.querySelector('[data-map-pin="pin:560059"]').dispatchEvent(new h.window.Event('mouseenter'));
+  const popup = popupOf(h);
   assert.ok(popup, 'popup is rendered');
   assert.match(popup.textContent, /Potential revenue/);
+  assert.match(popup.textContent, /#1 next-best PIN to open/);
   assert.doesNotMatch(popup.textContent, /You have a store here/);
   assert.equal(h.adapter.hasStore('560059'), false);
+});
+
+test('store PINs render green markers and next-best PINs numbered grey markers from the opportunity API', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  const stores = h.container.querySelectorAll('.expansion-pin--store');
+  const next = h.container.querySelectorAll('.expansion-pin--next');
+  assert.equal(stores.length, 1); assert.equal(stores[0].dataset.mapPin, 'pin:560058');
+  assert.deepEqual([...next].map(el => el.textContent.trim()), ['1', '2']);
+  assert.deepEqual([...next].map(el => el.dataset.mapPin), ['pin:560059', 'pin:560060']);
+  const anchors = h.lib.Marker.instances.filter(marker => !marker.removed).map(marker => JSON.stringify(marker.lngLat)).sort();
+  const expected = [storePin, ...opportunityFixture.opportunities].map(item => JSON.stringify(item.anchor)).sort();
+  assert.deepEqual(anchors, expected);
+});
+
+test('clicking a PIN marker opens a popup with reliable figures only', async t => {
+  const h = mountAdapter({ responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  await clickPin(h, 'pin:560059');
+  const popup = popupOf(h);
+  for (const text of ['Annual category spend', 'Potential revenue', 'Catchment', 'Consumer spend']) assert.match(popup.textContent, new RegExp(text));
+  for (const text of ['Serviceable', 'Competitor intensity', 'Relevant customers', 'Market opportunity', 'Unavailable']) assert.doesNotMatch(popup.textContent, new RegExp(text));
+  assert.match(popup.textContent, /#1 next-best PIN to open/);
+});
+
+test('PIN popup shows investment and payback from the cost model, and "> 5 yrs" when payback is unknown', async t => {
+  const known = mountAdapter({ responder: pinApi({ analysis: economics(30) }) });
+  t.after(() => { known.adapter.destroy(); known.dom.window.close(); });
+  await loadPins();
+  await clickPin(known, 'pin:560059');
+  assert.match(popupOf(known).textContent, /Investment required/);
+  assert.match(popupOf(known).textContent, /Payback/);
+  assert.match(popupOf(known).textContent, /2\.5 yrs/);
+
+  const unknown = mountAdapter({ responder: pinApi({ analysis: economics(null) }) });
+  t.after(() => { unknown.adapter.destroy(); unknown.dom.window.close(); });
+  await loadPins();
+  await clickPin(unknown, 'pin:560059');
+  assert.match(popupOf(unknown).textContent, /Payback/);
+  assert.match(popupOf(unknown).textContent, /> 5 yrs/);
+});
+
+test('storePins option marks listed PINs as stores and is sent with the opportunity request', async t => {
+  const h = mountAdapter({ storePins: ['560058'], responder: pinApi() });
+  t.after(() => { h.adapter.destroy(); h.dom.window.close(); });
+  await loadPins();
+  assert.equal(h.adapter.hasStore('pin:560058'), true);
+  assert.equal(h.adapter.hasStore('560058'), true);
+  assert.equal(h.adapter.hasStore('560059'), false);
+  const sent = h.requests.find(url => url.includes('/api/market/map/opportunities'));
+  assert.equal(new URL(sent, 'http://localhost').searchParams.get('storePins'), '560058');
+  h.adapter.setStorePins(['560059']);
+  assert.equal(h.adapter.hasStore('560059'), true);
+  assert.equal(h.adapter.hasStore('560058'), false);
 });

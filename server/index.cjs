@@ -1,42 +1,18 @@
 'use strict';
 
 const http = require('node:http');
-const fs = require('node:fs');
 const path = require('node:path');
-const { Pool } = require('pg');
-const { createHandler } = require('./app.cjs');
-const { createStore } = require('./store.cjs');
-const { createMarketStore } = require('./market-store.cjs');
-const { createMarketMapStore } = require('./market-map-store.cjs');
-const { createMarketResearchStore } = require('./market-research-store.cjs');
-const { createMarketResearchService } = require('./market-research.cjs');
+const { createApplicationRuntime } = require('./runtime.cjs');
 const { createStaticHandler } = require('./static.cjs');
-const { normalizeDatabaseUrl } = require('./db-config.cjs');
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Copy .env.example and set the Neon connection string.');
-const pool = new Pool({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL), max: 5 });
-pool.on('error', error => {
-  // Idle Neon connections can be closed by the provider. Log the condition without
-  // secrets and let pg-pool discard that client instead of crashing the local app.
-  process.stderr.write(`Neon idle connection dropped (${error.code || 'connection error'}); a later query will reconnect.\n`);
-});
-const dataDirectory = path.resolve(__dirname, '..', 'data');
-const marketSources = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-sources.json'), 'utf8'));
-const marketBenchmarks = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-market-benchmarks.json'), 'utf8'));
-const geographyManifest = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-geography', 'manifest.json'), 'utf8'));
-const marketStore = createMarketStore(pool);
-const marketMapStore = createMarketMapStore(pool);
-const priorityPlacesVersion = JSON.parse(fs.readFileSync(path.join(dataDirectory, 'india-geography', 'karnataka-priority-places.json'), 'utf8')).version;
-marketMapStore.sourceVersion = `india-geography-${geographyManifest.version}+${priorityPlacesVersion}`;
-const marketResearchStore = createMarketResearchStore(pool);
-const marketResearchService = createMarketResearchService({ logger: {
+const { api, pool } = createApplicationRuntime({ logger: {
   info(message, metadata) { process.stdout.write(`${message} ${JSON.stringify(metadata)}\n`); },
-  error(message, metadata) { process.stderr.write(`${message} ${JSON.stringify(metadata)}\n`); }
+  error(message, metadata) { process.stderr.write(`${message} ${metadata ? JSON.stringify(metadata) : ''}\n`); }
 } });
-const api = createHandler({ store: createStore(pool), marketStore, marketMapStore, marketResearchStore, marketResearchService, marketSources, marketBenchmarks });
-const serveStatic = createStaticHandler({ directory: require('node:path').resolve(__dirname, '..', 'dist') });
+const serveStatic = createStaticHandler({ directory: path.resolve(__dirname, '..', 'dist') });
 const staticServer = http.createServer((req, res) => req.url.startsWith('/api/') ? api(req, res) : serveStatic(req, res));
 const port = Number(process.env.PORT || 8080);
+
 // Local development is intentionally restricted to this machine until authentication is added.
 staticServer.listen(port, '127.0.0.1', () => process.stdout.write(`FranchiseOS listening at http://127.0.0.1:${port}\n`));
 process.on('SIGINT', async () => { staticServer.close(); await pool.end(); process.exit(0); });

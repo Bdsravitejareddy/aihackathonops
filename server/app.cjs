@@ -47,13 +47,13 @@ async function readBody(req, maxBytes) {
   catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
 }
 
-function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024 }) {
+function createHandler({ store, marketStore, marketMapStore, marketLocationData = createMarketLocationData(), marketResearchStore, marketResearchService, marketSources, marketBenchmarks, maxBodyBytes = 10 * 1024 * 1024, allowRemote = false }) {
   if (!store || typeof store.load !== 'function' || typeof store.save !== 'function') throw new TypeError('A workspace store is required');
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const host = req.headers.host || '';
-    if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) return reply(res, 403, { error: 'Local requests only' });
-    if (req.headers.origin) {
+    if (!allowRemote && !/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) return reply(res, 403, { error: 'Local requests only' });
+    if (!allowRemote && req.headers.origin) {
       try {
         const origin = new URL(req.headers.origin);
         if (origin.protocol !== 'http:' || origin.host !== host || !/^(localhost|127\.0\.0\.1)$/i.test(origin.hostname)) return reply(res, 403, { error: 'Local requests only' });

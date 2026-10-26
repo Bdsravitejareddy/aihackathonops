@@ -101,6 +101,19 @@ test('API rejects a hostile host or cross-origin browser request', async () => {
   assert.deepEqual(JSON.parse(body), { error: 'Local requests only' });
 });
 
+test('Vercel serverless handler accepts the platform host and HTTPS origin while local handler stays restricted', async () => {
+  const handle = createHandler({ store: { load: async () => null, save: async () => {} }, allowRemote: true });
+  const req = Readable.from([]);
+  req.method = 'GET';
+  req.url = '/api/health';
+  req.headers = { host: 'franchiseos.vercel.app', origin: 'https://franchiseos.vercel.app' };
+  let status;
+  let body;
+  await handle(req, { writeHead(code) { status = code; }, setHeader() {}, end(value) { body = value; } });
+  assert.equal(status, 200);
+  assert.deepEqual(JSON.parse(body), { ok: true });
+});
+
 test('stale workspace save gets a conflict and leaves the latest revision intact', async () => {
   const id = 'f28e574b-6f52-4f24-97c6-69e0c28bb54f';
   await withHandler(async call => {

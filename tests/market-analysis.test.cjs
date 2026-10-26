@@ -235,3 +235,9 @@ test('a PIN catchment (PINs within 3 km) is the demand base, and staff never dro
   assert.equal(result.assumptions.areaSqFt.value.mid, 400);
   assert.ok(result.costRange.headcount.low >= 2 && result.costRange.headcount.mid >= 2);
 });
+
+test('the overview ramp to potential matches the store model base case', () => {
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'dist', 'app.js'), 'utf8');
+  const shown = Number(app.match(/RAMP_MONTHS_BASE=(\d+)/)[1]);
+  assert.equal(shown, costs.assumptions.rampMonths.value.mid);
+});

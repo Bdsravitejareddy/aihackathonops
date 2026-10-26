@@ -32,6 +32,8 @@
     };
     el.textContent = format(0);
     root.requestAnimationFrame(step);
+    // Animation frames pause in hidden tabs; the final value is always written, so a figure never sticks at 0.
+    root.setTimeout(() => { if (el.isConnected && el.textContent !== text) el.textContent = text; }, duration + 150);
   }
 
   const observer = 'IntersectionObserver' in root ? new IntersectionObserver(entries => {

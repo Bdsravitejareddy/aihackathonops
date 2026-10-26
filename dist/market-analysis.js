@@ -24,6 +24,7 @@
   const pct = (value, digits = 1) => value === null || value === undefined || !Number.isFinite(value) ? '—' : `${value.toFixed(digits)}%`;
   const months = value => value === null || value === undefined ? 'over 5 years' : value < 24 ? `${value} months` : `${(value / 12).toFixed(1).replace(/\.0$/, '')} years`;
   const numeric = value => typeof value === 'number' && Number.isFinite(value);
+  const moneyRounded = value => money(typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : value);
   const chip = cls => `<span class="analysis-chip analysis-chip--${escape(cls || 'unknown')}">${escape(CLASS_LABEL[cls] || cls || 'Unclassified')}</span>`;
 
   function sparkline(trend) {
@@ -54,7 +55,7 @@
       ['Investment', k => money(s[k].investment)], ['Annual sales (full rate, after ramp-up)', k => money(s[k].annualRevenue)],
       ['Revenue limited by', k => ({ demand_limited: 'Area demand', store_capacity_limited: 'Store size', no_demand_data: 'Store size*', user_input: 'Your input' }[s[k].revenueConstraint] || '—')],
       ['ROI · 5-year cumulative', k => pct(s[k].roi5YearPercent)], ['ROI · annual (year 2)', k => pct(s[k].annualRoiPercent)],
-      ['Payback', k => months(s[k].paybackMonths)], ['Break-even revenue / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]
+      ['Payback', k => months(s[k].paybackMonths)], ['Break-even sales / yr', k => money(s[k].breakEvenRevenueAnnual)], ['NPV · 5 years', k => money(s[k].npv)]
     ];
     return `<table class="analysis-range"><thead><tr><th scope="col"></th>${LEVELS.map(k => `<th scope="col" title="${escape(s[k].pairing)}">${escape(s[k].label)}</th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, fn]) => `<tr><th scope="row">${escape(label)}</th>${LEVELS.map(k => `<td class="${k === 'mid' ? 'is-base' : ''}">${fn(k)}</td>`).join('')}</tr>`).join('')}</tbody></table>
@@ -63,6 +64,7 @@
 
   // Plain-language breakdown, one step per line: demand, store sales, running costs, margin, break-even, payback.
   function paybackHTML(result) {
+    const money = value => moneyRounded(value);
     const mid = result.scenarios?.mid, a = result.assumptions || {}, basis = result.revenueBasis || {};
     if (!mid) return '';
     const area = a.areaSqFt?.value?.mid, density = a.revenuePerSqFtYear?.value?.mid, capture = a.captureRate?.value?.mid;

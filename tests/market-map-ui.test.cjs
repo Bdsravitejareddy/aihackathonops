@@ -111,7 +111,7 @@ test('visible fill layer accepts sourced MultiPolygon state boundaries', async t
 });
 
 test('click loads workspace detail, evidence popup is escaped, and unsupported metrics remain unavailable', async t => {
-  const f = feature('a',120); f.evidence[0].title = '<img src=x onerror=alert(1)>'; f.evidence.push({ title: 'Unsafe', url: 'javascript:alert(1)' });
+  const f = feature('a',120); f.metrics.incomeProxy={value:null,unit:'INR/person/month',missing:{cause:'source_unavailable',nextAction:'Add a compatible cited local income source.'}}; f.evidence[0].title = '<img src=x onerror=alert(1)>'; f.evidence.push({ title: 'Unsafe', url: 'javascript:alert(1)' });
   const h = setup(url => url.includes('/geographies/') ? f : levels([f]));
   t.after(() => { h.controller.destroy(); h.dom.window.close(); }); await tick();
   h.map.fire('click', { features: [{ id: 'a', properties: { id: 'a' } }], lngLat: { lng:76, lat:21 } }, 'market-fill'); await tick();
@@ -121,6 +121,7 @@ test('click loads workspace detail, evidence popup is escaped, and unsupported m
   assert.match(detail.textContent, /Test area a/); assert.match(detail.textContent, /derived_estimate/);
   assert.match(detail.textContent, /2011/); assert.match(detail.textContent, /Unavailable/);
   assert.match(detail.textContent, /areal_interpolation/); assert.match(detail.textContent, /low/i);
+  assert.match(detail.textContent,/Source unavailable: Add a compatible cited local income source/);
   assert.equal(detail.querySelector('a[href="https://example.org/source"]').textContent.includes('<img'),true);
   assert.equal(detail.querySelector('img'),null); assert.equal(detail.querySelector('[href^="javascript:"]'),null);
   const popup = h.window.maplibregl.Popup.instances.at(-1);
@@ -254,7 +255,7 @@ test('additional investment layers request their own metric and show missing evi
   const detail = h.host.querySelector('[data-map-detail]');
   assert.match(detail.textContent,/Source year.*2011/s); assert.match(detail.textContent,/Geographic resolution.*state survey/s);
   assert.match(detail.textContent,/No compatible income proxy evidence/);
-  assert.match(detail.textContent,/Missing evidence/);
+  assert.match(detail.textContent,/Evidence unavailable:/);
 });
 
 test('selected geography shows detailed demographic data when the source provides it', async t => {

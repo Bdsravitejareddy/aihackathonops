@@ -75,9 +75,11 @@
     }).join('')}</ul>` : '<p class="hint">Source evidence unavailable.</p>';
   }
   function metricHTML(key, metric) {
+    const causeLabels = { source_unavailable:'Source unavailable', not_integrated:'Source not integrated', geography_mismatch:'Geography mismatch', missing_calculation_dependency:'Missing calculation dependency', api_database_failure:'API/database failure', user_input_required:'User input required' };
+    const gap = metricValue(metric) === null ? `${causeLabels[metric?.missing?.cause] || 'Evidence unavailable'}: ${metric?.missing?.nextAction || 'Use a compatible source or provide required inputs, then recalculate.'}` : '';
     return `<div class="expansion-metric"><span>${escape(label(key))}</span><strong>${escape(display(metric))}</strong>
       <small>${escape(metric?.evidenceClass || (metricValue(metric) === null ? 'unavailable' : 'Evidence class unavailable'))}${metric?.referenceYear || metric?.referencePeriod ? ' · ' + escape(metric.referenceYear || metric.referencePeriod) : ''}</small>
-      ${metricValue(metric) === null ? '<small>Missing evidence: no compatible source or complete model inputs at this resolution.</small>' : ''}
+      ${gap ? `<small>${escape(gap)}</small>` : ''}
       ${metric?.warnings ? `<small>${list(metric.warnings).map(escape).join(' · ')}</small>` : ''}
       ${metric?.evidence ? evidenceHTML(metric.evidence) : ''}</div>`;
   }

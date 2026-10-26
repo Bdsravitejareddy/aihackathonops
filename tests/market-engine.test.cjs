@@ -23,6 +23,7 @@ test('missing, zero, negative and non-finite proxies remain unavailable', () => 
     assert.equal(result.status, 'unavailable');
     assert.equal(result.value, null);
     assert.ok(result.warnings.length);
+    assert.equal(result.missing.cause, 'user_input_required');
   }
 });
 

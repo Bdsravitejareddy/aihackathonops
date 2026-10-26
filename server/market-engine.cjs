@@ -11,7 +11,7 @@ function metric(status, value, unit, evidenceClass, assumptions = [], warnings =
   return { status, value, unit, evidenceClass, assumptions, warnings };
 }
 
-function unavailable(unit, reason, assumptions = [], cause = 'user_input_required', nextAction = 'Provide the missing input, then recalculate this assessment.') {
+function unavailable(unit, reason, assumptions = [], cause = 'missing_calculation_dependency', nextAction = 'Supply the missing upstream value and recalculate.') {
   return { ...metric('unavailable', null, unit, 'derived_estimate', assumptions, [reason]), missing: missingEvidence(cause, nextAction) };
 }
 
@@ -25,7 +25,7 @@ function provenanceField(value, label) {
   const present = value !== undefined && value !== null && value !== '';
   return present
     ? { status: 'available', value }
-    : { status: 'unavailable', value: null, warnings: [`${label} was not supplied.`] };
+    : { status: 'unavailable', value: null, warnings: [`${label} was not supplied.`], missing: missingEvidence('user_input_required', `Provide ${label.toLowerCase()} before relying on this assessment.`) };
 }
 
 function validatePin(pin) {
@@ -36,14 +36,14 @@ function estimatePerCapitaSpend({ regionalSpend, pinIncomeProxy, regionalIncomeP
   const warnings = [];
   if (![regionalSpend, pinIncomeProxy, regionalIncomeProxy].every(isPositiveFinite)) {
     warnings.push('Regional spend and both income proxies must be supplied as positive finite numbers.');
-    return metric('unavailable', null, 'INR/person/month', 'derived_estimate', [], warnings);
+    return { ...metric('unavailable', null, 'INR/person/month', 'derived_estimate', [], warnings), missing: missingEvidence('user_input_required', 'Provide regional spend and both local and regional income proxies, all positive finite values.') };
   }
   if (!isPositiveFinite(elasticity)) {
-    return metric('invalid', null, 'INR/person/month', 'derived_estimate', [], ['Elasticity must be a positive finite number.']);
+    return { ...metric('invalid', null, 'INR/person/month', 'derived_estimate', [], ['Elasticity must be a positive finite number.']), missing: missingEvidence('user_input_required', 'Enter a positive finite elasticity value.') };
   }
   const value = regionalSpend * (pinIncomeProxy / regionalIncomeProxy) ** elasticity;
   if (!Number.isFinite(value)) {
-    return metric('unavailable', null, 'INR/person/month', 'derived_estimate', [], ['The spend estimate is outside the supported numeric range.']);
+    return { ...metric('unavailable', null, 'INR/person/month', 'derived_estimate', [], ['The spend estimate is outside the supported numeric range.']), missing: missingEvidence('missing_calculation_dependency', 'Review the input magnitudes and use supported positive finite values.') };
   }
   return metric('estimated', value, 'INR/person/month', 'derived_estimate', [
     `Regional spend ${regionalSpend} × (PIN income proxy ${pinIncomeProxy} / regional income proxy ${regionalIncomeProxy})^${elasticity}.`,

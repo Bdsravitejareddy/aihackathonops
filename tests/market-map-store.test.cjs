@@ -3,6 +3,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { normalizeFeature } = require('../server/market-map-store.cjs');
+const { MISSING_CAUSES } = require('../server/market-evidence.cjs');
+
+test('missing evidence taxonomy contains the six supported cause classes', () => {
+  assert.deepEqual(Object.keys(MISSING_CAUSES), [
+    'source_unavailable', 'not_integrated', 'geography_mismatch',
+    'missing_calculation_dependency', 'api_database_failure', 'user_input_required'
+  ]);
+});
 
 test('map metrics classify source, geography, integration, and calculation gaps without filling values', () => {
   const place = normalizeFeature({ external_id:'pin:560026', kind:'pin', name:'Bengaluru PIN', properties:{} });

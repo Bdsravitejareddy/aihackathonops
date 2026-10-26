@@ -55,7 +55,7 @@ function missing(a,state){let out=[];for(let f of a.missing||[])out.push(`What i
 function laterBlockers(a,state){const s=state.settings||{},out=[];
  const proposed=f=>(a.pending||[]).find(p=>p.field===f)?.proposed;
  const invest=Number.isFinite(a.investment)?a.investment:proposed('investment'),area=Number.isFinite(a.area)&&a.area>0?a.area:proposed('area');
- if(Number(s.minInvestment)>0&&Number.isFinite(invest)&&invest<Number(s.minInvestment)&&!a.reasons.some(r=>/Can invest/.test(r)))out.push(`${Number.isFinite(a.investment)?'they can invest':'the proposed amount is'} ₹${invest} lakh, below the ₹${s.minInvestment} lakh needed`);
+ if(Number(s.minInvestment)>0&&Number.isFinite(invest)&&invest<Number(s.minInvestment)&&!a.reasons.some(r=>/Can invest/.test(r)))out.push(`${Number.isFinite(a.investment)?'they can invest':'the proposed amount is'} ₹${invest} lakh, below the ₹${s.minInvestment} lakh needed,`);
  if(Number(s.minArea)>0&&Number.isFinite(area)&&area<Number(s.minArea)&&!a.reasons.some(r=>/sq ft; the brand needs/.test(r)))out.push(`the shop is ${area} sq ft, below the ${s.minArea} sq ft minimum`);
  if(Number(s.minLaunch)>0&&Number.isFinite(a.launch)&&a.launch<Number(s.minLaunch)&&!a.reasons.some(r=>/Wants to open/.test(r)))out.push(`they want to open in ${a.launch} month${a.launch===1?'':'s'}, sooner than the ${s.minLaunch} months a store needs`);
  return out;}

@@ -17,7 +17,8 @@
   const isGap = value => value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value)) || GAP.test(String(value).trim());
   const money = value => isGap(value) ? null : formatMetric({ value: Number(value), unit: 'INR' });
   const people = value => isGap(value) ? null : `${Math.round(Number(value)).toLocaleString('en-IN')} people`;
-  const months = value => isGap(value) ? null : `${value} months`;
+  // Same payback wording as the rest of the app: N months under 2 years, else N.N years.
+  const months = value => isGap(value) ? null : Number(value) < 24 ? `${value} months` : `${(Number(value) / 12).toFixed(1).replace(/\.0$/, '')} years`;
   const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
   const fieldOf = (label, value, note) => isGap(value) ? null : { label: clean(label, 80), value: clean(value, 120), ...(isGap(note) ? {} : { note: clean(note, 140) }) };
   const gapsOf = (...pairs) => pairs.filter(([, value]) => isGap(value)).map(([label]) => label);
@@ -57,7 +58,7 @@
     const slotsTotal = rows.reduce((n, r) => n + (r.slots || 0), 0);
     const data = { territories: rows, total: rows.length, applications: results.length, recommended: results.filter(a => a.status === 'Recommended').length, slotsTotal, economicsLoaded: !!economics };
     const facts = rows.flatMap(r => [fieldOf(`${r.id}${r.city ? ' · ' + r.city : ''}`, `${plural(r.applications, 'applicant')}, ${r.recommended} recommended${r.slots !== null ? `, ${plural(r.slots, 'slot')}` : ''}`),
-      fieldOf(`${r.id} catchment`, people(r.catchment), r.pinsTotal ? `${r.pinsWithData} of ${r.pinsTotal} PINs with data` : null), fieldOf(`${r.id} payback`, months(r.payback))]);
+      fieldOf(`${r.id} residents`, people(r.catchment), r.pinsTotal ? `${r.pinsWithData} of ${r.pinsTotal} PINs with data` : null), fieldOf(`${r.id} payback`, months(r.payback))]);
     const gaps = economics ? [] : ['PIN economics are still loading'];
     return { data, facts: facts.filter(Boolean), gaps };
   }
@@ -154,7 +155,7 @@
         const top = Object.entries(byCity).sort((a, b) => b[1].applications - a[1].applications)[0];
         if (top && top[1].applications) out.push(`${top[0]} has the most applicants (${top[1].applications})${top[1].recommended ? `, with ${top[1].recommended} recommended` : ' but no recommendation yet'}`);
         const largest = rows.filter(r => r.catchment !== null).sort((a, b) => b.catchment - a.catchment)[0];
-        if (largest) out.push(`Largest catchment: ${largest.id}${largest.city ? ` (${largest.city})` : ''} with ${people(largest.catchment)}${largest.pinsTotal ? `, ${largest.pinsWithData} of ${largest.pinsTotal} PINs with data` : ''}`);
+        if (largest) out.push(`Most residents: ${largest.id}${largest.city ? ` (${largest.city})` : ''} with ${people(largest.catchment)}${largest.pinsTotal ? `, ${largest.pinsWithData} of ${largest.pinsTotal} PINs with data` : ''}`);
         const missing = rows.filter(r => r.economicsLoaded && r.pinsMissing > 0).length;
         if (missing) out.push(`${plural(missing, 'territory', 'territories')} use PINs that are not in the PIN dataset, so ${missing === 1 ? 'its economics are' : 'their economics are'} unavailable`);
       }
@@ -192,7 +193,7 @@
       '• Sales: one store sells the area\'s potential revenue × a capture rate (10% in the base case), capped at what its floor space can sell.',
       '• Monthly cash: sales × (gross margin − royalty − marketing), minus rent, staff and utilities.',
       '• Investment: fit-out, rent deposit, opening stock, franchise fee, pre-opening costs and a cash reserve, priced for the city tier.',
-      '• Payback is the first month the running total turns positive. If that does not happen within 5 years, the app shows "> 5 yrs".'] },
+      '• Payback is the first month the running total turns positive. If that does not happen within 5 years, the app shows "over 5 years".'] },
     { topic: /\b(potential revenue|organi[sz]ed (?:store )?demand)\b/i, text: [
       'Potential revenue is the yearly apparel spend that organised physical stores can win in an area.',
       '• Population (modelled 2020) × monthly clothing and footwear spend per person (HCES 2023–24, rural and urban) × 12.',

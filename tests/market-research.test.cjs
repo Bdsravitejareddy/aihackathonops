@@ -220,3 +220,16 @@ test('retries one transient provider or network failure without exposing credent
   const result = await service.answerQuestion({context:validContext,question:'What evidence matters?'});
   assert.equal(result.ok,true);assert.equal(calls,2);assert.equal(JSON.stringify(result).includes('private-key'),false);
 });
+
+test('research cards take sources from grounding supports and same-site URLs, never unretrieved pages', () => {
+  const { shapeContextCards } = require('../server/market-research.cjs');
+  const citations = [{ url: 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/abc', title: 'censusindia.gov.in' }, { url: 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/def', title: 'mospi.gov.in' }];
+  const supports = [{ text: 'Rajajinagar has dense residential housing and a busy retail corridor', urls: [citations[0].url] }];
+  const base = { confidence: 'medium', referenceDate: '2026-10-26', implication: 'Prioritise high-street sites.' };
+  const cards = shapeContextCards([
+    { ...base, headline: 'Dense catchment', insight: 'Rajajinagar has dense residential housing and a busy retail corridor.', evidenceUrls: [] },
+    { ...base, headline: 'Spend data', insight: 'Survey spend varies by sector.', evidenceUrls: ['https://www.mospi.gov.in/some/report.pdf'] },
+    { ...base, headline: 'Unbacked', insight: 'A claim with no retrieved source.', evidenceUrls: ['https://unknown.example/page'] }
+  ], citations, supports);
+  assert.deepEqual(cards.map(card => [card.headline, card.evidenceUrls]), [['Dense catchment', [citations[0].url]], ['Spend data', [citations[1].url]]]);
+});

@@ -18,6 +18,15 @@ function sanitizeContext(context) {
   }
 }
 
+// Which retrieved pages back which sentence of the answer (Gemini groundingSupports), as { text, urls }.
+function extractSupports(groundingMetadata) {
+  const chunks = groundingMetadata?.groundingChunks || [];
+  return (groundingMetadata?.groundingSupports || []).map(support => ({
+    text: safeText(support?.segment?.text, 1000),
+    urls: (support?.groundingChunkIndices || []).map(index => chunks[index]?.web?.uri).filter(uri => typeof uri === 'string' && /^https?:\/\//.test(uri))
+  })).filter(support => support.text && support.urls.length);
+}
+
 function extractCitations(groundingMetadata) {
   const chunks = groundingMetadata?.groundingMetadata?.groundingChunks
     || groundingMetadata?.groundingChunks || [];
@@ -50,18 +59,35 @@ function parseJson(text) {
   return null;
 }
 
-function shapeContextCards(input, citations = []) {
+// The model cannot see grounding URLs (they are opaque redirects), so a card's sources are the retrieved pages behind
+// grounding sentences that appear in the card, plus any URL it names whose site matches a retrieved page.
+const normalizeForMatch = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const siteOf = value => { try { return new URL(value).hostname.replace(/^www\./, ''); } catch { return null; } };
+function cardSources(card, citations, supports) {
+  const known = new Set(citations.map(item => item.url)), found = new Set();
+  for (const url of Array.isArray(card.evidenceUrls) ? card.evidenceUrls : []) {
+    if (typeof url !== 'string') continue;
+    if (known.has(url)) { found.add(url); continue; }
+    const site = siteOf(url), match = site && citations.find(item => [siteOf(item.url), String(item.title || '').replace(/^www\./, '')].some(h => h && (h === site || site.endsWith('.' + h) || h.endsWith('.' + site))));
+    if (match) found.add(match.url);
+  }
+  const body = normalizeForMatch(`${card.headline} ${card.insight} ${card.implication}`);
+  for (const support of supports) {
+    const segment = normalizeForMatch(support.text);
+    if (segment.length >= 24 && (body.includes(segment) || segment.includes(normalizeForMatch(card.insight).slice(0, 80)))) support.urls.forEach(url => known.has(url) && found.add(url));
+  }
+  return [...found];
+}
+
+function shapeContextCards(input, citations = [], supports = []) {
   if (!Array.isArray(input)) return [];
-  const knownUrls = new Set(citations.map(item => item.url));
   const output = [];
   for (const card of input) {
     if (!card || typeof card !== 'object' || Array.isArray(card)) continue;
     const headline = safeText(card.headline, 120);
     const insight = safeText(card.insight, 900);
     const implication = safeText(card.implication, 300);
-    const evidenceUrls = Array.isArray(card.evidenceUrls)
-      ? [...new Set(card.evidenceUrls.filter(url => typeof url === 'string' && knownUrls.has(url)))]
-      : [];
+    const evidenceUrls = cardSources(card, citations, supports);
     const confidence = ['low', 'medium', 'high'].includes(card.confidence) ? card.confidence : null;
     const referenceDate = safeText(card.referenceDate, 40);
     if (!headline || !insight || !implication || !confidence || !referenceDate || !evidenceUrls.length) continue;
@@ -172,7 +198,7 @@ function createMarketResearchService(options = {}) {
       const retrievedAt = new Date(now()).toISOString();
       const citations = extractCitations(candidate.groundingMetadata).map(citation => ({ ...citation, publicationDate: null, retrievedAt }));
       if (typeof logger.info === 'function') logger.info('Gemini market research usage', { model, usage: payload.usageMetadata || null, groundingQueries: candidate.groundingMetadata?.webSearchQueries?.length || 0, estimatedCostUsd:costPerRequestUsd, costRateConfigured:costPerRequestUsd !== null });
-      return { ok: true, text: extractResponseText(payload), citations, usage: payload.usageMetadata || null, retrievedAt };
+      return { ok: true, text: extractResponseText(payload), citations, supports: extractSupports(candidate.groundingMetadata), usage: payload.usageMetadata || null, retrievedAt };
     } catch (error) {
       if (timedOut || error?.name === 'AbortError') return fail('timeout', 'Research request timed out. Try again.');
       logger.error('Gemini market research request failed', { name: safeText(error?.name, 80) || 'Error' });
@@ -190,7 +216,7 @@ function createMarketResearchService(options = {}) {
     if (!result.ok) return result;
     const parsed = parseJson(result.text);
     if (!parsed || !Array.isArray(parsed.cards)) return fail('invalid_response', 'Research response did not match the expected card format.');
-    const cards = shapeContextCards(parsed.cards, result.citations)
+    const cards = shapeContextCards(parsed.cards, result.citations, result.supports || [])
       .filter(card => hasOnlyContextNumbers(`${card.headline} ${card.insight} ${card.implication}`, clean))
       .map(card => ({ ...card, referenceDate: `Retrieved ${result.retrievedAt.slice(0, 10)}; publication date not verified` }));
     if (!cards.length) return fail('invalid_response', 'Research response contained no valid cards with verified citations.');

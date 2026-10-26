@@ -189,3 +189,11 @@ test('brand names in shop names match whole words only', () => {
   assert.deepEqual(result.brands.map(b => [b.name, b.count]), [['H&M', 1], ['Max', 1]]);
   assert.equal(result.brandCounts.max, 1);
 });
+
+test('researched competitors are matched to citations through grounding supports', () => {
+  const { shapeResearched } = require('../server/market-competitors.cjs');
+  const citations = [{ url: 'https://a.example/stores', title: 'a.example' }, { url: 'https://b.example/zudio-bengaluru', title: 'b.example' }];
+  const rows = shapeResearched({ competitors: [{ name: 'Westside' }, { name: 'Zudio' }, { name: 'Unbacked Brand' }] }, citations,
+    [{ text: 'Westside operates a store on Rajajinagar main road.', urls: ['https://a.example/stores'] }]);
+  assert.deepEqual(rows.map(r => [r.name, r.citation.url]), [['Westside', 'https://a.example/stores'], ['Zudio', 'https://b.example/zudio-bengaluru']]);
+});

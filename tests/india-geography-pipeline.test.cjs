@@ -12,12 +12,16 @@ const root = path.resolve(__dirname,'..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root,'data/india-geography/manifest.json'),'utf8'));
 const polygon = { type:'Polygon', coordinates:[[[77,12],[78,12],[78,13],[77,13],[77,12]]] };
 
-test('repository geography manifest validates sourced state coverage and explicit remaining gaps', () => {
+test('repository geography manifest validates sourced state, district and PIN coverage and explicit remaining gaps', () => {
   const result = validateRepository({rootDir:root});
-  assert.equal(result.datasetCount,10);
+  assert.equal(result.datasetCount,12);
   assert.equal(result.featureCount,0);
-  assert.equal(result.coverage.populationTotal,1112978963);
-  assert.equal(manifest.datasets.find(item=>item.id==='geoboundaries-india-adm1').coverage.featureCount,36);
+  const coverage = id => manifest.datasets.find(item=>item.id===id).coverage;
+  assert.equal(coverage('geoboundaries-india-adm1').populationTotal,1210854977);
+  assert.equal(coverage('geoboundaries-india-adm1').featureCount,36);
+  // Districts and PINs share the modelled 2020 population; PINs only miss districts with no mapped post office.
+  const districts = coverage('geoboundaries-india-adm2-worldpop-2020').populationTotal, pins = coverage('india-post-pin-directory-areas').populationTotal;
+  assert.ok(pins <= districts && pins > districts * 0.999);
   assert.equal(manifest.datasets.filter(item=>item.status==='unavailable').length,9);
 });
 
@@ -44,7 +48,9 @@ test('ingestion creates a reproducible immutable snapshot and rejects changed ou
     const first=ingest({rootDir:root,outputDir}), second=ingest({rootDir:root,outputDir});
     assert.equal(first.idempotent,false);assert.equal(second.idempotent,true);assert.deepEqual(first.coverage,second.coverage);
     const data=JSON.parse(fs.readFileSync(first.path,'utf8'));
-    assert.equal(data.geographies.length,36);assert.deepEqual(data.relationships,[]);
+    assert.equal(data.geographies.length,36+735);assert.equal(data.relationships.length,735);
+    assert.ok(data.relationships.every(relation=>relation.parentKind==='state'&&relation.childKind==='district'));
+    assert.equal(data.datasets.find(row=>row.id==='india-post-pin-directory-areas').ingest,'seed-script');
     fs.writeFileSync(first.path,'modified');
     assert.throws(()=>ingest({rootDir:root,outputDir}),/immutable/i);
   } finally { fs.rmSync(outputDir,{recursive:true,force:true}); }

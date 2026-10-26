@@ -86,7 +86,7 @@
         "benchmarkCatalog": "data/india-market-benchmarks.json",
         "datasetId": "hces-2023-24-state-sector",
         "status": "unavailable",
-        "coverage": "Benchmark extract covers 36 State/UTs × rural and urban; no spatial state_sector geography records are seeded."
+        "coverage": "Benchmark extract covers 36 State/UTs \u00d7 rural and urban; no spatial state_sector geography records are seeded."
       }
     },
     {
@@ -152,21 +152,32 @@
       "id": "india-post-pin-directory",
       "publisher": "Department of Posts, Ministry of Communications, Government of India",
       "title": "Post Office and PIN Code Directory",
-      "url": "https://www.indiapost.gov.in/rti/pincodelist",
-      "referencePeriod": "Current directory; verify retrieval vintage when ingested",
+      "url": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "referencePeriod": "Directory downloaded 2026-10-26 (165,627 offices, 19,586 PINs)",
       "geography": "Postal PIN and post office records",
       "updateFrequency": "As published by India Post",
-      "licenseNote": "Government directory; attribute India Post and check reuse terms for downloaded data.",
+      "licenseNote": "Government Open Data License - India (data.gov.in); attribute Department of Posts.",
       "variables": [
         "PIN code",
         "post office",
-        "administrative location names"
+        "office type",
+        "delivery status",
+        "district",
+        "state",
+        "latitude",
+        "longitude"
       ],
       "limitations": [
         "Postal lookup only; a PIN is not a census unit, market boundary, or guaranteed catchment.",
-        "Contains no observed income, population, apparel spend or footfall."
+        "Contains no observed income, population, apparel spend or footfall.",
+        "12,015 offices lack coordinates and several thousand have coordinates outside India or in the wrong state; see india-pin-quality-report.json."
       ],
-      "evidenceClass": "official_observed"
+      "evidenceClass": "official_observed",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "india-post-pin-directory-areas",
+        "status": "available"
+      }
     },
     {
       "id": "ogd-india-pin-geojson",
@@ -355,6 +366,67 @@
         "datasetId": "census-state-population-2011",
         "status": "available"
       }
+    },
+    {
+      "id": "geoboundaries-ind-adm2",
+      "publisher": "geoBoundaries; underlying source: Pathways Data Pvt. Ltd. / Local Government Directory (lgdirectory.gov.in)",
+      "title": "India ADM2 District Boundaries (simplified)",
+      "url": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+      "referencePeriod": "2021 boundaries; source updated 2023-01-19; build 2023-12-12",
+      "geography": "735 district polygons, WGS84 longitude/latitude",
+      "updateFrequency": "Versioned source; refresh only after metadata and license review",
+      "licenseNote": "ODbL 1.0; attribute geoBoundaries and Pathways Data / lgdirectory.gov.in. Share-alike applies to the boundary database.",
+      "variables": [
+        "district polygons",
+        "source boundary ID"
+      ],
+      "limitations": [
+        "Cartographic simplification reduces boundary detail.",
+        "One polygon is labelled \"DATA NOT AVAILABLE\" in the source."
+      ],
+      "evidenceClass": "derived_geometry",
+      "geographyPipeline": {
+        "manifest": "data/india-geography/manifest.json",
+        "datasetId": "geoboundaries-india-adm2-worldpop-2020",
+        "status": "available"
+      }
+    },
+    {
+      "id": "worldpop-2020-1km-unadj-ind",
+      "publisher": "WorldPop, University of Southampton",
+      "title": "India 2020 population counts, 1 km, UN-adjusted",
+      "url": "https://hub.worldpop.org/geodata/summary?id=31527",
+      "downloadUrl": "https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/IND/ind_ppp_2020_1km_Aggregated_UNadj.tif",
+      "referencePeriod": "2020",
+      "geography": "1 km grid",
+      "updateFrequency": "Annual series to 2020",
+      "licenseNote": "CC BY 4.0; attribute WorldPop.",
+      "variables": [
+        "population count per grid cell"
+      ],
+      "limitations": [
+        "Modelled disaggregation; under-allocates very dense urban cores (corrected for Mumbai, Chennai and Kolkata against Census 2011)."
+      ],
+      "evidenceClass": "derived_estimate"
+    },
+    {
+      "id": "careedge-apparel-retail-fy25",
+      "publisher": "IBEF, reporting CareEdge Ratings",
+      "title": "India's apparel retail market poised to reach US$ 193 billion by FY30",
+      "url": "https://www.ibef.org/news/india-s-apparel-retail-market-poised-to-reach-us-193-billion-by-fy30-careedge",
+      "referencePeriod": "FY25",
+      "geography": "India",
+      "updateFrequency": "Report-specific",
+      "licenseNote": "Cite IBEF/CareEdge; figures used as published shares only.",
+      "variables": [
+        "organised share of apparel retail (41%)",
+        "online share of organised apparel retail (22%)"
+      ],
+      "limitations": [
+        "National shares; no urban/rural or state split."
+      ],
+      "evidenceClass": "derived_estimate"
     }
   ]
 }

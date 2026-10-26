@@ -6,7 +6,7 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const sourcesDoc = JSON.parse(fs.readFileSync(path.join(root, 'data/india-market-sources.json'), 'utf8'));
 const benchmarksDoc = JSON.parse(fs.readFileSync(path.join(root, 'data/india-market-benchmarks.json'), 'utf8'));
-const allowedClasses = new Set(['official_observed', 'official_survey_estimate', 'derived_estimate']);
+const allowedClasses = new Set(['official_observed', 'official_survey_estimate', 'derived_estimate', 'derived_geometry']);
 const requiredSourceFields = ['id', 'publisher', 'title', 'url', 'referencePeriod', 'geography', 'updateFrequency', 'licenseNote', 'variables', 'limitations', 'evidenceClass'];
 
 function validate() {

@@ -1,0 +1,5979 @@
+{
+  "summary": {
+    "censusValidation": {
+      "consistent": 583,
+      "flagged_possible_boundary_change": 47,
+      "no_2011_match": 102,
+      "corrected_dense_core_undercount": 3
+    },
+    "gridTotal": 1380004385,
+    "stateTotal": 1376627882,
+    "districtTotal": 1377492172,
+    "stateCoveragePercent": 99.76,
+    "districtCoveragePercent": 99.82,
+    "districts": 735,
+    "gridSha256": "27d08e3eabf59f63a2147901c25c046d584c3295f9ceb4c4cf08a902a5bec911"
+  },
+  "reconciliation": [
+    {
+      "code": "IN-PY",
+      "name": "Puducherry",
+      "statePopulation2020": 1388724,
+      "districtSum": 1366445,
+      "gapPercent": -1.6
+    },
+    {
+      "code": "IN-MH",
+      "name": "Maharashtra",
+      "statePopulation2020": 126117990,
+      "districtSum": 126210413,
+      "gapPercent": 0.07
+    },
+    {
+      "code": "IN-NL",
+      "name": "Nagaland",
+      "statePopulation2020": 2018771,
+      "districtSum": 2010751,
+      "gapPercent": -0.4
+    },
+    {
+      "code": "IN-LD",
+      "name": "Lakshadweep",
+      "statePopulation2020": 38722,
+      "districtSum": 42512,
+      "gapPercent": 9.79
+    },
+    {
+      "code": "IN-UP",
+      "name": "Uttar Pradesh",
+      "statePopulation2020": 231428541,
+      "districtSum": 231567435,
+      "gapPercent": 0.06
+    },
+    {
+      "code": "IN-TN",
+      "name": "Tamil Nadu",
+      "statePopulation2020": 80846800,
+      "districtSum": 80825189,
+      "gapPercent": -0.03
+    },
+    {
+      "code": "IN-CT",
+      "name": "Chhattisgarh",
+      "statePopulation2020": 29493955,
+      "districtSum": 29504626,
+      "gapPercent": 0.04
+    },
+    {
+      "code": "IN-GJ",
+      "name": "Gujarat",
+      "statePopulation2020": 69341186,
+      "districtSum": 69737010,
+      "gapPercent": 0.57
+    },
+    {
+      "code": "IN-DL",
+      "name": "Delhi",
+      "statePopulation2020": 19311895,
+      "districtSum": 19320088,
+      "gapPercent": 0.04
+    },
+    {
+      "code": "IN-SK",
+      "name": "Sikkim",
+      "statePopulation2020": 665746,
+      "districtSum": 659764,
+      "gapPercent": -0.9
+    },
+    {
+      "code": "IN-TR",
+      "name": "Tripura",
+      "statePopulation2020": 4006972,
+      "districtSum": 3988513,
+      "gapPercent": -0.46
+    },
+    {
+      "code": "IN-WB",
+      "name": "West Bengal",
+      "statePopulation2020": 99267487,
+      "districtSum": 99549346,
+      "gapPercent": 0.28
+    },
+    {
+      "code": "IN-OR",
+      "name": "Odisha",
+      "statePopulation2020": 46453329,
+      "districtSum": 46454820,
+      "gapPercent": 0
+    },
+    {
+      "code": "IN-BR",
+      "name": "Bihar",
+      "statePopulation2020": 125455911,
+      "districtSum": 125387211,
+      "gapPercent": -0.05
+    },
+    {
+      "code": "IN-LA",
+      "name": "Ladakh",
+      "statePopulation2020": 306303,
+      "districtSum": 307425,
+      "gapPercent": 0.37
+    },
+    {
+      "code": "IN-RJ",
+      "name": "Rajasthan",
+      "statePopulation2020": 80195421,
+      "districtSum": 80254787,
+      "gapPercent": 0.07
+    },
+    {
+      "code": "IN-TG",
+      "name": "Telangana",
+      "statePopulation2020": 38983240,
+      "districtSum": 39165844,
+      "gapPercent": 0.47
+    },
+    {
+      "code": "IN-AP",
+      "name": "Andhra Pradesh",
+      "statePopulation2020": 52654906,
+      "districtSum": 52481785,
+      "gapPercent": -0.33
+    },
+    {
+      "code": "IN-MZ",
+      "name": "Mizoram",
+      "statePopulation2020": 1314829,
+      "districtSum": 1306056,
+      "gapPercent": -0.67
+    },
+    {
+      "code": "IN-AR",
+      "name": "Arunachal Pradesh",
+      "statePopulation2020": 1737428,
+      "districtSum": 1733295,
+      "gapPercent": -0.24
+    },
+    {
+      "code": "IN-ML",
+      "name": "Meghalaya",
+      "statePopulation2020": 3721244,
+      "districtSum": 3718248,
+      "gapPercent": -0.08
+    },
+    {
+      "code": "IN-JH",
+      "name": "Jharkhand",
+      "statePopulation2020": 39218977,
+      "districtSum": 39160008,
+      "gapPercent": -0.15
+    },
+    {
+      "code": "IN-AS",
+      "name": "Assam",
+      "statePopulation2020": 34979782,
+      "districtSum": 34952392,
+      "gapPercent": -0.08
+    },
+    {
+      "code": "IN-MN",
+      "name": "Manipur",
+      "statePopulation2020": 3484282,
+      "districtSum": 3484560,
+      "gapPercent": 0.01
+    },
+    {
+      "code": "IN-KA",
+      "name": "Karnataka",
+      "statePopulation2020": 68782417,
+      "districtSum": 68822010,
+      "gapPercent": 0.06
+    },
+    {
+      "code": "IN-UT",
+      "name": "Uttarakhand",
+      "statePopulation2020": 11755439,
+      "districtSum": 11641459,
+      "gapPercent": -0.97
+    },
+    {
+      "code": "IN-DH",
+      "name": "Dadra and Nagar Haveli and Daman and Diu",
+      "statePopulation2020": 823503,
+      "districtSum": 887146,
+      "gapPercent": 7.73
+    },
+    {
+      "code": "IN-MP",
+      "name": "Madhya Pradesh",
+      "statePopulation2020": 84047191,
+      "districtSum": 83993386,
+      "gapPercent": -0.06
+    },
+    {
+      "code": "IN-GA",
+      "name": "Goa",
+      "statePopulation2020": 1516470,
+      "districtSum": 1528823,
+      "gapPercent": 0.81
+    },
+    {
+      "code": "IN-KL",
+      "name": "Kerala",
+      "statePopulation2020": 33766520,
+      "districtSum": 33905160,
+      "gapPercent": 0.41
+    },
+    {
+      "code": "IN-CH",
+      "name": "Chandigarh",
+      "statePopulation2020": 881511,
+      "districtSum": 881026,
+      "gapPercent": -0.06
+    },
+    {
+      "code": "IN-AN",
+      "name": "Andaman and Nicobar Islands",
+      "statePopulation2020": 361984,
+      "districtSum": 366491,
+      "gapPercent": 1.25
+    },
+    {
+      "code": "IN-HP",
+      "name": "Himachal Pradesh",
+      "statePopulation2020": 7568684,
+      "districtSum": 7540503,
+      "gapPercent": -0.37
+    },
+    {
+      "code": "IN-JK",
+      "name": "Jammu and Kashmir",
+      "statePopulation2020": 14511419,
+      "districtSum": 14510428,
+      "gapPercent": -0.01
+    },
+    {
+      "code": "IN-PB",
+      "name": "Punjab",
+      "statePopulation2020": 30768389,
+      "districtSum": 30833103,
+      "gapPercent": 0.21
+    },
+    {
+      "code": "IN-HR",
+      "name": "Haryana",
+      "statePopulation2020": 29411915,
+      "districtSum": 29394114,
+      "gapPercent": -0.06
+    }
+  ],
+  "censusChecks": [
+    {
+      "district": "Karaikal",
+      "state": "Puducherry",
+      "model2020": 135731,
+      "census2011": 200222,
+      "expectedAtStateGrowth": 219233,
+      "ratio": 0.619,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Puducherry",
+      "state": "Puducherry",
+      "model2020": 1181639,
+      "census2011": 950289,
+      "expectedAtStateGrowth": 1040518,
+      "ratio": 1.136,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahe",
+      "state": "Puducherry",
+      "model2020": 49075,
+      "census2011": 41816,
+      "expectedAtStateGrowth": 45786,
+      "ratio": 1.072,
+      "status": "consistent"
+    },
+    {
+      "district": "Washim",
+      "state": "Maharashtra",
+      "model2020": 1334224,
+      "census2011": 1197160,
+      "expectedAtStateGrowth": 1344560,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Ahmadnagar",
+      "state": "Maharashtra",
+      "model2020": 4989802,
+      "census2011": 4543159,
+      "expectedAtStateGrowth": 5102535,
+      "ratio": 0.978,
+      "status": "consistent"
+    },
+    {
+      "district": "Latur",
+      "state": "Maharashtra",
+      "model2020": 2745961,
+      "census2011": 2454196,
+      "expectedAtStateGrowth": 2756369,
+      "ratio": 0.996,
+      "status": "consistent"
+    },
+    {
+      "district": "Solapur",
+      "state": "Maharashtra",
+      "model2020": 4715100,
+      "census2011": 4317756,
+      "expectedAtStateGrowth": 4849379,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Nashik",
+      "state": "Maharashtra",
+      "model2020": 7162229,
+      "census2011": 6107187,
+      "expectedAtStateGrowth": 6859134,
+      "ratio": 1.044,
+      "status": "consistent"
+    },
+    {
+      "district": "Osmanabad",
+      "state": "Maharashtra",
+      "model2020": 1874295,
+      "census2011": 1657576,
+      "expectedAtStateGrowth": 1861665,
+      "ratio": 1.007,
+      "status": "consistent"
+    },
+    {
+      "district": "Sindhudurg",
+      "state": "Maharashtra",
+      "model2020": 790940,
+      "census2011": 849651,
+      "expectedAtStateGrowth": 954264,
+      "ratio": 0.829,
+      "status": "consistent"
+    },
+    {
+      "district": "Kolhapur",
+      "state": "Maharashtra",
+      "model2020": 3884268,
+      "census2011": 3876001,
+      "expectedAtStateGrowth": 4353233,
+      "ratio": 0.892,
+      "status": "consistent"
+    },
+    {
+      "district": "Chandrapur",
+      "state": "Maharashtra",
+      "model2020": 2293198,
+      "census2011": 2204307,
+      "expectedAtStateGrowth": 2475712,
+      "ratio": 0.926,
+      "status": "consistent"
+    },
+    {
+      "district": "Akola",
+      "state": "Maharashtra",
+      "model2020": 1984391,
+      "census2011": 1813906,
+      "expectedAtStateGrowth": 2037243,
+      "ratio": 0.974,
+      "status": "consistent"
+    },
+    {
+      "district": "Parbhani",
+      "state": "Maharashtra",
+      "model2020": 2094178,
+      "census2011": 1836086,
+      "expectedAtStateGrowth": 2062154,
+      "ratio": 1.016,
+      "status": "consistent"
+    },
+    {
+      "district": "Yavatmal",
+      "state": "Maharashtra",
+      "model2020": 3048158,
+      "census2011": 2772348,
+      "expectedAtStateGrowth": 3113693,
+      "ratio": 0.979,
+      "status": "consistent"
+    },
+    {
+      "district": "Nanded",
+      "state": "Maharashtra",
+      "model2020": 3781463,
+      "census2011": 3361292,
+      "expectedAtStateGrowth": 3775151,
+      "ratio": 1.002,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhule",
+      "state": "Maharashtra",
+      "model2020": 2405868,
+      "census2011": 2050862,
+      "expectedAtStateGrowth": 2303374,
+      "ratio": 1.044,
+      "status": "consistent"
+    },
+    {
+      "district": "Satara",
+      "state": "Maharashtra",
+      "model2020": 3100529,
+      "census2011": 3003741,
+      "expectedAtStateGrowth": 3373576,
+      "ratio": 0.919,
+      "status": "consistent"
+    },
+    {
+      "district": "Sangli",
+      "state": "Maharashtra",
+      "model2020": 3161573,
+      "census2011": 2822143,
+      "expectedAtStateGrowth": 3169619,
+      "ratio": 0.997,
+      "status": "consistent"
+    },
+    {
+      "district": "Hingoli",
+      "state": "Maharashtra",
+      "model2020": 1332152,
+      "census2011": 1177345,
+      "expectedAtStateGrowth": 1322305,
+      "ratio": 1.007,
+      "status": "consistent"
+    },
+    {
+      "district": "Pune",
+      "state": "Maharashtra",
+      "model2020": 11729534,
+      "census2011": 9429408,
+      "expectedAtStateGrowth": 10590403,
+      "ratio": 1.108,
+      "status": "consistent"
+    },
+    {
+      "district": "Gondiya",
+      "state": "Maharashtra",
+      "model2020": 1514050,
+      "census2011": 1322507,
+      "expectedAtStateGrowth": 1485341,
+      "ratio": 1.019,
+      "status": "consistent"
+    },
+    {
+      "district": "Amravati",
+      "state": "Maharashtra",
+      "model2020": 3131067,
+      "census2011": 2888445,
+      "expectedAtStateGrowth": 3244085,
+      "ratio": 0.965,
+      "status": "consistent"
+    },
+    {
+      "district": "Nandurbar",
+      "state": "Maharashtra",
+      "model2020": 1979773,
+      "census2011": 1648295,
+      "expectedAtStateGrowth": 1851241,
+      "ratio": 1.069,
+      "status": "consistent"
+    },
+    {
+      "district": "Ratnagiri",
+      "state": "Maharashtra",
+      "model2020": 1491805,
+      "census2011": 1615069,
+      "expectedAtStateGrowth": 1813924,
+      "ratio": 0.822,
+      "status": "consistent"
+    },
+    {
+      "district": "Wardha",
+      "state": "Maharashtra",
+      "model2020": 1335634,
+      "census2011": 1300774,
+      "expectedAtStateGrowth": 1460932,
+      "ratio": 0.914,
+      "status": "consistent"
+    },
+    {
+      "district": "Aurangabad",
+      "state": "Maharashtra",
+      "model2020": 4463448,
+      "census2011": 3701282,
+      "expectedAtStateGrowth": 4157002,
+      "ratio": 1.074,
+      "status": "consistent"
+    },
+    {
+      "district": "Buldana",
+      "state": "Maharashtra",
+      "model2020": 2877208,
+      "census2011": 2586258,
+      "expectedAtStateGrowth": 2904691,
+      "ratio": 0.991,
+      "status": "consistent"
+    },
+    {
+      "district": "Gadchiroli",
+      "state": "Maharashtra",
+      "model2020": 1148430,
+      "census2011": 1072942,
+      "expectedAtStateGrowth": 1205048,
+      "ratio": 0.953,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalgaon",
+      "state": "Maharashtra",
+      "model2020": 4640128,
+      "census2011": 4229917,
+      "expectedAtStateGrowth": 4750725,
+      "ratio": 0.977,
+      "status": "consistent"
+    },
+    {
+      "district": "Raigarh",
+      "state": "Maharashtra",
+      "model2020": 3007521,
+      "census2011": 2634200,
+      "expectedAtStateGrowth": 2958536,
+      "ratio": 1.017,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhandara",
+      "state": "Maharashtra",
+      "model2020": 1138830,
+      "census2011": 1200334,
+      "expectedAtStateGrowth": 1348125,
+      "ratio": 0.845,
+      "status": "consistent"
+    },
+    {
+      "district": "Bid",
+      "state": "Maharashtra",
+      "model2020": 2965910,
+      "census2011": 2585049,
+      "expectedAtStateGrowth": 2903333,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalna",
+      "state": "Maharashtra",
+      "model2020": 2284913,
+      "census2011": 1959046,
+      "expectedAtStateGrowth": 2200253,
+      "ratio": 1.038,
+      "status": "consistent"
+    },
+    {
+      "district": "Thane",
+      "state": "Maharashtra",
+      "model2020": 9528680,
+      "census2011": 11060148,
+      "expectedAtStateGrowth": 12421928,
+      "ratio": 0.767,
+      "status": "consistent"
+    },
+    {
+      "district": "Mumbai",
+      "state": "Maharashtra",
+      "model2020": 2633182,
+      "census2011": 3085411,
+      "expectedAtStateGrowth": 3465302,
+      "ratio": 0.76,
+      "status": "corrected_dense_core_undercount"
+    },
+    {
+      "district": "Mumbai Suburban",
+      "state": "Maharashtra",
+      "model2020": 10686043,
+      "census2011": 9356962,
+      "expectedAtStateGrowth": 10509037,
+      "ratio": 1.017,
+      "status": "consistent"
+    },
+    {
+      "district": "Nagpur",
+      "state": "Maharashtra",
+      "model2020": 5137965,
+      "census2011": 4653570,
+      "expectedAtStateGrowth": 5226540,
+      "ratio": 0.983,
+      "status": "consistent"
+    },
+    {
+      "district": "Mon",
+      "state": "Nagaland",
+      "model2020": 217584,
+      "census2011": 250260,
+      "expectedAtStateGrowth": 254339,
+      "ratio": 0.855,
+      "status": "consistent"
+    },
+    {
+      "district": "Tuensang",
+      "state": "Nagaland",
+      "model2020": 193723,
+      "census2011": 196596,
+      "expectedAtStateGrowth": 199800,
+      "ratio": 0.97,
+      "status": "consistent"
+    },
+    {
+      "district": "Mokokchung",
+      "state": "Nagaland",
+      "model2020": 164375,
+      "census2011": 194622,
+      "expectedAtStateGrowth": 197794,
+      "ratio": 0.831,
+      "status": "consistent"
+    },
+    {
+      "district": "Longleng",
+      "state": "Nagaland",
+      "model2020": 32400,
+      "census2011": 50484,
+      "expectedAtStateGrowth": 51307,
+      "ratio": 0.631,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Phek",
+      "state": "Nagaland",
+      "model2020": 155279,
+      "census2011": 163418,
+      "expectedAtStateGrowth": 166082,
+      "ratio": 0.935,
+      "status": "consistent"
+    },
+    {
+      "district": "Kohima",
+      "state": "Nagaland",
+      "model2020": 310749,
+      "census2011": 267988,
+      "expectedAtStateGrowth": 272356,
+      "ratio": 1.141,
+      "status": "consistent"
+    },
+    {
+      "district": "Wokha",
+      "state": "Nagaland",
+      "model2020": 157738,
+      "census2011": 166343,
+      "expectedAtStateGrowth": 169054,
+      "ratio": 0.933,
+      "status": "consistent"
+    },
+    {
+      "district": "Zunheboto",
+      "state": "Nagaland",
+      "model2020": 139574,
+      "census2011": 140757,
+      "expectedAtStateGrowth": 143051,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Kiphire",
+      "state": "Nagaland",
+      "model2020": 50284,
+      "census2011": 74004,
+      "expectedAtStateGrowth": 75210,
+      "ratio": 0.669,
+      "status": "consistent"
+    },
+    {
+      "district": "Dimapur",
+      "state": "Nagaland",
+      "model2020": 481217,
+      "census2011": 378811,
+      "expectedAtStateGrowth": 384986,
+      "ratio": 1.25,
+      "status": "consistent"
+    },
+    {
+      "district": "Peren",
+      "state": "Nagaland",
+      "model2020": 107828,
+      "census2011": 95219,
+      "expectedAtStateGrowth": 96771,
+      "ratio": 1.114,
+      "status": "consistent"
+    },
+    {
+      "district": "Lakshadweep",
+      "state": "Lakshadweep",
+      "model2020": 42512,
+      "census2011": 64473,
+      "expectedAtStateGrowth": 42512,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Moradabad",
+      "state": "Uttar Pradesh",
+      "model2020": 3740910,
+      "census2011": 4772006,
+      "expectedAtStateGrowth": 5530395,
+      "ratio": 0.676,
+      "status": "consistent"
+    },
+    {
+      "district": "Budaun",
+      "state": "Uttar Pradesh",
+      "model2020": 3580905,
+      "census2011": 3681896,
+      "expectedAtStateGrowth": 4267040,
+      "ratio": 0.839,
+      "status": "consistent"
+    },
+    {
+      "district": "Kanshiram Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 1622544,
+      "census2011": 1436719,
+      "expectedAtStateGrowth": 1665049,
+      "ratio": 0.974,
+      "status": "consistent"
+    },
+    {
+      "district": "Bahraich",
+      "state": "Uttar Pradesh",
+      "model2020": 4044974,
+      "census2011": 3487731,
+      "expectedAtStateGrowth": 4042017,
+      "ratio": 1.001,
+      "status": "consistent"
+    },
+    {
+      "district": "Sitapur",
+      "state": "Uttar Pradesh",
+      "model2020": 5289206,
+      "census2011": 4483992,
+      "expectedAtStateGrowth": 5196609,
+      "ratio": 1.018,
+      "status": "consistent"
+    },
+    {
+      "district": "Shrawasti",
+      "state": "Uttar Pradesh",
+      "model2020": 1371913,
+      "census2011": 1117361,
+      "expectedAtStateGrowth": 1294937,
+      "ratio": 1.059,
+      "status": "consistent"
+    },
+    {
+      "district": "Meerut",
+      "state": "Uttar Pradesh",
+      "model2020": 3786602,
+      "census2011": 3443689,
+      "expectedAtStateGrowth": 3990976,
+      "ratio": 0.949,
+      "status": "consistent"
+    },
+    {
+      "district": "Aligarh",
+      "state": "Uttar Pradesh",
+      "model2020": 4139187,
+      "census2011": 3673889,
+      "expectedAtStateGrowth": 4257760,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Bulandshahr",
+      "state": "Uttar Pradesh",
+      "model2020": 4143903,
+      "census2011": 3499171,
+      "expectedAtStateGrowth": 4055275,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Bijnor",
+      "state": "Uttar Pradesh",
+      "model2020": 4109452,
+      "census2011": 3682713,
+      "expectedAtStateGrowth": 4267987,
+      "ratio": 0.963,
+      "status": "consistent"
+    },
+    {
+      "district": "Baghpat",
+      "state": "Uttar Pradesh",
+      "model2020": 1327811,
+      "census2011": 1303048,
+      "expectedAtStateGrowth": 1510134,
+      "ratio": 0.879,
+      "status": "consistent"
+    },
+    {
+      "district": "Kheri",
+      "state": "Uttar Pradesh",
+      "model2020": 4752459,
+      "census2011": 4021243,
+      "expectedAtStateGrowth": 4660317,
+      "ratio": 1.02,
+      "status": "consistent"
+    },
+    {
+      "district": "Rampur",
+      "state": "Uttar Pradesh",
+      "model2020": 2889411,
+      "census2011": 2335819,
+      "expectedAtStateGrowth": 2707038,
+      "ratio": 1.067,
+      "status": "consistent"
+    },
+    {
+      "district": "Bareilly",
+      "state": "Uttar Pradesh",
+      "model2020": 4985853,
+      "census2011": 4448359,
+      "expectedAtStateGrowth": 5155313,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Mathura",
+      "state": "Uttar Pradesh",
+      "model2020": 3020506,
+      "census2011": 2547184,
+      "expectedAtStateGrowth": 2951994,
+      "ratio": 1.023,
+      "status": "consistent"
+    },
+    {
+      "district": "Etah",
+      "state": "Uttar Pradesh",
+      "model2020": 2057559,
+      "census2011": 1774480,
+      "expectedAtStateGrowth": 2056489,
+      "ratio": 1.001,
+      "status": "consistent"
+    },
+    {
+      "district": "Hardoi",
+      "state": "Uttar Pradesh",
+      "model2020": 4707759,
+      "census2011": 4092845,
+      "expectedAtStateGrowth": 4743299,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Balrampur",
+      "state": "Uttar Pradesh",
+      "model2020": 2412330,
+      "census2011": 2148665,
+      "expectedAtStateGrowth": 2490141,
+      "ratio": 0.969,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahamaya Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 1739595,
+      "census2011": 1564708,
+      "expectedAtStateGrowth": 1813379,
+      "ratio": 0.959,
+      "status": "consistent"
+    },
+    {
+      "district": "Shahjahanpur",
+      "state": "Uttar Pradesh",
+      "model2020": 3559500,
+      "census2011": 3006538,
+      "expectedAtStateGrowth": 3484351,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Farrukhabad",
+      "state": "Uttar Pradesh",
+      "model2020": 2101575,
+      "census2011": 1885204,
+      "expectedAtStateGrowth": 2184809,
+      "ratio": 0.962,
+      "status": "consistent"
+    },
+    {
+      "district": "Kannauj",
+      "state": "Uttar Pradesh",
+      "model2020": 1889101,
+      "census2011": 1656616,
+      "expectedAtStateGrowth": 1919893,
+      "ratio": 0.984,
+      "status": "consistent"
+    },
+    {
+      "district": "Pilibhit",
+      "state": "Uttar Pradesh",
+      "model2020": 2399535,
+      "census2011": 2031007,
+      "expectedAtStateGrowth": 2353784,
+      "ratio": 1.019,
+      "status": "consistent"
+    },
+    {
+      "district": "Mainpuri",
+      "state": "Uttar Pradesh",
+      "model2020": 2075171,
+      "census2011": 1868529,
+      "expectedAtStateGrowth": 2165484,
+      "ratio": 0.958,
+      "status": "consistent"
+    },
+    {
+      "district": "Jyotiba Phule Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 2262071,
+      "census2011": 1840221,
+      "expectedAtStateGrowth": 2132677,
+      "ratio": 1.061,
+      "status": "consistent"
+    },
+    {
+      "district": "Firozabad",
+      "state": "Uttar Pradesh",
+      "model2020": 2841185,
+      "census2011": 2498156,
+      "expectedAtStateGrowth": 2895174,
+      "ratio": 0.981,
+      "status": "consistent"
+    },
+    {
+      "district": "Sultanpur",
+      "state": "Uttar Pradesh",
+      "model2020": 2462751,
+      "census2011": 3797117,
+      "expectedAtStateGrowth": 4400572,
+      "ratio": 0.56,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Chitrakoot",
+      "state": "Uttar Pradesh",
+      "model2020": 1196145,
+      "census2011": 991730,
+      "expectedAtStateGrowth": 1149340,
+      "ratio": 1.041,
+      "status": "consistent"
+    },
+    {
+      "district": "Basti",
+      "state": "Uttar Pradesh",
+      "model2020": 2624653,
+      "census2011": 2464464,
+      "expectedAtStateGrowth": 2856128,
+      "ratio": 0.919,
+      "status": "consistent"
+    },
+    {
+      "district": "Gorakhpur",
+      "state": "Uttar Pradesh",
+      "model2020": 4987657,
+      "census2011": 4440895,
+      "expectedAtStateGrowth": 5146662,
+      "ratio": 0.969,
+      "status": "consistent"
+    },
+    {
+      "district": "Lucknow",
+      "state": "Uttar Pradesh",
+      "model2020": 5689022,
+      "census2011": 4589838,
+      "expectedAtStateGrowth": 5319276,
+      "ratio": 1.07,
+      "status": "consistent"
+    },
+    {
+      "district": "Azamgarh",
+      "state": "Uttar Pradesh",
+      "model2020": 5283838,
+      "census2011": 4613913,
+      "expectedAtStateGrowth": 5347177,
+      "ratio": 0.988,
+      "status": "consistent"
+    },
+    {
+      "district": "Faizabad",
+      "state": "Uttar Pradesh",
+      "model2020": 3012410,
+      "census2011": 2470996,
+      "expectedAtStateGrowth": 2863698,
+      "ratio": 1.052,
+      "status": "consistent"
+    },
+    {
+      "district": "Ambedkar Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 2846703,
+      "census2011": 2397888,
+      "expectedAtStateGrowth": 2778971,
+      "ratio": 1.024,
+      "status": "consistent"
+    },
+    {
+      "district": "Ballia",
+      "state": "Uttar Pradesh",
+      "model2020": 3628798,
+      "census2011": 3239774,
+      "expectedAtStateGrowth": 3754654,
+      "ratio": 0.966,
+      "status": "consistent"
+    },
+    {
+      "district": "Kanpur Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 4766214,
+      "census2011": 4581268,
+      "expectedAtStateGrowth": 5309344,
+      "ratio": 0.898,
+      "status": "consistent"
+    },
+    {
+      "district": "Sant Ravidas Nagar (Bhadohi)",
+      "state": "Uttar Pradesh",
+      "model2020": 1747939,
+      "census2011": 1578213,
+      "expectedAtStateGrowth": 1829030,
+      "ratio": 0.956,
+      "status": "consistent"
+    },
+    {
+      "district": "Siddharthnagar",
+      "state": "Uttar Pradesh",
+      "model2020": 3313819,
+      "census2011": 2559297,
+      "expectedAtStateGrowth": 2966032,
+      "ratio": 1.117,
+      "status": "consistent"
+    },
+    {
+      "district": "Auraiya",
+      "state": "Uttar Pradesh",
+      "model2020": 1585898,
+      "census2011": 1379545,
+      "expectedAtStateGrowth": 1598789,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Sant Kabir Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 2086420,
+      "census2011": 1715183,
+      "expectedAtStateGrowth": 1987768,
+      "ratio": 1.05,
+      "status": "consistent"
+    },
+    {
+      "district": "Kaushambi",
+      "state": "Uttar Pradesh",
+      "model2020": 1970156,
+      "census2011": 1599596,
+      "expectedAtStateGrowth": 1853811,
+      "ratio": 1.063,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalaun",
+      "state": "Uttar Pradesh",
+      "model2020": 1844537,
+      "census2011": 1689974,
+      "expectedAtStateGrowth": 1958552,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Varanasi",
+      "state": "Uttar Pradesh",
+      "model2020": 4229990,
+      "census2011": 3676841,
+      "expectedAtStateGrowth": 4261181,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Pratapgarh",
+      "state": "Uttar Pradesh",
+      "model2020": 3776704,
+      "census2011": 3209141,
+      "expectedAtStateGrowth": 3719152,
+      "ratio": 1.015,
+      "status": "consistent"
+    },
+    {
+      "district": "Hamirpur",
+      "state": "Uttar Pradesh",
+      "model2020": 1279725,
+      "census2011": 1104285,
+      "expectedAtStateGrowth": 1279783,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Gonda",
+      "state": "Uttar Pradesh",
+      "model2020": 4009678,
+      "census2011": 3433919,
+      "expectedAtStateGrowth": 3979653,
+      "ratio": 1.008,
+      "status": "consistent"
+    },
+    {
+      "district": "Kanpur Dehat",
+      "state": "Uttar Pradesh",
+      "model2020": 1995063,
+      "census2011": 1796184,
+      "expectedAtStateGrowth": 2081642,
+      "ratio": 0.958,
+      "status": "consistent"
+    },
+    {
+      "district": "Jaunpur",
+      "state": "Uttar Pradesh",
+      "model2020": 4879038,
+      "census2011": 4494204,
+      "expectedAtStateGrowth": 5208444,
+      "ratio": 0.937,
+      "status": "consistent"
+    },
+    {
+      "district": "Bara Banki",
+      "state": "Uttar Pradesh",
+      "model2020": 3738034,
+      "census2011": 3260699,
+      "expectedAtStateGrowth": 3778904,
+      "ratio": 0.989,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahoba",
+      "state": "Uttar Pradesh",
+      "model2020": 1006558,
+      "census2011": 875958,
+      "expectedAtStateGrowth": 1015169,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahrajganj",
+      "state": "Uttar Pradesh",
+      "model2020": 3260770,
+      "census2011": 2684703,
+      "expectedAtStateGrowth": 3111368,
+      "ratio": 1.048,
+      "status": "consistent"
+    },
+    {
+      "district": "Mirzapur",
+      "state": "Uttar Pradesh",
+      "model2020": 3100340,
+      "census2011": 2496970,
+      "expectedAtStateGrowth": 2893800,
+      "ratio": 1.071,
+      "status": "consistent"
+    },
+    {
+      "district": "Kushinagar",
+      "state": "Uttar Pradesh",
+      "model2020": 4216857,
+      "census2011": 3564544,
+      "expectedAtStateGrowth": 4131038,
+      "ratio": 1.021,
+      "status": "consistent"
+    },
+    {
+      "district": "Deoria",
+      "state": "Uttar Pradesh",
+      "model2020": 3227389,
+      "census2011": 3100946,
+      "expectedAtStateGrowth": 3593763,
+      "ratio": 0.898,
+      "status": "consistent"
+    },
+    {
+      "district": "Unnao",
+      "state": "Uttar Pradesh",
+      "model2020": 3547372,
+      "census2011": 3108367,
+      "expectedAtStateGrowth": 3602363,
+      "ratio": 0.985,
+      "status": "consistent"
+    },
+    {
+      "district": "Fatehpur",
+      "state": "Uttar Pradesh",
+      "model2020": 2974917,
+      "census2011": 2632733,
+      "expectedAtStateGrowth": 3051139,
+      "ratio": 0.975,
+      "status": "consistent"
+    },
+    {
+      "district": "Mau",
+      "state": "Uttar Pradesh",
+      "model2020": 2239736,
+      "census2011": 2205968,
+      "expectedAtStateGrowth": 2556551,
+      "ratio": 0.876,
+      "status": "consistent"
+    },
+    {
+      "district": "Rae Bareli",
+      "state": "Uttar Pradesh",
+      "model2020": 3344301,
+      "census2011": 3405559,
+      "expectedAtStateGrowth": 3946786,
+      "ratio": 0.847,
+      "status": "consistent"
+    },
+    {
+      "district": "Ghaziabad",
+      "state": "Uttar Pradesh",
+      "model2020": 4597760,
+      "census2011": 4681645,
+      "expectedAtStateGrowth": 5425674,
+      "ratio": 0.847,
+      "status": "consistent"
+    },
+    {
+      "district": "Muzaffarnagar",
+      "state": "Uttar Pradesh",
+      "model2020": 3246731,
+      "census2011": 4143512,
+      "expectedAtStateGrowth": 4802018,
+      "ratio": 0.676,
+      "status": "consistent"
+    },
+    {
+      "district": "Gautam Buddha Nagar",
+      "state": "Uttar Pradesh",
+      "model2020": 2512579,
+      "census2011": 1648115,
+      "expectedAtStateGrowth": 1910041,
+      "ratio": 1.315,
+      "status": "consistent"
+    },
+    {
+      "district": "Saharanpur",
+      "state": "Uttar Pradesh",
+      "model2020": 4035824,
+      "census2011": 3466382,
+      "expectedAtStateGrowth": 4017275,
+      "ratio": 1.005,
+      "status": "consistent"
+    },
+    {
+      "district": "Etawah",
+      "state": "Uttar Pradesh",
+      "model2020": 1844845,
+      "census2011": 1581810,
+      "expectedAtStateGrowth": 1833199,
+      "ratio": 1.006,
+      "status": "consistent"
+    },
+    {
+      "district": "Agra",
+      "state": "Uttar Pradesh",
+      "model2020": 5205569,
+      "census2011": 4418797,
+      "expectedAtStateGrowth": 5121052,
+      "ratio": 1.017,
+      "status": "consistent"
+    },
+    {
+      "district": "Allahabad",
+      "state": "Uttar Pradesh",
+      "model2020": 6918675,
+      "census2011": 5954391,
+      "expectedAtStateGrowth": 6900690,
+      "ratio": 1.003,
+      "status": "consistent"
+    },
+    {
+      "district": "Chandauli",
+      "state": "Uttar Pradesh",
+      "model2020": 2108657,
+      "census2011": 1952756,
+      "expectedAtStateGrowth": 2263097,
+      "ratio": 0.932,
+      "status": "consistent"
+    },
+    {
+      "district": "Jhansi",
+      "state": "Uttar Pradesh",
+      "model2020": 2174064,
+      "census2011": 1998603,
+      "expectedAtStateGrowth": 2316230,
+      "ratio": 0.939,
+      "status": "consistent"
+    },
+    {
+      "district": "Banda",
+      "state": "Uttar Pradesh",
+      "model2020": 2072033,
+      "census2011": 1799410,
+      "expectedAtStateGrowth": 2085380,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "Sonbhadra",
+      "state": "Uttar Pradesh",
+      "model2020": 2215979,
+      "census2011": 1862559,
+      "expectedAtStateGrowth": 2158565,
+      "ratio": 1.027,
+      "status": "consistent"
+    },
+    {
+      "district": "Lalitpur",
+      "state": "Uttar Pradesh",
+      "model2020": 1467357,
+      "census2011": 1221592,
+      "expectedAtStateGrowth": 1415733,
+      "ratio": 1.036,
+      "status": "consistent"
+    },
+    {
+      "district": "Ghazipur",
+      "state": "Uttar Pradesh",
+      "model2020": 4077891,
+      "census2011": 3620268,
+      "expectedAtStateGrowth": 4195618,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Ariyalur",
+      "state": "Tamil Nadu",
+      "model2020": 762295,
+      "census2011": 754894,
+      "expectedAtStateGrowth": 845696,
+      "ratio": 0.901,
+      "status": "consistent"
+    },
+    {
+      "district": "Sivaganga",
+      "state": "Tamil Nadu",
+      "model2020": 1544108,
+      "census2011": 1339101,
+      "expectedAtStateGrowth": 1500174,
+      "ratio": 1.029,
+      "status": "consistent"
+    },
+    {
+      "district": "Thanjavur",
+      "state": "Tamil Nadu",
+      "model2020": 2446393,
+      "census2011": 2405890,
+      "expectedAtStateGrowth": 2695281,
+      "ratio": 0.908,
+      "status": "consistent"
+    },
+    {
+      "district": "Tiruvannamalai",
+      "state": "Tamil Nadu",
+      "model2020": 2844856,
+      "census2011": 2464875,
+      "expectedAtStateGrowth": 2761361,
+      "ratio": 1.03,
+      "status": "consistent"
+    },
+    {
+      "district": "Ramanathapuram",
+      "state": "Tamil Nadu",
+      "model2020": 1444982,
+      "census2011": 1353445,
+      "expectedAtStateGrowth": 1516243,
+      "ratio": 0.953,
+      "status": "consistent"
+    },
+    {
+      "district": "Tirunelveli",
+      "state": "Tamil Nadu",
+      "model2020": 1818531,
+      "census2011": 3077233,
+      "expectedAtStateGrowth": 3447376,
+      "ratio": 0.528,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Virudhunagar",
+      "state": "Tamil Nadu",
+      "model2020": 2075858,
+      "census2011": 1942288,
+      "expectedAtStateGrowth": 2175915,
+      "ratio": 0.954,
+      "status": "consistent"
+    },
+    {
+      "district": "Thiruvarur",
+      "state": "Tamil Nadu",
+      "model2020": 1405915,
+      "census2011": 1264277,
+      "expectedAtStateGrowth": 1416350,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Thiruvallur",
+      "state": "Tamil Nadu",
+      "model2020": 4552649,
+      "census2011": 3728104,
+      "expectedAtStateGrowth": 4176536,
+      "ratio": 1.09,
+      "status": "consistent"
+    },
+    {
+      "district": "Tiruchirappalli",
+      "state": "Tamil Nadu",
+      "model2020": 3015072,
+      "census2011": 2722290,
+      "expectedAtStateGrowth": 3049739,
+      "ratio": 0.989,
+      "status": "consistent"
+    },
+    {
+      "district": "Tiruppur",
+      "state": "Tamil Nadu",
+      "model2020": 3048941,
+      "census2011": 2479052,
+      "expectedAtStateGrowth": 2777243,
+      "ratio": 1.098,
+      "status": "consistent"
+    },
+    {
+      "district": "Theni",
+      "state": "Tamil Nadu",
+      "model2020": 1372825,
+      "census2011": 1245899,
+      "expectedAtStateGrowth": 1395761,
+      "ratio": 0.984,
+      "status": "consistent"
+    },
+    {
+      "district": "Salem",
+      "state": "Tamil Nadu",
+      "model2020": 3877349,
+      "census2011": 3482056,
+      "expectedAtStateGrowth": 3900893,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "Madurai",
+      "state": "Tamil Nadu",
+      "model2020": 3312335,
+      "census2011": 3038252,
+      "expectedAtStateGrowth": 3403706,
+      "ratio": 0.973,
+      "status": "consistent"
+    },
+    {
+      "district": "Perambalur",
+      "state": "Tamil Nadu",
+      "model2020": 587247,
+      "census2011": 565223,
+      "expectedAtStateGrowth": 633210,
+      "ratio": 0.927,
+      "status": "consistent"
+    },
+    {
+      "district": "Dindigul",
+      "state": "Tamil Nadu",
+      "model2020": 2413557,
+      "census2011": 2159775,
+      "expectedAtStateGrowth": 2419562,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Karur",
+      "state": "Tamil Nadu",
+      "model2020": 1208043,
+      "census2011": 1064493,
+      "expectedAtStateGrowth": 1192535,
+      "ratio": 1.013,
+      "status": "consistent"
+    },
+    {
+      "district": "Dharmapuri",
+      "state": "Tamil Nadu",
+      "model2020": 1758354,
+      "census2011": 1506843,
+      "expectedAtStateGrowth": 1688093,
+      "ratio": 1.042,
+      "status": "consistent"
+    },
+    {
+      "district": "Namakkal",
+      "state": "Tamil Nadu",
+      "model2020": 1976335,
+      "census2011": 1726601,
+      "expectedAtStateGrowth": 1934284,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Cuddalore",
+      "state": "Tamil Nadu",
+      "model2020": 2917931,
+      "census2011": 2605914,
+      "expectedAtStateGrowth": 2919365,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Pudukkottai",
+      "state": "Tamil Nadu",
+      "model2020": 1794867,
+      "census2011": 1618345,
+      "expectedAtStateGrowth": 1813007,
+      "ratio": 0.99,
+      "status": "consistent"
+    },
+    {
+      "district": "Vellore",
+      "state": "Tamil Nadu",
+      "model2020": 1724370,
+      "census2011": 3936331,
+      "expectedAtStateGrowth": 4409810,
+      "ratio": 0.391,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Chennai",
+      "state": "Tamil Nadu",
+      "model2020": 4066814,
+      "census2011": 4646732,
+      "expectedAtStateGrowth": 5205661,
+      "ratio": 0.781,
+      "status": "corrected_dense_core_undercount"
+    },
+    {
+      "district": "Nagapattinam",
+      "state": "Tamil Nadu",
+      "model2020": 741053,
+      "census2011": 1616450,
+      "expectedAtStateGrowth": 1810884,
+      "ratio": 0.409,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Viluppuram",
+      "state": "Tamil Nadu",
+      "model2020": 2400030,
+      "census2011": 3458873,
+      "expectedAtStateGrowth": 3874921,
+      "ratio": 0.619,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Kancheepuram",
+      "state": "Tamil Nadu",
+      "model2020": 4148152,
+      "census2011": 3998252,
+      "expectedAtStateGrowth": 4479179,
+      "ratio": 0.926,
+      "status": "consistent"
+    },
+    {
+      "district": "Kanniyakumari",
+      "state": "Tamil Nadu",
+      "model2020": 2036391,
+      "census2011": 1870374,
+      "expectedAtStateGrowth": 2095351,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Thoothukkudi",
+      "state": "Tamil Nadu",
+      "model2020": 1810973,
+      "census2011": 1750176,
+      "expectedAtStateGrowth": 1960695,
+      "ratio": 0.924,
+      "status": "consistent"
+    },
+    {
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "model2020": 2085137,
+      "census2011": 1879809,
+      "expectedAtStateGrowth": 2105921,
+      "ratio": 0.99,
+      "status": "consistent"
+    },
+    {
+      "district": "Erode",
+      "state": "Tamil Nadu",
+      "model2020": 2245320,
+      "census2011": 2251744,
+      "expectedAtStateGrowth": 2522594,
+      "ratio": 0.89,
+      "status": "consistent"
+    },
+    {
+      "district": "Coimbatore",
+      "state": "Tamil Nadu",
+      "model2020": 4097009,
+      "census2011": 3458045,
+      "expectedAtStateGrowth": 3873994,
+      "ratio": 1.058,
+      "status": "consistent"
+    },
+    {
+      "district": "The Nilgiris",
+      "state": "Tamil Nadu",
+      "model2020": 691014,
+      "census2011": 735394,
+      "expectedAtStateGrowth": 823850,
+      "ratio": 0.839,
+      "status": "consistent"
+    },
+    {
+      "district": "Bastar",
+      "state": "Chhattisgarh",
+      "model2020": 904285,
+      "census2011": 1413199,
+      "expectedAtStateGrowth": 1632241,
+      "ratio": 0.554,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Bilaspur",
+      "state": "Chhattisgarh",
+      "model2020": 1972610,
+      "census2011": 2663629,
+      "expectedAtStateGrowth": 3076483,
+      "ratio": 0.641,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Kabeerdham",
+      "state": "Chhattisgarh",
+      "model2020": 1121780,
+      "census2011": 822526,
+      "expectedAtStateGrowth": 950015,
+      "ratio": 1.181,
+      "status": "consistent"
+    },
+    {
+      "district": "Uttar Bastar Kanker",
+      "state": "Chhattisgarh",
+      "model2020": 847818,
+      "census2011": 748941,
+      "expectedAtStateGrowth": 865025,
+      "ratio": 0.98,
+      "status": "consistent"
+    },
+    {
+      "district": "Dakshin Bastar Dantewada",
+      "state": "Chhattisgarh",
+      "model2020": 310393,
+      "census2011": 533638,
+      "expectedAtStateGrowth": 616350,
+      "ratio": 0.504,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Surguja",
+      "state": "Chhattisgarh",
+      "model2020": 1109699,
+      "census2011": 2359886,
+      "expectedAtStateGrowth": 2725661,
+      "ratio": 0.407,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Narayanpur",
+      "state": "Chhattisgarh",
+      "model2020": 117342,
+      "census2011": 139820,
+      "expectedAtStateGrowth": 161492,
+      "ratio": 0.727,
+      "status": "consistent"
+    },
+    {
+      "district": "Durg",
+      "state": "Chhattisgarh",
+      "model2020": 1969268,
+      "census2011": 3343872,
+      "expectedAtStateGrowth": 3862162,
+      "ratio": 0.51,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Bijapur",
+      "state": "Chhattisgarh",
+      "model2020": 280388,
+      "census2011": 255230,
+      "expectedAtStateGrowth": 294790,
+      "ratio": 0.951,
+      "status": "consistent"
+    },
+    {
+      "district": "Raipur",
+      "state": "Chhattisgarh",
+      "model2020": 2753006,
+      "census2011": 4063872,
+      "expectedAtStateGrowth": 4693760,
+      "ratio": 0.587,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Koriya",
+      "state": "Chhattisgarh",
+      "model2020": 750733,
+      "census2011": 658917,
+      "expectedAtStateGrowth": 761047,
+      "ratio": 0.986,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhamtari",
+      "state": "Chhattisgarh",
+      "model2020": 873008,
+      "census2011": 799781,
+      "expectedAtStateGrowth": 923745,
+      "ratio": 0.945,
+      "status": "consistent"
+    },
+    {
+      "district": "Korba",
+      "state": "Chhattisgarh",
+      "model2020": 1385546,
+      "census2011": 1206640,
+      "expectedAtStateGrowth": 1393666,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "Raigarh",
+      "state": "Chhattisgarh",
+      "model2020": 1578387,
+      "census2011": 1493984,
+      "expectedAtStateGrowth": 1725547,
+      "ratio": 0.915,
+      "status": "consistent"
+    },
+    {
+      "district": "Jashpur",
+      "state": "Chhattisgarh",
+      "model2020": 915473,
+      "census2011": 851669,
+      "expectedAtStateGrowth": 983675,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahasamund",
+      "state": "Chhattisgarh",
+      "model2020": 1131713,
+      "census2011": 1032754,
+      "expectedAtStateGrowth": 1192828,
+      "ratio": 0.949,
+      "status": "consistent"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "state": "Chhattisgarh",
+      "model2020": 2241463,
+      "census2011": 1619707,
+      "expectedAtStateGrowth": 1870757,
+      "ratio": 1.198,
+      "status": "consistent"
+    },
+    {
+      "district": "Rajnandgaon",
+      "state": "Chhattisgarh",
+      "model2020": 1756485,
+      "census2011": 1537133,
+      "expectedAtStateGrowth": 1775384,
+      "ratio": 0.989,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhavnagar",
+      "state": "Gujarat",
+      "model2020": 2738090,
+      "census2011": 2880365,
+      "expectedAtStateGrowth": 3323446,
+      "ratio": 0.824,
+      "status": "consistent"
+    },
+    {
+      "district": "Ahmadabad",
+      "state": "Gujarat",
+      "model2020": 8582268,
+      "census2011": 7214225,
+      "expectedAtStateGrowth": 8323975,
+      "ratio": 1.031,
+      "status": "consistent"
+    },
+    {
+      "district": "Vadodara",
+      "state": "Gujarat",
+      "model2020": 3377603,
+      "census2011": 4165626,
+      "expectedAtStateGrowth": 4806416,
+      "ratio": 0.703,
+      "status": "consistent"
+    },
+    {
+      "district": "Sabar Kantha",
+      "state": "Gujarat",
+      "model2020": 1550620,
+      "census2011": 2428589,
+      "expectedAtStateGrowth": 2802174,
+      "ratio": 0.553,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Banas Kantha",
+      "state": "Gujarat",
+      "model2020": 3650155,
+      "census2011": 3120506,
+      "expectedAtStateGrowth": 3600527,
+      "ratio": 1.014,
+      "status": "consistent"
+    },
+    {
+      "district": "Surendranagar",
+      "state": "Gujarat",
+      "model2020": 1774133,
+      "census2011": 1756268,
+      "expectedAtStateGrowth": 2026431,
+      "ratio": 0.875,
+      "status": "consistent"
+    },
+    {
+      "district": "Anand",
+      "state": "Gujarat",
+      "model2020": 2725341,
+      "census2011": 2092745,
+      "expectedAtStateGrowth": 2414668,
+      "ratio": 1.129,
+      "status": "consistent"
+    },
+    {
+      "district": "Narmada",
+      "state": "Gujarat",
+      "model2020": 677322,
+      "census2011": 590297,
+      "expectedAtStateGrowth": 681101,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "Amreli",
+      "state": "Gujarat",
+      "model2020": 1608039,
+      "census2011": 1514190,
+      "expectedAtStateGrowth": 1747115,
+      "ratio": 0.92,
+      "status": "consistent"
+    },
+    {
+      "district": "Dohad",
+      "state": "Gujarat",
+      "model2020": 2674000,
+      "census2011": 2127086,
+      "expectedAtStateGrowth": 2454291,
+      "ratio": 1.09,
+      "status": "consistent"
+    },
+    {
+      "district": "Rajkot",
+      "state": "Gujarat",
+      "model2020": 3469377,
+      "census2011": 3804558,
+      "expectedAtStateGrowth": 4389806,
+      "ratio": 0.79,
+      "status": "consistent"
+    },
+    {
+      "district": "Kachchh",
+      "state": "Gujarat",
+      "model2020": 2622337,
+      "census2011": 2092371,
+      "expectedAtStateGrowth": 2414236,
+      "ratio": 1.086,
+      "status": "consistent"
+    },
+    {
+      "district": "The Dangs",
+      "state": "Gujarat",
+      "model2020": 263421,
+      "census2011": 228291,
+      "expectedAtStateGrowth": 263409,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahesana",
+      "state": "Gujarat",
+      "model2020": 2138573,
+      "census2011": 2035064,
+      "expectedAtStateGrowth": 2348114,
+      "ratio": 0.911,
+      "status": "consistent"
+    },
+    {
+      "district": "Patan",
+      "state": "Gujarat",
+      "model2020": 1409859,
+      "census2011": 1343734,
+      "expectedAtStateGrowth": 1550438,
+      "ratio": 0.909,
+      "status": "consistent"
+    },
+    {
+      "district": "Bharuch",
+      "state": "Gujarat",
+      "model2020": 1683706,
+      "census2011": 1551019,
+      "expectedAtStateGrowth": 1789609,
+      "ratio": 0.941,
+      "status": "consistent"
+    },
+    {
+      "district": "Junagadh",
+      "state": "Gujarat",
+      "model2020": 1604924,
+      "census2011": 2743082,
+      "expectedAtStateGrowth": 3165045,
+      "ratio": 0.507,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Navsari",
+      "state": "Gujarat",
+      "model2020": 1417543,
+      "census2011": 1329672,
+      "expectedAtStateGrowth": 1534213,
+      "ratio": 0.924,
+      "status": "consistent"
+    },
+    {
+      "district": "Surat",
+      "state": "Gujarat",
+      "model2020": 8109462,
+      "census2011": 6081322,
+      "expectedAtStateGrowth": 7016800,
+      "ratio": 1.156,
+      "status": "consistent"
+    },
+    {
+      "district": "Jamnagar",
+      "state": "Gujarat",
+      "model2020": 1479297,
+      "census2011": 2160119,
+      "expectedAtStateGrowth": 2492406,
+      "ratio": 0.594,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Tapi",
+      "state": "Gujarat",
+      "model2020": 949697,
+      "census2011": 807022,
+      "expectedAtStateGrowth": 931165,
+      "ratio": 1.02,
+      "status": "consistent"
+    },
+    {
+      "district": "Porbandar",
+      "state": "Gujarat",
+      "model2020": 628930,
+      "census2011": 585449,
+      "expectedAtStateGrowth": 675507,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Valsad",
+      "state": "Gujarat",
+      "model2020": 1999960,
+      "census2011": 1705678,
+      "expectedAtStateGrowth": 1968059,
+      "ratio": 1.016,
+      "status": "consistent"
+    },
+    {
+      "district": "Gandhinagar",
+      "state": "Gujarat",
+      "model2020": 1266565,
+      "census2011": 1391753,
+      "expectedAtStateGrowth": 1605844,
+      "ratio": 0.789,
+      "status": "consistent"
+    },
+    {
+      "district": "Panch Mahals",
+      "state": "Gujarat",
+      "model2020": 1918180,
+      "census2011": 2390776,
+      "expectedAtStateGrowth": 2758544,
+      "ratio": 0.695,
+      "status": "consistent"
+    },
+    {
+      "district": "Kheda",
+      "state": "Gujarat",
+      "model2020": 1988305,
+      "census2011": 2299885,
+      "expectedAtStateGrowth": 2653672,
+      "ratio": 0.749,
+      "status": "consistent"
+    },
+    {
+      "district": "North West",
+      "state": "Delhi",
+      "model2020": 2073510,
+      "census2011": 3656539,
+      "expectedAtStateGrowth": 4208060,
+      "ratio": 0.493,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "New Delhi",
+      "state": "Delhi",
+      "model2020": 1200711,
+      "census2011": 142004,
+      "expectedAtStateGrowth": 163423,
+      "ratio": 7.347,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "East",
+      "state": "Delhi",
+      "model2020": 2050995,
+      "census2011": 1709346,
+      "expectedAtStateGrowth": 1967169,
+      "ratio": 1.043,
+      "status": "consistent"
+    },
+    {
+      "district": "South West",
+      "state": "Delhi",
+      "model2020": 1547722,
+      "census2011": 2292958,
+      "expectedAtStateGrowth": 2638808,
+      "ratio": 0.587,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "West",
+      "state": "Delhi",
+      "model2020": 2863123,
+      "census2011": 2543243,
+      "expectedAtStateGrowth": 2926844,
+      "ratio": 0.978,
+      "status": "consistent"
+    },
+    {
+      "district": "South",
+      "state": "Delhi",
+      "model2020": 1492479,
+      "census2011": 2731929,
+      "expectedAtStateGrowth": 3143989,
+      "ratio": 0.475,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "North ",
+      "state": "Delhi",
+      "model2020": 2460600,
+      "census2011": 887978,
+      "expectedAtStateGrowth": 1021913,
+      "ratio": 2.408,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "North East",
+      "state": "Delhi",
+      "model2020": 1224558,
+      "census2011": 2241624,
+      "expectedAtStateGrowth": 2579731,
+      "ratio": 0.475,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Central",
+      "state": "Delhi",
+      "model2020": 1391882,
+      "census2011": 582320,
+      "expectedAtStateGrowth": 670152,
+      "ratio": 2.077,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "North District",
+      "state": "Sikkim",
+      "model2020": 45815,
+      "census2011": 43709,
+      "expectedAtStateGrowth": 47230,
+      "ratio": 0.97,
+      "status": "consistent"
+    },
+    {
+      "district": "South District",
+      "state": "Sikkim",
+      "model2020": 160218,
+      "census2011": 146850,
+      "expectedAtStateGrowth": 158680,
+      "ratio": 1.01,
+      "status": "consistent"
+    },
+    {
+      "district": "West District",
+      "state": "Sikkim",
+      "model2020": 136302,
+      "census2011": 136435,
+      "expectedAtStateGrowth": 147426,
+      "ratio": 0.925,
+      "status": "consistent"
+    },
+    {
+      "district": "East District",
+      "state": "Sikkim",
+      "model2020": 317429,
+      "census2011": 283583,
+      "expectedAtStateGrowth": 306428,
+      "ratio": 1.036,
+      "status": "consistent"
+    },
+    {
+      "district": "West Tripura",
+      "state": "Tripura",
+      "model2020": 1050388,
+      "census2011": 1725739,
+      "expectedAtStateGrowth": 1873513,
+      "ratio": 0.561,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Dhalai",
+      "state": "Tripura",
+      "model2020": 420916,
+      "census2011": 378230,
+      "expectedAtStateGrowth": 410618,
+      "ratio": 1.025,
+      "status": "consistent"
+    },
+    {
+      "district": "North Tripura",
+      "state": "Tripura",
+      "model2020": 410930,
+      "census2011": 693947,
+      "expectedAtStateGrowth": 753369,
+      "ratio": 0.545,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "South Tripura",
+      "state": "Tripura",
+      "model2020": 391952,
+      "census2011": 876001,
+      "expectedAtStateGrowth": 951013,
+      "ratio": 0.412,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Nadia",
+      "state": "West Bengal",
+      "model2020": 5247545,
+      "census2011": 5167600,
+      "expectedAtStateGrowth": 5635989,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Dakshin Dinajpur",
+      "state": "West Bengal",
+      "model2020": 1735751,
+      "census2011": 1676276,
+      "expectedAtStateGrowth": 1828213,
+      "ratio": 0.949,
+      "status": "consistent"
+    },
+    {
+      "district": "Murshidabad",
+      "state": "West Bengal",
+      "model2020": 8150808,
+      "census2011": 7103807,
+      "expectedAtStateGrowth": 7747693,
+      "ratio": 1.052,
+      "status": "consistent"
+    },
+    {
+      "district": "Kolkata",
+      "state": "West Bengal",
+      "model2020": 3051037,
+      "census2011": 4496694,
+      "expectedAtStateGrowth": 4904273,
+      "ratio": 0.622,
+      "status": "corrected_dense_core_undercount"
+    },
+    {
+      "district": "Maldah",
+      "state": "West Bengal",
+      "model2020": 4162953,
+      "census2011": 3988845,
+      "expectedAtStateGrowth": 4350392,
+      "ratio": 0.957,
+      "status": "consistent"
+    },
+    {
+      "district": "South Twenty Four Parganas",
+      "state": "West Bengal",
+      "model2020": 12566733,
+      "census2011": 8161961,
+      "expectedAtStateGrowth": 8901758,
+      "ratio": 1.412,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Darjiling",
+      "state": "West Bengal",
+      "model2020": 1819282,
+      "census2011": 1846823,
+      "expectedAtStateGrowth": 2014218,
+      "ratio": 0.903,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalpaiguri",
+      "state": "West Bengal",
+      "model2020": 2735822,
+      "census2011": 3872846,
+      "expectedAtStateGrowth": 4223879,
+      "ratio": 0.648,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Uttar Dinajpur",
+      "state": "West Bengal",
+      "model2020": 3249747,
+      "census2011": 3007134,
+      "expectedAtStateGrowth": 3279699,
+      "ratio": 0.991,
+      "status": "consistent"
+    },
+    {
+      "district": "Purba Medinipur",
+      "state": "West Bengal",
+      "model2020": 5700513,
+      "census2011": 5095875,
+      "expectedAtStateGrowth": 5557763,
+      "ratio": 1.026,
+      "status": "consistent"
+    },
+    {
+      "district": "Haora",
+      "state": "West Bengal",
+      "model2020": 4302402,
+      "census2011": 4850029,
+      "expectedAtStateGrowth": 5289634,
+      "ratio": 0.813,
+      "status": "consistent"
+    },
+    {
+      "district": "North Twenty Four Parganas",
+      "state": "West Bengal",
+      "model2020": 10211168,
+      "census2011": 10009781,
+      "expectedAtStateGrowth": 10917064,
+      "ratio": 0.935,
+      "status": "consistent"
+    },
+    {
+      "district": "Birbhum",
+      "state": "West Bengal",
+      "model2020": 4011753,
+      "census2011": 3502404,
+      "expectedAtStateGrowth": 3819861,
+      "ratio": 1.05,
+      "status": "consistent"
+    },
+    {
+      "district": "Barddhaman",
+      "state": "West Bengal",
+      "model2020": 4775746,
+      "census2011": 7717563,
+      "expectedAtStateGrowth": 8417080,
+      "ratio": 0.567,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Bankura",
+      "state": "West Bengal",
+      "model2020": 3916670,
+      "census2011": 3596674,
+      "expectedAtStateGrowth": 3922675,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Puruliya",
+      "state": "West Bengal",
+      "model2020": 3324363,
+      "census2011": 2930115,
+      "expectedAtStateGrowth": 3195699,
+      "ratio": 1.04,
+      "status": "consistent"
+    },
+    {
+      "district": "Koch Bihar",
+      "state": "West Bengal",
+      "model2020": 3119689,
+      "census2011": 2819086,
+      "expectedAtStateGrowth": 3074607,
+      "ratio": 1.015,
+      "status": "consistent"
+    },
+    {
+      "district": "Paschim Medinipur",
+      "state": "West Bengal",
+      "model2020": 5392603,
+      "census2011": 5913457,
+      "expectedAtStateGrowth": 6449450,
+      "ratio": 0.836,
+      "status": "consistent"
+    },
+    {
+      "district": "Hugli",
+      "state": "West Bengal",
+      "model2020": 5598650,
+      "census2011": 5519145,
+      "expectedAtStateGrowth": 6019398,
+      "ratio": 0.93,
+      "status": "consistent"
+    },
+    {
+      "district": "Subarnapur",
+      "state": "Odisha",
+      "model2020": 642836,
+      "census2011": 610183,
+      "expectedAtStateGrowth": 675318,
+      "ratio": 0.952,
+      "status": "consistent"
+    },
+    {
+      "district": "Puri",
+      "state": "Odisha",
+      "model2020": 1822691,
+      "census2011": 1698730,
+      "expectedAtStateGrowth": 1880064,
+      "ratio": 0.969,
+      "status": "consistent"
+    },
+    {
+      "district": "Anugul",
+      "state": "Odisha",
+      "model2020": 1421667,
+      "census2011": 1273821,
+      "expectedAtStateGrowth": 1409797,
+      "ratio": 1.008,
+      "status": "consistent"
+    },
+    {
+      "district": "Debagarh",
+      "state": "Odisha",
+      "model2020": 344893,
+      "census2011": 312520,
+      "expectedAtStateGrowth": 345880,
+      "ratio": 0.997,
+      "status": "consistent"
+    },
+    {
+      "district": "Koraput",
+      "state": "Odisha",
+      "model2020": 1566548,
+      "census2011": 1379647,
+      "expectedAtStateGrowth": 1526920,
+      "ratio": 1.026,
+      "status": "consistent"
+    },
+    {
+      "district": "Nabarangapur",
+      "state": "Odisha",
+      "model2020": 1373772,
+      "census2011": 1220946,
+      "expectedAtStateGrowth": 1351278,
+      "ratio": 1.017,
+      "status": "consistent"
+    },
+    {
+      "district": "Bargarh",
+      "state": "Odisha",
+      "model2020": 1518897,
+      "census2011": 1481255,
+      "expectedAtStateGrowth": 1639374,
+      "ratio": 0.927,
+      "status": "consistent"
+    },
+    {
+      "district": "Jagatsinghapur",
+      "state": "Odisha",
+      "model2020": 1234692,
+      "census2011": 1136971,
+      "expectedAtStateGrowth": 1258339,
+      "ratio": 0.981,
+      "status": "consistent"
+    },
+    {
+      "district": "Kandhamal",
+      "state": "Odisha",
+      "model2020": 818957,
+      "census2011": 733110,
+      "expectedAtStateGrowth": 811367,
+      "ratio": 1.009,
+      "status": "consistent"
+    },
+    {
+      "district": "Khordha",
+      "state": "Odisha",
+      "model2020": 2511202,
+      "census2011": 2251673,
+      "expectedAtStateGrowth": 2492031,
+      "ratio": 1.008,
+      "status": "consistent"
+    },
+    {
+      "district": "Mayurbhanj",
+      "state": "Odisha",
+      "model2020": 2852355,
+      "census2011": 2519738,
+      "expectedAtStateGrowth": 2788711,
+      "ratio": 1.023,
+      "status": "consistent"
+    },
+    {
+      "district": "Malkangiri",
+      "state": "Odisha",
+      "model2020": 745082,
+      "census2011": 613192,
+      "expectedAtStateGrowth": 678648,
+      "ratio": 1.098,
+      "status": "consistent"
+    },
+    {
+      "district": "Baleshwar",
+      "state": "Odisha",
+      "model2020": 2418624,
+      "census2011": 2320529,
+      "expectedAtStateGrowth": 2568237,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Sambalpur",
+      "state": "Odisha",
+      "model2020": 1232164,
+      "census2011": 1041099,
+      "expectedAtStateGrowth": 1152233,
+      "ratio": 1.069,
+      "status": "consistent"
+    },
+    {
+      "district": "Gajapati",
+      "state": "Odisha",
+      "model2020": 629755,
+      "census2011": 577817,
+      "expectedAtStateGrowth": 639497,
+      "ratio": 0.985,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhenkanal",
+      "state": "Odisha",
+      "model2020": 1303340,
+      "census2011": 1192811,
+      "expectedAtStateGrowth": 1320139,
+      "ratio": 0.987,
+      "status": "consistent"
+    },
+    {
+      "district": "Nayagarh",
+      "state": "Odisha",
+      "model2020": 1017734,
+      "census2011": 962789,
+      "expectedAtStateGrowth": 1065563,
+      "ratio": 0.955,
+      "status": "consistent"
+    },
+    {
+      "district": "Cuttack",
+      "state": "Odisha",
+      "model2020": 2787695,
+      "census2011": 2624470,
+      "expectedAtStateGrowth": 2904623,
+      "ratio": 0.96,
+      "status": "consistent"
+    },
+    {
+      "district": "Jajapur",
+      "state": "Odisha",
+      "model2020": 2034563,
+      "census2011": 1827192,
+      "expectedAtStateGrowth": 2022238,
+      "ratio": 1.006,
+      "status": "consistent"
+    },
+    {
+      "district": "Kalahandi",
+      "state": "Odisha",
+      "model2020": 1824043,
+      "census2011": 1576869,
+      "expectedAtStateGrowth": 1745194,
+      "ratio": 1.045,
+      "status": "consistent"
+    },
+    {
+      "district": "Baudh",
+      "state": "Odisha",
+      "model2020": 513508,
+      "census2011": 441162,
+      "expectedAtStateGrowth": 488255,
+      "ratio": 1.052,
+      "status": "consistent"
+    },
+    {
+      "district": "Kendrapara",
+      "state": "Odisha",
+      "model2020": 1637458,
+      "census2011": 1440361,
+      "expectedAtStateGrowth": 1594115,
+      "ratio": 1.027,
+      "status": "consistent"
+    },
+    {
+      "district": "Kendujhar",
+      "state": "Odisha",
+      "model2020": 2072441,
+      "census2011": 1801733,
+      "expectedAtStateGrowth": 1994062,
+      "ratio": 1.039,
+      "status": "consistent"
+    },
+    {
+      "district": "Ganjam",
+      "state": "Odisha",
+      "model2020": 3825249,
+      "census2011": 3529031,
+      "expectedAtStateGrowth": 3905743,
+      "ratio": 0.979,
+      "status": "consistent"
+    },
+    {
+      "district": "Sundargarh",
+      "state": "Odisha",
+      "model2020": 2309470,
+      "census2011": 2093437,
+      "expectedAtStateGrowth": 2316904,
+      "ratio": 0.997,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhadrak",
+      "state": "Odisha",
+      "model2020": 1585160,
+      "census2011": 1506337,
+      "expectedAtStateGrowth": 1667133,
+      "ratio": 0.951,
+      "status": "consistent"
+    },
+    {
+      "district": "Nuapada",
+      "state": "Odisha",
+      "model2020": 690493,
+      "census2011": 610382,
+      "expectedAtStateGrowth": 675538,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Jharsuguda",
+      "state": "Odisha",
+      "model2020": 617253,
+      "census2011": 579505,
+      "expectedAtStateGrowth": 641365,
+      "ratio": 0.962,
+      "status": "consistent"
+    },
+    {
+      "district": "Rayagada",
+      "state": "Odisha",
+      "model2020": 1108864,
+      "census2011": 967911,
+      "expectedAtStateGrowth": 1071232,
+      "ratio": 1.035,
+      "status": "consistent"
+    },
+    {
+      "district": "Balangir",
+      "state": "Odisha",
+      "model2020": 1993414,
+      "census2011": 1648997,
+      "expectedAtStateGrowth": 1825022,
+      "ratio": 1.092,
+      "status": "consistent"
+    },
+    {
+      "district": "Arwal",
+      "state": "Bihar",
+      "model2020": 616621,
+      "census2011": 700843,
+      "expectedAtStateGrowth": 844161,
+      "ratio": 0.73,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhagalpur",
+      "state": "Bihar",
+      "model2020": 3582544,
+      "census2011": 3037766,
+      "expectedAtStateGrowth": 3658972,
+      "ratio": 0.979,
+      "status": "consistent"
+    },
+    {
+      "district": "Purnia",
+      "state": "Bihar",
+      "model2020": 3977355,
+      "census2011": 3264619,
+      "expectedAtStateGrowth": 3932215,
+      "ratio": 1.011,
+      "status": "consistent"
+    },
+    {
+      "district": "Madhepura",
+      "state": "Bihar",
+      "model2020": 2768129,
+      "census2011": 2001762,
+      "expectedAtStateGrowth": 2411111,
+      "ratio": 1.148,
+      "status": "consistent"
+    },
+    {
+      "district": "Kishanganj",
+      "state": "Bihar",
+      "model2020": 2134924,
+      "census2011": 1690400,
+      "expectedAtStateGrowth": 2036077,
+      "ratio": 1.049,
+      "status": "consistent"
+    },
+    {
+      "district": "Gaya",
+      "state": "Bihar",
+      "model2020": 5443009,
+      "census2011": 4391418,
+      "expectedAtStateGrowth": 5289439,
+      "ratio": 1.029,
+      "status": "consistent"
+    },
+    {
+      "district": "Banka",
+      "state": "Bihar",
+      "model2020": 2671723,
+      "census2011": 2034763,
+      "expectedAtStateGrowth": 2450861,
+      "ratio": 1.09,
+      "status": "consistent"
+    },
+    {
+      "district": "Aurangabad",
+      "state": "Bihar",
+      "model2020": 3200969,
+      "census2011": 2540073,
+      "expectedAtStateGrowth": 3059504,
+      "ratio": 1.046,
+      "status": "consistent"
+    },
+    {
+      "district": "Nawada",
+      "state": "Bihar",
+      "model2020": 2755533,
+      "census2011": 2219146,
+      "expectedAtStateGrowth": 2672949,
+      "ratio": 1.031,
+      "status": "consistent"
+    },
+    {
+      "district": "Araria",
+      "state": "Bihar",
+      "model2020": 3545046,
+      "census2011": 2811569,
+      "expectedAtStateGrowth": 3386519,
+      "ratio": 1.047,
+      "status": "consistent"
+    },
+    {
+      "district": "Pashchim Champaran",
+      "state": "Bihar",
+      "model2020": 4815724,
+      "census2011": 3935042,
+      "expectedAtStateGrowth": 4739736,
+      "ratio": 1.016,
+      "status": "consistent"
+    },
+    {
+      "district": "Muzaffarpur",
+      "state": "Bihar",
+      "model2020": 5853943,
+      "census2011": 4801062,
+      "expectedAtStateGrowth": 5782852,
+      "ratio": 1.012,
+      "status": "consistent"
+    },
+    {
+      "district": "Saran",
+      "state": "Bihar",
+      "model2020": 4471674,
+      "census2011": 3951862,
+      "expectedAtStateGrowth": 4759996,
+      "ratio": 0.939,
+      "status": "consistent"
+    },
+    {
+      "district": "Sheikhpura",
+      "state": "Bihar",
+      "model2020": 615239,
+      "census2011": 636342,
+      "expectedAtStateGrowth": 766470,
+      "ratio": 0.803,
+      "status": "consistent"
+    },
+    {
+      "district": "Jehanabad",
+      "state": "Bihar",
+      "model2020": 1272913,
+      "census2011": 1125313,
+      "expectedAtStateGrowth": 1355433,
+      "ratio": 0.939,
+      "status": "consistent"
+    },
+    {
+      "district": "Saharsa",
+      "state": "Bihar",
+      "model2020": 2280414,
+      "census2011": 1900661,
+      "expectedAtStateGrowth": 2289336,
+      "ratio": 0.996,
+      "status": "consistent"
+    },
+    {
+      "district": "Gopalganj",
+      "state": "Bihar",
+      "model2020": 2870827,
+      "census2011": 2562012,
+      "expectedAtStateGrowth": 3085929,
+      "ratio": 0.93,
+      "status": "consistent"
+    },
+    {
+      "district": "Vaishali",
+      "state": "Bihar",
+      "model2020": 4641826,
+      "census2011": 3495021,
+      "expectedAtStateGrowth": 4209733,
+      "ratio": 1.103,
+      "status": "consistent"
+    },
+    {
+      "district": "Siwan",
+      "state": "Bihar",
+      "model2020": 3466589,
+      "census2011": 3330464,
+      "expectedAtStateGrowth": 4011525,
+      "ratio": 0.864,
+      "status": "consistent"
+    },
+    {
+      "district": "Sheohar",
+      "state": "Bihar",
+      "model2020": 861847,
+      "census2011": 656246,
+      "expectedAtStateGrowth": 790445,
+      "ratio": 1.09,
+      "status": "consistent"
+    },
+    {
+      "district": "Buxar",
+      "state": "Bihar",
+      "model2020": 1855151,
+      "census2011": 1706352,
+      "expectedAtStateGrowth": 2055291,
+      "ratio": 0.903,
+      "status": "consistent"
+    },
+    {
+      "district": "Madhubani",
+      "state": "Bihar",
+      "model2020": 5040443,
+      "census2011": 4487379,
+      "expectedAtStateGrowth": 5405023,
+      "ratio": 0.933,
+      "status": "consistent"
+    },
+    {
+      "district": "Supaul",
+      "state": "Bihar",
+      "model2020": 2853954,
+      "census2011": 2229076,
+      "expectedAtStateGrowth": 2684910,
+      "ratio": 1.063,
+      "status": "consistent"
+    },
+    {
+      "district": "Patna",
+      "state": "Bihar",
+      "model2020": 6798350,
+      "census2011": 5838465,
+      "expectedAtStateGrowth": 7032399,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhojpur",
+      "state": "Bihar",
+      "model2020": 3453222,
+      "census2011": 2728407,
+      "expectedAtStateGrowth": 3286351,
+      "ratio": 1.051,
+      "status": "consistent"
+    },
+    {
+      "district": "Darbhanga",
+      "state": "Bihar",
+      "model2020": 4433626,
+      "census2011": 3937385,
+      "expectedAtStateGrowth": 4742558,
+      "ratio": 0.935,
+      "status": "consistent"
+    },
+    {
+      "district": "Samastipur",
+      "state": "Bihar",
+      "model2020": 5330527,
+      "census2011": 4261566,
+      "expectedAtStateGrowth": 5133033,
+      "ratio": 1.038,
+      "status": "consistent"
+    },
+    {
+      "district": "Kaimur (Bhabua)",
+      "state": "Bihar",
+      "model2020": 1883150,
+      "census2011": 1626384,
+      "expectedAtStateGrowth": 1958970,
+      "ratio": 0.961,
+      "status": "consistent"
+    },
+    {
+      "district": "Rohtas",
+      "state": "Bihar",
+      "model2020": 3566294,
+      "census2011": 2959918,
+      "expectedAtStateGrowth": 3565205,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Khagaria",
+      "state": "Bihar",
+      "model2020": 2075255,
+      "census2011": 1666886,
+      "expectedAtStateGrowth": 2007755,
+      "ratio": 1.034,
+      "status": "consistent"
+    },
+    {
+      "district": "Munger",
+      "state": "Bihar",
+      "model2020": 1624022,
+      "census2011": 1367765,
+      "expectedAtStateGrowth": 1647465,
+      "ratio": 0.986,
+      "status": "consistent"
+    },
+    {
+      "district": "Sitamarhi",
+      "state": "Bihar",
+      "model2020": 3985964,
+      "census2011": 3423574,
+      "expectedAtStateGrowth": 4123676,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Purba Champaran",
+      "state": "Bihar",
+      "model2020": 6483978,
+      "census2011": 5099371,
+      "expectedAtStateGrowth": 6142164,
+      "ratio": 1.056,
+      "status": "consistent"
+    },
+    {
+      "district": "Lakhisarai",
+      "state": "Bihar",
+      "model2020": 1142065,
+      "census2011": 1000912,
+      "expectedAtStateGrowth": 1205593,
+      "ratio": 0.947,
+      "status": "consistent"
+    },
+    {
+      "district": "Jamui",
+      "state": "Bihar",
+      "model2020": 2116347,
+      "census2011": 1760405,
+      "expectedAtStateGrowth": 2120398,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Begusarai",
+      "state": "Bihar",
+      "model2020": 3935205,
+      "census2011": 2970541,
+      "expectedAtStateGrowth": 3578000,
+      "ratio": 1.1,
+      "status": "consistent"
+    },
+    {
+      "district": "Nalanda",
+      "state": "Bihar",
+      "model2020": 3307499,
+      "census2011": 2877653,
+      "expectedAtStateGrowth": 3466117,
+      "ratio": 0.954,
+      "status": "consistent"
+    },
+    {
+      "district": "Katihar",
+      "state": "Bihar",
+      "model2020": 3655310,
+      "census2011": 3071029,
+      "expectedAtStateGrowth": 3699037,
+      "ratio": 0.988,
+      "status": "consistent"
+    },
+    {
+      "district": "Leh(Ladakh)",
+      "state": "Ladakh",
+      "model2020": 145508,
+      "census2011": 133487,
+      "expectedAtStateGrowth": 149613,
+      "ratio": 0.973,
+      "status": "consistent"
+    },
+    {
+      "district": "Kargil",
+      "state": "Ladakh",
+      "model2020": 161917,
+      "census2011": 140802,
+      "expectedAtStateGrowth": 157812,
+      "ratio": 1.026,
+      "status": "consistent"
+    },
+    {
+      "district": "Jhunjhunun",
+      "state": "Rajasthan",
+      "model2020": 2395335,
+      "census2011": 2137045,
+      "expectedAtStateGrowth": 2501999,
+      "ratio": 0.957,
+      "status": "consistent"
+    },
+    {
+      "district": "Jaisalmer",
+      "state": "Rajasthan",
+      "model2020": 832436,
+      "census2011": 669919,
+      "expectedAtStateGrowth": 784324,
+      "ratio": 1.061,
+      "status": "consistent"
+    },
+    {
+      "district": "Sikar",
+      "state": "Rajasthan",
+      "model2020": 2952725,
+      "census2011": 2677333,
+      "expectedAtStateGrowth": 3134554,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Hanumangarh",
+      "state": "Rajasthan",
+      "model2020": 2030880,
+      "census2011": 1774692,
+      "expectedAtStateGrowth": 2077765,
+      "ratio": 0.977,
+      "status": "consistent"
+    },
+    {
+      "district": "Nagaur",
+      "state": "Rajasthan",
+      "model2020": 3738683,
+      "census2011": 3307743,
+      "expectedAtStateGrowth": 3872622,
+      "ratio": 0.965,
+      "status": "consistent"
+    },
+    {
+      "district": "Barmer",
+      "state": "Rajasthan",
+      "model2020": 3258877,
+      "census2011": 2603751,
+      "expectedAtStateGrowth": 3048406,
+      "ratio": 1.069,
+      "status": "consistent"
+    },
+    {
+      "district": "Ganganagar",
+      "state": "Rajasthan",
+      "model2020": 2053361,
+      "census2011": 1969168,
+      "expectedAtStateGrowth": 2305452,
+      "ratio": 0.891,
+      "status": "consistent"
+    },
+    {
+      "district": "Jodhpur",
+      "state": "Rajasthan",
+      "model2020": 4547823,
+      "census2011": 3687165,
+      "expectedAtStateGrowth": 4316840,
+      "ratio": 1.054,
+      "status": "consistent"
+    },
+    {
+      "district": "Churu",
+      "state": "Rajasthan",
+      "model2020": 2175159,
+      "census2011": 2039547,
+      "expectedAtStateGrowth": 2387850,
+      "ratio": 0.911,
+      "status": "consistent"
+    },
+    {
+      "district": "Bikaner",
+      "state": "Rajasthan",
+      "model2020": 3046946,
+      "census2011": 2363937,
+      "expectedAtStateGrowth": 2767638,
+      "ratio": 1.101,
+      "status": "consistent"
+    },
+    {
+      "district": "Pratapgarh",
+      "state": "Rajasthan",
+      "model2020": 1043531,
+      "census2011": 867848,
+      "expectedAtStateGrowth": 1016055,
+      "ratio": 1.027,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhilwara",
+      "state": "Rajasthan",
+      "model2020": 2752461,
+      "census2011": 2408523,
+      "expectedAtStateGrowth": 2819838,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Tonk",
+      "state": "Rajasthan",
+      "model2020": 1622017,
+      "census2011": 1421326,
+      "expectedAtStateGrowth": 1664053,
+      "ratio": 0.975,
+      "status": "consistent"
+    },
+    {
+      "district": "Bundi",
+      "state": "Rajasthan",
+      "model2020": 1339763,
+      "census2011": 1110906,
+      "expectedAtStateGrowth": 1300621,
+      "ratio": 1.03,
+      "status": "consistent"
+    },
+    {
+      "district": "Jaipur",
+      "state": "Rajasthan",
+      "model2020": 8071098,
+      "census2011": 6626178,
+      "expectedAtStateGrowth": 7757763,
+      "ratio": 1.04,
+      "status": "consistent"
+    },
+    {
+      "district": "Kota",
+      "state": "Rajasthan",
+      "model2020": 2229741,
+      "census2011": 1951014,
+      "expectedAtStateGrowth": 2284198,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Pali",
+      "state": "Rajasthan",
+      "model2020": 2207125,
+      "census2011": 2037573,
+      "expectedAtStateGrowth": 2385539,
+      "ratio": 0.925,
+      "status": "consistent"
+    },
+    {
+      "district": "Rajsamand",
+      "state": "Rajasthan",
+      "model2020": 1341182,
+      "census2011": 1156597,
+      "expectedAtStateGrowth": 1354115,
+      "ratio": 0.99,
+      "status": "consistent"
+    },
+    {
+      "district": "Ajmer",
+      "state": "Rajasthan",
+      "model2020": 2915161,
+      "census2011": 2583052,
+      "expectedAtStateGrowth": 3024172,
+      "ratio": 0.964,
+      "status": "consistent"
+    },
+    {
+      "district": "Bharatpur",
+      "state": "Rajasthan",
+      "model2020": 2898235,
+      "census2011": 2548462,
+      "expectedAtStateGrowth": 2983675,
+      "ratio": 0.971,
+      "status": "consistent"
+    },
+    {
+      "district": "Dungarpur",
+      "state": "Rajasthan",
+      "model2020": 1632819,
+      "census2011": 1388552,
+      "expectedAtStateGrowth": 1625682,
+      "ratio": 1.004,
+      "status": "consistent"
+    },
+    {
+      "district": "Chittaurgarh",
+      "state": "Rajasthan",
+      "model2020": 1769164,
+      "census2011": 1544338,
+      "expectedAtStateGrowth": 1808072,
+      "ratio": 0.978,
+      "status": "consistent"
+    },
+    {
+      "district": "Udaipur",
+      "state": "Rajasthan",
+      "model2020": 3591343,
+      "census2011": 3068420,
+      "expectedAtStateGrowth": 3592429,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalor",
+      "state": "Rajasthan",
+      "model2020": 2219801,
+      "census2011": 1828730,
+      "expectedAtStateGrowth": 2141031,
+      "ratio": 1.037,
+      "status": "consistent"
+    },
+    {
+      "district": "Dausa",
+      "state": "Rajasthan",
+      "model2020": 2177031,
+      "census2011": 1634409,
+      "expectedAtStateGrowth": 1913525,
+      "ratio": 1.138,
+      "status": "consistent"
+    },
+    {
+      "district": "Sirohi",
+      "state": "Rajasthan",
+      "model2020": 1242037,
+      "census2011": 1036346,
+      "expectedAtStateGrowth": 1213328,
+      "ratio": 1.024,
+      "status": "consistent"
+    },
+    {
+      "district": "Jhalawar",
+      "state": "Rajasthan",
+      "model2020": 1629385,
+      "census2011": 1411129,
+      "expectedAtStateGrowth": 1652114,
+      "ratio": 0.986,
+      "status": "consistent"
+    },
+    {
+      "district": "Alwar",
+      "state": "Rajasthan",
+      "model2020": 4363531,
+      "census2011": 3674179,
+      "expectedAtStateGrowth": 4301636,
+      "ratio": 1.014,
+      "status": "consistent"
+    },
+    {
+      "district": "Baran",
+      "state": "Rajasthan",
+      "model2020": 1368137,
+      "census2011": 1222755,
+      "expectedAtStateGrowth": 1431571,
+      "ratio": 0.956,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhaulpur",
+      "state": "Rajasthan",
+      "model2020": 1468359,
+      "census2011": 1206516,
+      "expectedAtStateGrowth": 1412559,
+      "ratio": 1.04,
+      "status": "consistent"
+    },
+    {
+      "district": "Sawai Madhopur",
+      "state": "Rajasthan",
+      "model2020": 1486023,
+      "census2011": 1335551,
+      "expectedAtStateGrowth": 1563630,
+      "ratio": 0.95,
+      "status": "consistent"
+    },
+    {
+      "district": "Banswara",
+      "state": "Rajasthan",
+      "model2020": 2191486,
+      "census2011": 1797485,
+      "expectedAtStateGrowth": 2104450,
+      "ratio": 1.041,
+      "status": "consistent"
+    },
+    {
+      "district": "Karauli",
+      "state": "Rajasthan",
+      "model2020": 1663132,
+      "census2011": 1458248,
+      "expectedAtStateGrowth": 1707280,
+      "ratio": 0.974,
+      "status": "consistent"
+    },
+    {
+      "district": "Karimnagar",
+      "state": "Telangana",
+      "model2020": 1095024,
+      "census2011": 3776269,
+      "expectedAtStateGrowth": 4225293,
+      "ratio": 0.259,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Nizamabad",
+      "state": "Telangana",
+      "model2020": 1695201,
+      "census2011": 2551335,
+      "expectedAtStateGrowth": 2854706,
+      "ratio": 0.594,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Medak",
+      "state": "Telangana",
+      "model2020": 851637,
+      "census2011": 3033288,
+      "expectedAtStateGrowth": 3393966,
+      "ratio": 0.251,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Rangareddy",
+      "state": "Telangana",
+      "model2020": 3558702,
+      "census2011": 5296741,
+      "expectedAtStateGrowth": 5926559,
+      "ratio": 0.6,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Nalgonda",
+      "state": "Telangana",
+      "model2020": 1764152,
+      "census2011": 3488809,
+      "expectedAtStateGrowth": 3903652,
+      "ratio": 0.452,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Adilabad",
+      "state": "Telangana",
+      "model2020": 791170,
+      "census2011": 2741239,
+      "expectedAtStateGrowth": 3067191,
+      "ratio": 0.258,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Khammam",
+      "state": "Telangana",
+      "model2020": 1521530,
+      "census2011": 2797370,
+      "expectedAtStateGrowth": 3129996,
+      "ratio": 0.486,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Prakasam",
+      "state": "Andhra Pradesh",
+      "model2020": 3722963,
+      "census2011": 3397448,
+      "expectedAtStateGrowth": 3596502,
+      "ratio": 1.035,
+      "status": "consistent"
+    },
+    {
+      "district": "Krishna",
+      "state": "Andhra Pradesh",
+      "model2020": 4585446,
+      "census2011": 4517398,
+      "expectedAtStateGrowth": 4782069,
+      "ratio": 0.959,
+      "status": "consistent"
+    },
+    {
+      "district": "East Godavari",
+      "state": "Andhra Pradesh",
+      "model2020": 5254481,
+      "census2011": 5154296,
+      "expectedAtStateGrowth": 5456282,
+      "ratio": 0.963,
+      "status": "consistent"
+    },
+    {
+      "district": "Visakhapatnam",
+      "state": "Andhra Pradesh",
+      "model2020": 4702817,
+      "census2011": 4290589,
+      "expectedAtStateGrowth": 4541971,
+      "ratio": 1.035,
+      "status": "consistent"
+    },
+    {
+      "district": "Sri Potti Sriramulu Nellore",
+      "state": "Andhra Pradesh",
+      "model2020": 3204553,
+      "census2011": 2963557,
+      "expectedAtStateGrowth": 3137189,
+      "ratio": 1.021,
+      "status": "consistent"
+    },
+    {
+      "district": "Chittoor",
+      "state": "Andhra Pradesh",
+      "model2020": 4499155,
+      "census2011": 4174064,
+      "expectedAtStateGrowth": 4418619,
+      "ratio": 1.018,
+      "status": "consistent"
+    },
+    {
+      "district": "Srikakulam",
+      "state": "Andhra Pradesh",
+      "model2020": 2679800,
+      "census2011": 2703114,
+      "expectedAtStateGrowth": 2861487,
+      "ratio": 0.937,
+      "status": "consistent"
+    },
+    {
+      "district": "Kurnool",
+      "state": "Andhra Pradesh",
+      "model2020": 4517804,
+      "census2011": 4053463,
+      "expectedAtStateGrowth": 4290952,
+      "ratio": 1.053,
+      "status": "consistent"
+    },
+    {
+      "district": "Guntur",
+      "state": "Andhra Pradesh",
+      "model2020": 5289782,
+      "census2011": 4887813,
+      "expectedAtStateGrowth": 5174186,
+      "ratio": 1.022,
+      "status": "consistent"
+    },
+    {
+      "district": "Vizianagaram",
+      "state": "Andhra Pradesh",
+      "model2020": 2384870,
+      "census2011": 2344474,
+      "expectedAtStateGrowth": 2481835,
+      "ratio": 0.961,
+      "status": "consistent"
+    },
+    {
+      "district": "Anantapur",
+      "state": "Andhra Pradesh",
+      "model2020": 4467288,
+      "census2011": 4081148,
+      "expectedAtStateGrowth": 4320259,
+      "ratio": 1.034,
+      "status": "consistent"
+    },
+    {
+      "district": "West Godavari",
+      "state": "Andhra Pradesh",
+      "model2020": 4063919,
+      "census2011": 3936966,
+      "expectedAtStateGrowth": 4167630,
+      "ratio": 0.975,
+      "status": "consistent"
+    },
+    {
+      "district": "Lunglei",
+      "state": "Mizoram",
+      "model2020": 151362,
+      "census2011": 161428,
+      "expectedAtStateGrowth": 192155,
+      "ratio": 0.788,
+      "status": "consistent"
+    },
+    {
+      "district": "Kolasib",
+      "state": "Mizoram",
+      "model2020": 129678,
+      "census2011": 83955,
+      "expectedAtStateGrowth": 99936,
+      "ratio": 1.298,
+      "status": "consistent"
+    },
+    {
+      "district": "Lawngtlai",
+      "state": "Mizoram",
+      "model2020": 138541,
+      "census2011": 117894,
+      "expectedAtStateGrowth": 140335,
+      "ratio": 0.987,
+      "status": "consistent"
+    },
+    {
+      "district": "Saiha",
+      "state": "Mizoram",
+      "model2020": 70837,
+      "census2011": 56574,
+      "expectedAtStateGrowth": 67343,
+      "ratio": 1.052,
+      "status": "consistent"
+    },
+    {
+      "district": "Champhai",
+      "state": "Mizoram",
+      "model2020": 70190,
+      "census2011": 125745,
+      "expectedAtStateGrowth": 149680,
+      "ratio": 0.469,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Serchhip",
+      "state": "Mizoram",
+      "model2020": 70119,
+      "census2011": 64937,
+      "expectedAtStateGrowth": 77298,
+      "ratio": 0.907,
+      "status": "consistent"
+    },
+    {
+      "district": "Aizawl",
+      "state": "Mizoram",
+      "model2020": 449619,
+      "census2011": 400309,
+      "expectedAtStateGrowth": 476507,
+      "ratio": 0.944,
+      "status": "consistent"
+    },
+    {
+      "district": "Mamit",
+      "state": "Mizoram",
+      "model2020": 119886,
+      "census2011": 86364,
+      "expectedAtStateGrowth": 102803,
+      "ratio": 1.166,
+      "status": "consistent"
+    },
+    {
+      "district": "Lohit",
+      "state": "Arunachal Pradesh",
+      "model2020": 55996,
+      "census2011": 145726,
+      "expectedAtStateGrowth": 182540,
+      "ratio": 0.307,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "West Siang",
+      "state": "Arunachal Pradesh",
+      "model2020": 66960,
+      "census2011": 112274,
+      "expectedAtStateGrowth": 140638,
+      "ratio": 0.476,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Upper Subansiri",
+      "state": "Arunachal Pradesh",
+      "model2020": 115090,
+      "census2011": 83448,
+      "expectedAtStateGrowth": 104529,
+      "ratio": 1.101,
+      "status": "consistent"
+    },
+    {
+      "district": "Changlang",
+      "state": "Arunachal Pradesh",
+      "model2020": 172442,
+      "census2011": 148226,
+      "expectedAtStateGrowth": 185672,
+      "ratio": 0.929,
+      "status": "consistent"
+    },
+    {
+      "district": "Lower Subansiri",
+      "state": "Arunachal Pradesh",
+      "model2020": 99328,
+      "census2011": 83030,
+      "expectedAtStateGrowth": 104006,
+      "ratio": 0.955,
+      "status": "consistent"
+    },
+    {
+      "district": "East Kameng",
+      "state": "Arunachal Pradesh",
+      "model2020": 83598,
+      "census2011": 78690,
+      "expectedAtStateGrowth": 98569,
+      "ratio": 0.848,
+      "status": "consistent"
+    },
+    {
+      "district": "Upper Siang",
+      "state": "Arunachal Pradesh",
+      "model2020": 35048,
+      "census2011": 35320,
+      "expectedAtStateGrowth": 44243,
+      "ratio": 0.792,
+      "status": "consistent"
+    },
+    {
+      "district": "Anjaw",
+      "state": "Arunachal Pradesh",
+      "model2020": 21971,
+      "census2011": 21167,
+      "expectedAtStateGrowth": 26514,
+      "ratio": 0.829,
+      "status": "consistent"
+    },
+    {
+      "district": "Dibang Valley",
+      "state": "Arunachal Pradesh",
+      "model2020": 9662,
+      "census2011": 8004,
+      "expectedAtStateGrowth": 10026,
+      "ratio": 0.964,
+      "status": "consistent"
+    },
+    {
+      "district": "Kurung Kumey",
+      "state": "Arunachal Pradesh",
+      "model2020": 89782,
+      "census2011": 92076,
+      "expectedAtStateGrowth": 115337,
+      "ratio": 0.778,
+      "status": "consistent"
+    },
+    {
+      "district": "West Kameng",
+      "state": "Arunachal Pradesh",
+      "model2020": 96349,
+      "census2011": 83947,
+      "expectedAtStateGrowth": 105154,
+      "ratio": 0.916,
+      "status": "consistent"
+    },
+    {
+      "district": "Lower Dibang Valley",
+      "state": "Arunachal Pradesh",
+      "model2020": 58617,
+      "census2011": 54080,
+      "expectedAtStateGrowth": 67742,
+      "ratio": 0.865,
+      "status": "consistent"
+    },
+    {
+      "district": "Tawang",
+      "state": "Arunachal Pradesh",
+      "model2020": 57150,
+      "census2011": 49977,
+      "expectedAtStateGrowth": 62603,
+      "ratio": 0.913,
+      "status": "consistent"
+    },
+    {
+      "district": "Papum Pare",
+      "state": "Arunachal Pradesh",
+      "model2020": 235311,
+      "census2011": 176573,
+      "expectedAtStateGrowth": 221180,
+      "ratio": 1.064,
+      "status": "consistent"
+    },
+    {
+      "district": "Tirap",
+      "state": "Arunachal Pradesh",
+      "model2020": 74350,
+      "census2011": 111975,
+      "expectedAtStateGrowth": 140263,
+      "ratio": 0.53,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "East Siang",
+      "state": "Arunachal Pradesh",
+      "model2020": 101300,
+      "census2011": 99214,
+      "expectedAtStateGrowth": 124278,
+      "ratio": 0.815,
+      "status": "consistent"
+    },
+    {
+      "district": "South Garo Hills",
+      "state": "Meghalaya",
+      "model2020": 167702,
+      "census2011": 142334,
+      "expectedAtStateGrowth": 178380,
+      "ratio": 0.94,
+      "status": "consistent"
+    },
+    {
+      "district": "Ribhoi",
+      "state": "Meghalaya",
+      "model2020": 381121,
+      "census2011": 258840,
+      "expectedAtStateGrowth": 324391,
+      "ratio": 1.175,
+      "status": "consistent"
+    },
+    {
+      "district": "East Khasi Hills",
+      "state": "Meghalaya",
+      "model2020": 961572,
+      "census2011": 825922,
+      "expectedAtStateGrowth": 1035085,
+      "ratio": 0.929,
+      "status": "consistent"
+    },
+    {
+      "district": "West Khasi Hills",
+      "state": "Meghalaya",
+      "model2020": 343424,
+      "census2011": 383461,
+      "expectedAtStateGrowth": 480572,
+      "ratio": 0.715,
+      "status": "consistent"
+    },
+    {
+      "district": "West Garo Hills",
+      "state": "Meghalaya",
+      "model2020": 722078,
+      "census2011": 643291,
+      "expectedAtStateGrowth": 806203,
+      "ratio": 0.896,
+      "status": "consistent"
+    },
+    {
+      "district": "East Garo Hills",
+      "state": "Meghalaya",
+      "model2020": 197851,
+      "census2011": 317917,
+      "expectedAtStateGrowth": 398429,
+      "ratio": 0.497,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Jamtara",
+      "state": "Jharkhand",
+      "model2020": 997403,
+      "census2011": 791042,
+      "expectedAtStateGrowth": 939041,
+      "ratio": 1.062,
+      "status": "consistent"
+    },
+    {
+      "district": "Saraikela-Kharsawan",
+      "state": "Jharkhand",
+      "model2020": 1137738,
+      "census2011": 1065056,
+      "expectedAtStateGrowth": 1264321,
+      "ratio": 0.9,
+      "status": "consistent"
+    },
+    {
+      "district": "Simdega",
+      "state": "Jharkhand",
+      "model2020": 661828,
+      "census2011": 599578,
+      "expectedAtStateGrowth": 711755,
+      "ratio": 0.93,
+      "status": "consistent"
+    },
+    {
+      "district": "Latehar",
+      "state": "Jharkhand",
+      "model2020": 894919,
+      "census2011": 726978,
+      "expectedAtStateGrowth": 862991,
+      "ratio": 1.037,
+      "status": "consistent"
+    },
+    {
+      "district": "Khunti",
+      "state": "Jharkhand",
+      "model2020": 637349,
+      "census2011": 531885,
+      "expectedAtStateGrowth": 631397,
+      "ratio": 1.009,
+      "status": "consistent"
+    },
+    {
+      "district": "Pashchimi Singhbhum",
+      "state": "Jharkhand",
+      "model2020": 1707223,
+      "census2011": 1502338,
+      "expectedAtStateGrowth": 1783416,
+      "ratio": 0.957,
+      "status": "consistent"
+    },
+    {
+      "district": "Hazaribagh",
+      "state": "Jharkhand",
+      "model2020": 1962345,
+      "census2011": 1734495,
+      "expectedAtStateGrowth": 2059008,
+      "ratio": 0.953,
+      "status": "consistent"
+    },
+    {
+      "district": "Chatra",
+      "state": "Jharkhand",
+      "model2020": 1301733,
+      "census2011": 1042886,
+      "expectedAtStateGrowth": 1238003,
+      "ratio": 1.051,
+      "status": "consistent"
+    },
+    {
+      "district": "Purbi Singhbhum",
+      "state": "Jharkhand",
+      "model2020": 2733614,
+      "census2011": 2293919,
+      "expectedAtStateGrowth": 2723097,
+      "ratio": 1.004,
+      "status": "consistent"
+    },
+    {
+      "district": "Kodarma",
+      "state": "Jharkhand",
+      "model2020": 945244,
+      "census2011": 716259,
+      "expectedAtStateGrowth": 850267,
+      "ratio": 1.112,
+      "status": "consistent"
+    },
+    {
+      "district": "Giridih",
+      "state": "Jharkhand",
+      "model2020": 3025329,
+      "census2011": 2445474,
+      "expectedAtStateGrowth": 2903007,
+      "ratio": 1.042,
+      "status": "consistent"
+    },
+    {
+      "district": "Lohardaga",
+      "state": "Jharkhand",
+      "model2020": 634890,
+      "census2011": 461790,
+      "expectedAtStateGrowth": 548188,
+      "ratio": 1.158,
+      "status": "consistent"
+    },
+    {
+      "district": "Sahibganj",
+      "state": "Jharkhand",
+      "model2020": 1768246,
+      "census2011": 1150567,
+      "expectedAtStateGrowth": 1365831,
+      "ratio": 1.295,
+      "status": "consistent"
+    },
+    {
+      "district": "Godda",
+      "state": "Jharkhand",
+      "model2020": 1516633,
+      "census2011": 1313551,
+      "expectedAtStateGrowth": 1559308,
+      "ratio": 0.973,
+      "status": "consistent"
+    },
+    {
+      "district": "Palamu",
+      "state": "Jharkhand",
+      "model2020": 2281991,
+      "census2011": 1939869,
+      "expectedAtStateGrowth": 2302806,
+      "ratio": 0.991,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhanbad",
+      "state": "Jharkhand",
+      "model2020": 2998738,
+      "census2011": 2684487,
+      "expectedAtStateGrowth": 3186738,
+      "ratio": 0.941,
+      "status": "consistent"
+    },
+    {
+      "district": "Dumka",
+      "state": "Jharkhand",
+      "model2020": 1494455,
+      "census2011": 1321442,
+      "expectedAtStateGrowth": 1568676,
+      "ratio": 0.953,
+      "status": "consistent"
+    },
+    {
+      "district": "Bokaro",
+      "state": "Jharkhand",
+      "model2020": 2351260,
+      "census2011": 2062330,
+      "expectedAtStateGrowth": 2448179,
+      "ratio": 0.96,
+      "status": "consistent"
+    },
+    {
+      "district": "Deoghar",
+      "state": "Jharkhand",
+      "model2020": 1737717,
+      "census2011": 1492073,
+      "expectedAtStateGrowth": 1771231,
+      "ratio": 0.981,
+      "status": "consistent"
+    },
+    {
+      "district": "Gumla",
+      "state": "Jharkhand",
+      "model2020": 1173221,
+      "census2011": 1025213,
+      "expectedAtStateGrowth": 1217024,
+      "ratio": 0.964,
+      "status": "consistent"
+    },
+    {
+      "district": "Ramgarh",
+      "state": "Jharkhand",
+      "model2020": 978251,
+      "census2011": 949443,
+      "expectedAtStateGrowth": 1127078,
+      "ratio": 0.868,
+      "status": "consistent"
+    },
+    {
+      "district": "Garhwa",
+      "state": "Jharkhand",
+      "model2020": 1668339,
+      "census2011": 1322784,
+      "expectedAtStateGrowth": 1570269,
+      "ratio": 1.062,
+      "status": "consistent"
+    },
+    {
+      "district": "Ranchi",
+      "state": "Jharkhand",
+      "model2020": 3490163,
+      "census2011": 2914253,
+      "expectedAtStateGrowth": 3459492,
+      "ratio": 1.009,
+      "status": "consistent"
+    },
+    {
+      "district": "Pakur",
+      "state": "Jharkhand",
+      "model2020": 1061379,
+      "census2011": 900422,
+      "expectedAtStateGrowth": 1068885,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Goalpara",
+      "state": "Assam",
+      "model2020": 1041022,
+      "census2011": 1008183,
+      "expectedAtStateGrowth": 1129234,
+      "ratio": 0.922,
+      "status": "consistent"
+    },
+    {
+      "district": "Nalbari",
+      "state": "Assam",
+      "model2020": 947973,
+      "census2011": 771639,
+      "expectedAtStateGrowth": 864289,
+      "ratio": 1.097,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhubri",
+      "state": "Assam",
+      "model2020": 1550109,
+      "census2011": 1949258,
+      "expectedAtStateGrowth": 2183303,
+      "ratio": 0.71,
+      "status": "consistent"
+    },
+    {
+      "district": "Sivasagar",
+      "state": "Assam",
+      "model2020": 783541,
+      "census2011": 1151050,
+      "expectedAtStateGrowth": 1289255,
+      "ratio": 0.608,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Karimganj",
+      "state": "Assam",
+      "model2020": 1361560,
+      "census2011": 1228686,
+      "expectedAtStateGrowth": 1376213,
+      "ratio": 0.989,
+      "status": "consistent"
+    },
+    {
+      "district": "Tinsukia",
+      "state": "Assam",
+      "model2020": 1384246,
+      "census2011": 1327929,
+      "expectedAtStateGrowth": 1487372,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Hailakandi",
+      "state": "Assam",
+      "model2020": 730356,
+      "census2011": 659296,
+      "expectedAtStateGrowth": 738457,
+      "ratio": 0.989,
+      "status": "consistent"
+    },
+    {
+      "district": "Chirang",
+      "state": "Assam",
+      "model2020": 508643,
+      "census2011": 482162,
+      "expectedAtStateGrowth": 540055,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhemaji",
+      "state": "Assam",
+      "model2020": 731631,
+      "census2011": 686133,
+      "expectedAtStateGrowth": 768516,
+      "ratio": 0.952,
+      "status": "consistent"
+    },
+    {
+      "district": "Morigaon",
+      "state": "Assam",
+      "model2020": 1145502,
+      "census2011": 957423,
+      "expectedAtStateGrowth": 1072380,
+      "ratio": 1.068,
+      "status": "consistent"
+    },
+    {
+      "district": "Lakhimpur",
+      "state": "Assam",
+      "model2020": 1103923,
+      "census2011": 1042137,
+      "expectedAtStateGrowth": 1167265,
+      "ratio": 0.946,
+      "status": "consistent"
+    },
+    {
+      "district": "Bongaigaon",
+      "state": "Assam",
+      "model2020": 791980,
+      "census2011": 738804,
+      "expectedAtStateGrowth": 827511,
+      "ratio": 0.957,
+      "status": "consistent"
+    },
+    {
+      "district": "Baksa",
+      "state": "Assam",
+      "model2020": 1208794,
+      "census2011": 950075,
+      "expectedAtStateGrowth": 1064149,
+      "ratio": 1.136,
+      "status": "consistent"
+    },
+    {
+      "district": "Nagaon",
+      "state": "Assam",
+      "model2020": 2232458,
+      "census2011": 2823768,
+      "expectedAtStateGrowth": 3162814,
+      "ratio": 0.706,
+      "status": "consistent"
+    },
+    {
+      "district": "Cachar",
+      "state": "Assam",
+      "model2020": 2073764,
+      "census2011": 1736617,
+      "expectedAtStateGrowth": 1945131,
+      "ratio": 1.066,
+      "status": "consistent"
+    },
+    {
+      "district": "Darrang",
+      "state": "Assam",
+      "model2020": 1112603,
+      "census2011": 928500,
+      "expectedAtStateGrowth": 1039984,
+      "ratio": 1.07,
+      "status": "consistent"
+    },
+    {
+      "district": "Kamrup",
+      "state": "Assam",
+      "model2020": 1560835,
+      "census2011": 1517542,
+      "expectedAtStateGrowth": 1699751,
+      "ratio": 0.918,
+      "status": "consistent"
+    },
+    {
+      "district": "Dibrugarh",
+      "state": "Assam",
+      "model2020": 1485828,
+      "census2011": 1326335,
+      "expectedAtStateGrowth": 1485586,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Barpeta",
+      "state": "Assam",
+      "model2020": 1893872,
+      "census2011": 1693622,
+      "expectedAtStateGrowth": 1896973,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Sonitpur",
+      "state": "Assam",
+      "model2020": 1449480,
+      "census2011": 1924110,
+      "expectedAtStateGrowth": 2155136,
+      "ratio": 0.673,
+      "status": "consistent"
+    },
+    {
+      "district": "Udalguri",
+      "state": "Assam",
+      "model2020": 902256,
+      "census2011": 831668,
+      "expectedAtStateGrowth": 931525,
+      "ratio": 0.969,
+      "status": "consistent"
+    },
+    {
+      "district": "Golaghat",
+      "state": "Assam",
+      "model2020": 1204760,
+      "census2011": 1066888,
+      "expectedAtStateGrowth": 1194988,
+      "ratio": 1.008,
+      "status": "consistent"
+    },
+    {
+      "district": "Kamrup Metropolitan",
+      "state": "Assam",
+      "model2020": 1365680,
+      "census2011": 1253938,
+      "expectedAtStateGrowth": 1404497,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Dima Hasao",
+      "state": "Assam",
+      "model2020": 283363,
+      "census2011": 214102,
+      "expectedAtStateGrowth": 239809,
+      "ratio": 1.182,
+      "status": "consistent"
+    },
+    {
+      "district": "Kokrajhar",
+      "state": "Assam",
+      "model2020": 1110035,
+      "census2011": 887142,
+      "expectedAtStateGrowth": 993660,
+      "ratio": 1.117,
+      "status": "consistent"
+    },
+    {
+      "district": "Jorhat",
+      "state": "Assam",
+      "model2020": 997009,
+      "census2011": 1092256,
+      "expectedAtStateGrowth": 1223402,
+      "ratio": 0.815,
+      "status": "consistent"
+    },
+    {
+      "district": "Chandel",
+      "state": "Manipur",
+      "model2020": 121411,
+      "census2011": 144182,
+      "expectedAtStateGrowth": 175927,
+      "ratio": 0.69,
+      "status": "consistent"
+    },
+    {
+      "district": "Tamenglong",
+      "state": "Manipur",
+      "model2020": 122635,
+      "census2011": 140651,
+      "expectedAtStateGrowth": 171618,
+      "ratio": 0.715,
+      "status": "consistent"
+    },
+    {
+      "district": "Ukhrul",
+      "state": "Manipur",
+      "model2020": 180749,
+      "census2011": 183998,
+      "expectedAtStateGrowth": 224509,
+      "ratio": 0.805,
+      "status": "consistent"
+    },
+    {
+      "district": "Bishnupur",
+      "state": "Manipur",
+      "model2020": 267752,
+      "census2011": 237399,
+      "expectedAtStateGrowth": 289668,
+      "ratio": 0.924,
+      "status": "consistent"
+    },
+    {
+      "district": "Churachandpur",
+      "state": "Manipur",
+      "model2020": 256384,
+      "census2011": 274143,
+      "expectedAtStateGrowth": 334502,
+      "ratio": 0.766,
+      "status": "consistent"
+    },
+    {
+      "district": "Thoubal",
+      "state": "Manipur",
+      "model2020": 350198,
+      "census2011": 422168,
+      "expectedAtStateGrowth": 515118,
+      "ratio": 0.68,
+      "status": "consistent"
+    },
+    {
+      "district": "Imphal East",
+      "state": "Manipur",
+      "model2020": 430097,
+      "census2011": 456113,
+      "expectedAtStateGrowth": 556536,
+      "ratio": 0.773,
+      "status": "consistent"
+    },
+    {
+      "district": "Imphal West",
+      "state": "Manipur",
+      "model2020": 562847,
+      "census2011": 517992,
+      "expectedAtStateGrowth": 632039,
+      "ratio": 0.891,
+      "status": "consistent"
+    },
+    {
+      "district": "Senapati",
+      "state": "Manipur",
+      "model2020": 446932,
+      "census2011": 479148,
+      "expectedAtStateGrowth": 584643,
+      "ratio": 0.764,
+      "status": "consistent"
+    },
+    {
+      "district": "Mandya",
+      "state": "Karnataka",
+      "model2020": 1668125,
+      "census2011": 1805769,
+      "expectedAtStateGrowth": 2034144,
+      "ratio": 0.82,
+      "status": "consistent"
+    },
+    {
+      "district": "Mysore",
+      "state": "Karnataka",
+      "model2020": 3439247,
+      "census2011": 3001127,
+      "expectedAtStateGrowth": 3380679,
+      "ratio": 1.017,
+      "status": "consistent"
+    },
+    {
+      "district": "Chikkaballapura",
+      "state": "Karnataka",
+      "model2020": 1278158,
+      "census2011": 1255104,
+      "expectedAtStateGrowth": 1413837,
+      "ratio": 0.904,
+      "status": "consistent"
+    },
+    {
+      "district": "Yadgir",
+      "state": "Karnataka",
+      "model2020": 1344152,
+      "census2011": 1174271,
+      "expectedAtStateGrowth": 1322781,
+      "ratio": 1.016,
+      "status": "consistent"
+    },
+    {
+      "district": "Chikmagalur",
+      "state": "Karnataka",
+      "model2020": 1127327,
+      "census2011": 1137961,
+      "expectedAtStateGrowth": 1281879,
+      "ratio": 0.879,
+      "status": "consistent"
+    },
+    {
+      "district": "Chitradurga",
+      "state": "Karnataka",
+      "model2020": 1761444,
+      "census2011": 1659456,
+      "expectedAtStateGrowth": 1869327,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Haveri",
+      "state": "Karnataka",
+      "model2020": 1564482,
+      "census2011": 1597668,
+      "expectedAtStateGrowth": 1799725,
+      "ratio": 0.869,
+      "status": "consistent"
+    },
+    {
+      "district": "Dakshina Kannada",
+      "state": "Karnataka",
+      "model2020": 2424803,
+      "census2011": 2089649,
+      "expectedAtStateGrowth": 2353927,
+      "ratio": 1.03,
+      "status": "consistent"
+    },
+    {
+      "district": "Raichur",
+      "state": "Karnataka",
+      "model2020": 2099971,
+      "census2011": 1928812,
+      "expectedAtStateGrowth": 2172749,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Kolar",
+      "state": "Karnataka",
+      "model2020": 1648046,
+      "census2011": 1536401,
+      "expectedAtStateGrowth": 1730709,
+      "ratio": 0.952,
+      "status": "consistent"
+    },
+    {
+      "district": "Bijapur",
+      "state": "Karnataka",
+      "model2020": 2530327,
+      "census2011": 2177331,
+      "expectedAtStateGrowth": 2452698,
+      "ratio": 1.032,
+      "status": "consistent"
+    },
+    {
+      "district": "Uttara Kannada",
+      "state": "Karnataka",
+      "model2020": 1573768,
+      "census2011": 1437169,
+      "expectedAtStateGrowth": 1618928,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Davanagere",
+      "state": "Karnataka",
+      "model2020": 2069985,
+      "census2011": 1945497,
+      "expectedAtStateGrowth": 2191544,
+      "ratio": 0.945,
+      "status": "consistent"
+    },
+    {
+      "district": "Dharwad",
+      "state": "Karnataka",
+      "model2020": 2003715,
+      "census2011": 1847023,
+      "expectedAtStateGrowth": 2080616,
+      "ratio": 0.963,
+      "status": "consistent"
+    },
+    {
+      "district": "Bidar",
+      "state": "Karnataka",
+      "model2020": 1808893,
+      "census2011": 1703300,
+      "expectedAtStateGrowth": 1918716,
+      "ratio": 0.943,
+      "status": "consistent"
+    },
+    {
+      "district": "Chamarajanagar",
+      "state": "Karnataka",
+      "model2020": 1070724,
+      "census2011": 1020791,
+      "expectedAtStateGrowth": 1149890,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Gulbarga",
+      "state": "Karnataka",
+      "model2020": 2869076,
+      "census2011": 2566326,
+      "expectedAtStateGrowth": 2890889,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Gadag",
+      "state": "Karnataka",
+      "model2020": 1189686,
+      "census2011": 1064570,
+      "expectedAtStateGrowth": 1199206,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Udupi",
+      "state": "Karnataka",
+      "model2020": 1052050,
+      "census2011": 1177361,
+      "expectedAtStateGrowth": 1326262,
+      "ratio": 0.793,
+      "status": "consistent"
+    },
+    {
+      "district": "Bagalkot",
+      "state": "Karnataka",
+      "model2020": 2051788,
+      "census2011": 1889752,
+      "expectedAtStateGrowth": 2128749,
+      "ratio": 0.964,
+      "status": "consistent"
+    },
+    {
+      "district": "Hassan",
+      "state": "Karnataka",
+      "model2020": 1806662,
+      "census2011": 1776421,
+      "expectedAtStateGrowth": 2001085,
+      "ratio": 0.903,
+      "status": "consistent"
+    },
+    {
+      "district": "Shimoga",
+      "state": "Karnataka",
+      "model2020": 1839518,
+      "census2011": 1752753,
+      "expectedAtStateGrowth": 1974423,
+      "ratio": 0.932,
+      "status": "consistent"
+    },
+    {
+      "district": "Bellary",
+      "state": "Karnataka",
+      "model2020": 2889831,
+      "census2011": 2452595,
+      "expectedAtStateGrowth": 2762774,
+      "ratio": 1.046,
+      "status": "consistent"
+    },
+    {
+      "district": "Kodagu",
+      "state": "Karnataka",
+      "model2020": 570647,
+      "census2011": 554519,
+      "expectedAtStateGrowth": 624649,
+      "ratio": 0.914,
+      "status": "consistent"
+    },
+    {
+      "district": "Bangalore Rural",
+      "state": "Karnataka",
+      "model2020": 1401413,
+      "census2011": 990923,
+      "expectedAtStateGrowth": 1116245,
+      "ratio": 1.255,
+      "status": "consistent"
+    },
+    {
+      "district": "Tumkur",
+      "state": "Karnataka",
+      "model2020": 2723249,
+      "census2011": 2678980,
+      "expectedAtStateGrowth": 3017790,
+      "ratio": 0.902,
+      "status": "consistent"
+    },
+    {
+      "district": "Belgaum",
+      "state": "Karnataka",
+      "model2020": 5340331,
+      "census2011": 4779661,
+      "expectedAtStateGrowth": 5384144,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Koppal",
+      "state": "Karnataka",
+      "model2020": 1525955,
+      "census2011": 1389920,
+      "expectedAtStateGrowth": 1565703,
+      "ratio": 0.975,
+      "status": "consistent"
+    },
+    {
+      "district": "Bangalore",
+      "state": "Karnataka",
+      "model2020": 13007404,
+      "census2011": 9621551,
+      "expectedAtStateGrowth": 10838387,
+      "ratio": 1.2,
+      "status": "consistent"
+    },
+    {
+      "district": "Ramanagara",
+      "state": "Karnataka",
+      "model2020": 1141233,
+      "census2011": 1082636,
+      "expectedAtStateGrowth": 1219557,
+      "ratio": 0.936,
+      "status": "consistent"
+    },
+    {
+      "district": "Nainital",
+      "state": "Uttarakhand",
+      "model2020": 1075442,
+      "census2011": 954605,
+      "expectedAtStateGrowth": 1101792,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Dehradun",
+      "state": "Uttarakhand",
+      "model2020": 2096324,
+      "census2011": 1696694,
+      "expectedAtStateGrowth": 1958301,
+      "ratio": 1.07,
+      "status": "consistent"
+    },
+    {
+      "district": "Almora",
+      "state": "Uttarakhand",
+      "model2020": 605798,
+      "census2011": 622506,
+      "expectedAtStateGrowth": 718488,
+      "ratio": 0.843,
+      "status": "consistent"
+    },
+    {
+      "district": "Champawat",
+      "state": "Uttarakhand",
+      "model2020": 278846,
+      "census2011": 259648,
+      "expectedAtStateGrowth": 299682,
+      "ratio": 0.93,
+      "status": "consistent"
+    },
+    {
+      "district": "Uttarkashi",
+      "state": "Uttarakhand",
+      "model2020": 402244,
+      "census2011": 330086,
+      "expectedAtStateGrowth": 380981,
+      "ratio": 1.056,
+      "status": "consistent"
+    },
+    {
+      "district": "Garhwal",
+      "state": "Uttarakhand",
+      "model2020": 705360,
+      "census2011": 687271,
+      "expectedAtStateGrowth": 793239,
+      "ratio": 0.889,
+      "status": "consistent"
+    },
+    {
+      "district": "Hardwar",
+      "state": "Uttarakhand",
+      "model2020": 2377237,
+      "census2011": 1890422,
+      "expectedAtStateGrowth": 2181899,
+      "ratio": 1.09,
+      "status": "consistent"
+    },
+    {
+      "district": "Rudraprayag",
+      "state": "Uttarakhand",
+      "model2020": 232264,
+      "census2011": 242285,
+      "expectedAtStateGrowth": 279642,
+      "ratio": 0.831,
+      "status": "consistent"
+    },
+    {
+      "district": "Tehri Garhwal",
+      "state": "Uttarakhand",
+      "model2020": 657947,
+      "census2011": 618931,
+      "expectedAtStateGrowth": 714362,
+      "ratio": 0.921,
+      "status": "consistent"
+    },
+    {
+      "district": "Bageshwar",
+      "state": "Uttarakhand",
+      "model2020": 259542,
+      "census2011": 259898,
+      "expectedAtStateGrowth": 299971,
+      "ratio": 0.865,
+      "status": "consistent"
+    },
+    {
+      "district": "Pithoragarh",
+      "state": "Uttarakhand",
+      "model2020": 490434,
+      "census2011": 483439,
+      "expectedAtStateGrowth": 557979,
+      "ratio": 0.879,
+      "status": "consistent"
+    },
+    {
+      "district": "Chamoli",
+      "state": "Uttarakhand",
+      "model2020": 431604,
+      "census2011": 391605,
+      "expectedAtStateGrowth": 451985,
+      "ratio": 0.955,
+      "status": "consistent"
+    },
+    {
+      "district": "Udham Singh Nagar",
+      "state": "Uttarakhand",
+      "model2020": 2028417,
+      "census2011": 1648902,
+      "expectedAtStateGrowth": 1903140,
+      "ratio": 1.066,
+      "status": "consistent"
+    },
+    {
+      "district": "Daman",
+      "state": "Dadra and Nagar Haveli and Daman and Diu",
+      "model2020": 235408,
+      "census2011": 191173,
+      "expectedAtStateGrowth": 288946,
+      "ratio": 0.815,
+      "status": "consistent"
+    },
+    {
+      "district": "Diu",
+      "state": "Dadra and Nagar Haveli and Daman and Diu",
+      "model2020": 67682,
+      "census2011": 52074,
+      "expectedAtStateGrowth": 78706,
+      "ratio": 0.86,
+      "status": "consistent"
+    },
+    {
+      "district": "Dadra & Nagar Haveli",
+      "state": "Dadra and Nagar Haveli and Daman and Diu",
+      "model2020": 584056,
+      "census2011": 343709,
+      "expectedAtStateGrowth": 519494,
+      "ratio": 1.124,
+      "status": "consistent"
+    },
+    {
+      "district": "Ashoknagar",
+      "state": "Madhya Pradesh",
+      "model2020": 1049971,
+      "census2011": 845071,
+      "expectedAtStateGrowth": 977330,
+      "ratio": 1.074,
+      "status": "consistent"
+    },
+    {
+      "district": "Raisen",
+      "state": "Madhya Pradesh",
+      "model2020": 1540425,
+      "census2011": 1331597,
+      "expectedAtStateGrowth": 1540001,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Chhindwara",
+      "state": "Madhya Pradesh",
+      "model2020": 2333569,
+      "census2011": 2090922,
+      "expectedAtStateGrowth": 2418165,
+      "ratio": 0.965,
+      "status": "consistent"
+    },
+    {
+      "district": "Betul",
+      "state": "Madhya Pradesh",
+      "model2020": 1734185,
+      "census2011": 1575362,
+      "expectedAtStateGrowth": 1821917,
+      "ratio": 0.952,
+      "status": "consistent"
+    },
+    {
+      "district": "Hoshangabad",
+      "state": "Madhya Pradesh",
+      "model2020": 1336983,
+      "census2011": 1241350,
+      "expectedAtStateGrowth": 1435630,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Sehore",
+      "state": "Madhya Pradesh",
+      "model2020": 1546835,
+      "census2011": 1311332,
+      "expectedAtStateGrowth": 1516564,
+      "ratio": 1.02,
+      "status": "consistent"
+    },
+    {
+      "district": "Jabalpur",
+      "state": "Madhya Pradesh",
+      "model2020": 2779426,
+      "census2011": 2463289,
+      "expectedAtStateGrowth": 2848810,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Narsimhapur",
+      "state": "Madhya Pradesh",
+      "model2020": 1246821,
+      "census2011": 1091854,
+      "expectedAtStateGrowth": 1262736,
+      "ratio": 0.987,
+      "status": "consistent"
+    },
+    {
+      "district": "Panna",
+      "state": "Madhya Pradesh",
+      "model2020": 1174512,
+      "census2011": 1016520,
+      "expectedAtStateGrowth": 1175612,
+      "ratio": 0.999,
+      "status": "consistent"
+    },
+    {
+      "district": "Ujjain",
+      "state": "Madhya Pradesh",
+      "model2020": 2228046,
+      "census2011": 1986864,
+      "expectedAtStateGrowth": 2297821,
+      "ratio": 0.97,
+      "status": "consistent"
+    },
+    {
+      "district": "Rewa",
+      "state": "Madhya Pradesh",
+      "model2020": 2755651,
+      "census2011": 2365106,
+      "expectedAtStateGrowth": 2735261,
+      "ratio": 1.007,
+      "status": "consistent"
+    },
+    {
+      "district": "Dindori",
+      "state": "Madhya Pradesh",
+      "model2020": 880761,
+      "census2011": 704524,
+      "expectedAtStateGrowth": 814787,
+      "ratio": 1.081,
+      "status": "consistent"
+    },
+    {
+      "district": "Balaghat",
+      "state": "Madhya Pradesh",
+      "model2020": 1857391,
+      "census2011": 1701698,
+      "expectedAtStateGrowth": 1968025,
+      "ratio": 0.944,
+      "status": "consistent"
+    },
+    {
+      "district": "Barwani",
+      "state": "Madhya Pradesh",
+      "model2020": 1722684,
+      "census2011": 1385881,
+      "expectedAtStateGrowth": 1602781,
+      "ratio": 1.075,
+      "status": "consistent"
+    },
+    {
+      "district": "Satna",
+      "state": "Madhya Pradesh",
+      "model2020": 2572372,
+      "census2011": 2228935,
+      "expectedAtStateGrowth": 2577778,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Chhatarpur",
+      "state": "Madhya Pradesh",
+      "model2020": 2070327,
+      "census2011": 1762375,
+      "expectedAtStateGrowth": 2038198,
+      "ratio": 1.016,
+      "status": "consistent"
+    },
+    {
+      "district": "Indore",
+      "state": "Madhya Pradesh",
+      "model2020": 4100948,
+      "census2011": 3276697,
+      "expectedAtStateGrowth": 3789522,
+      "ratio": 1.082,
+      "status": "consistent"
+    },
+    {
+      "district": "Ratlam",
+      "state": "Madhya Pradesh",
+      "model2020": 1647091,
+      "census2011": 1455069,
+      "expectedAtStateGrowth": 1682797,
+      "ratio": 0.979,
+      "status": "consistent"
+    },
+    {
+      "district": "Harda",
+      "state": "Madhya Pradesh",
+      "model2020": 658631,
+      "census2011": 570465,
+      "expectedAtStateGrowth": 659747,
+      "ratio": 0.998,
+      "status": "consistent"
+    },
+    {
+      "district": "Sagar",
+      "state": "Madhya Pradesh",
+      "model2020": 2730415,
+      "census2011": 2378458,
+      "expectedAtStateGrowth": 2750702,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Neemuch",
+      "state": "Madhya Pradesh",
+      "model2020": 871699,
+      "census2011": 826067,
+      "expectedAtStateGrowth": 955352,
+      "ratio": 0.912,
+      "status": "consistent"
+    },
+    {
+      "district": "Tikamgarh",
+      "state": "Madhya Pradesh",
+      "model2020": 1187590,
+      "census2011": 1445166,
+      "expectedAtStateGrowth": 1671344,
+      "ratio": 0.711,
+      "status": "consistent"
+    },
+    {
+      "district": "Guna",
+      "state": "Madhya Pradesh",
+      "model2020": 1428801,
+      "census2011": 1241519,
+      "expectedAtStateGrowth": 1435825,
+      "ratio": 0.995,
+      "status": "consistent"
+    },
+    {
+      "district": "Dewas",
+      "state": "Madhya Pradesh",
+      "model2020": 1798040,
+      "census2011": 1563715,
+      "expectedAtStateGrowth": 1808447,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "Mandsaur",
+      "state": "Madhya Pradesh",
+      "model2020": 1387235,
+      "census2011": 1340411,
+      "expectedAtStateGrowth": 1550194,
+      "ratio": 0.895,
+      "status": "consistent"
+    },
+    {
+      "district": "Khargone (West Nimar)",
+      "state": "Madhya Pradesh",
+      "model2020": 2150069,
+      "census2011": 1873046,
+      "expectedAtStateGrowth": 2166190,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Sheopur",
+      "state": "Madhya Pradesh",
+      "model2020": 871994,
+      "census2011": 687861,
+      "expectedAtStateGrowth": 795516,
+      "ratio": 1.096,
+      "status": "consistent"
+    },
+    {
+      "district": "Morena",
+      "state": "Madhya Pradesh",
+      "model2020": 2284237,
+      "census2011": 1965970,
+      "expectedAtStateGrowth": 2273657,
+      "ratio": 1.005,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhind",
+      "state": "Madhya Pradesh",
+      "model2020": 1901819,
+      "census2011": 1703005,
+      "expectedAtStateGrowth": 1969537,
+      "ratio": 0.966,
+      "status": "consistent"
+    },
+    {
+      "district": "Jhabua",
+      "state": "Madhya Pradesh",
+      "model2020": 1267907,
+      "census2011": 1025048,
+      "expectedAtStateGrowth": 1185475,
+      "ratio": 1.07,
+      "status": "consistent"
+    },
+    {
+      "district": "Seoni",
+      "state": "Madhya Pradesh",
+      "model2020": 1551018,
+      "census2011": 1379131,
+      "expectedAtStateGrowth": 1594974,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Khandwa (East Nimar)",
+      "state": "Madhya Pradesh",
+      "model2020": 1494797,
+      "census2011": 1310061,
+      "expectedAtStateGrowth": 1515094,
+      "ratio": 0.987,
+      "status": "consistent"
+    },
+    {
+      "district": "Umaria",
+      "state": "Madhya Pradesh",
+      "model2020": 824982,
+      "census2011": 644758,
+      "expectedAtStateGrowth": 745667,
+      "ratio": 1.106,
+      "status": "consistent"
+    },
+    {
+      "district": "Gwalior",
+      "state": "Madhya Pradesh",
+      "model2020": 2465082,
+      "census2011": 2032036,
+      "expectedAtStateGrowth": 2350063,
+      "ratio": 1.049,
+      "status": "consistent"
+    },
+    {
+      "district": "Damoh",
+      "state": "Madhya Pradesh",
+      "model2020": 1416355,
+      "census2011": 1264219,
+      "expectedAtStateGrowth": 1462078,
+      "ratio": 0.969,
+      "status": "consistent"
+    },
+    {
+      "district": "Dhar",
+      "state": "Madhya Pradesh",
+      "model2020": 2665283,
+      "census2011": 2185793,
+      "expectedAtStateGrowth": 2527884,
+      "ratio": 1.054,
+      "status": "consistent"
+    },
+    {
+      "district": "Katni",
+      "state": "Madhya Pradesh",
+      "model2020": 1440958,
+      "census2011": 1292042,
+      "expectedAtStateGrowth": 1494255,
+      "ratio": 0.964,
+      "status": "consistent"
+    },
+    {
+      "district": "Sidhi",
+      "state": "Madhya Pradesh",
+      "model2020": 1187943,
+      "census2011": 1127033,
+      "expectedAtStateGrowth": 1303421,
+      "ratio": 0.911,
+      "status": "consistent"
+    },
+    {
+      "district": "Alirajpur",
+      "state": "Madhya Pradesh",
+      "model2020": 890207,
+      "census2011": 728999,
+      "expectedAtStateGrowth": 843092,
+      "ratio": 1.056,
+      "status": "consistent"
+    },
+    {
+      "district": "Singrauli",
+      "state": "Madhya Pradesh",
+      "model2020": 1588232,
+      "census2011": 1178273,
+      "expectedAtStateGrowth": 1362681,
+      "ratio": 1.166,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhopal",
+      "state": "Madhya Pradesh",
+      "model2020": 2883742,
+      "census2011": 2371061,
+      "expectedAtStateGrowth": 2742148,
+      "ratio": 1.052,
+      "status": "consistent"
+    },
+    {
+      "district": "Rajgarh",
+      "state": "Madhya Pradesh",
+      "model2020": 1766658,
+      "census2011": 1545814,
+      "expectedAtStateGrowth": 1787744,
+      "ratio": 0.988,
+      "status": "consistent"
+    },
+    {
+      "district": "Mandla",
+      "state": "Madhya Pradesh",
+      "model2020": 1068962,
+      "census2011": 1054905,
+      "expectedAtStateGrowth": 1220005,
+      "ratio": 0.876,
+      "status": "consistent"
+    },
+    {
+      "district": "Shajapur",
+      "state": "Madhya Pradesh",
+      "model2020": 1051010,
+      "census2011": 1512681,
+      "expectedAtStateGrowth": 1749426,
+      "ratio": 0.601,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Shivpuri",
+      "state": "Madhya Pradesh",
+      "model2020": 2045491,
+      "census2011": 1726050,
+      "expectedAtStateGrowth": 1996188,
+      "ratio": 1.025,
+      "status": "consistent"
+    },
+    {
+      "district": "Datia",
+      "state": "Madhya Pradesh",
+      "model2020": 894882,
+      "census2011": 786754,
+      "expectedAtStateGrowth": 909886,
+      "ratio": 0.984,
+      "status": "consistent"
+    },
+    {
+      "district": "Burhanpur",
+      "state": "Madhya Pradesh",
+      "model2020": 873450,
+      "census2011": 757847,
+      "expectedAtStateGrowth": 876455,
+      "ratio": 0.997,
+      "status": "consistent"
+    },
+    {
+      "district": "Anuppur",
+      "state": "Madhya Pradesh",
+      "model2020": 914661,
+      "census2011": 749237,
+      "expectedAtStateGrowth": 866498,
+      "ratio": 1.056,
+      "status": "consistent"
+    },
+    {
+      "district": "Shahdol",
+      "state": "Madhya Pradesh",
+      "model2020": 1063864,
+      "census2011": 1066063,
+      "expectedAtStateGrowth": 1232909,
+      "ratio": 0.863,
+      "status": "consistent"
+    },
+    {
+      "district": "Vidisha",
+      "state": "Madhya Pradesh",
+      "model2020": 1677253,
+      "census2011": 1458875,
+      "expectedAtStateGrowth": 1687199,
+      "ratio": 0.994,
+      "status": "consistent"
+    },
+    {
+      "district": "North Goa",
+      "state": "Goa",
+      "model2020": 839390,
+      "census2011": 818008,
+      "expectedAtStateGrowth": 857423,
+      "ratio": 0.979,
+      "status": "consistent"
+    },
+    {
+      "district": "South Goa",
+      "state": "Goa",
+      "model2020": 689433,
+      "census2011": 640537,
+      "expectedAtStateGrowth": 671400,
+      "ratio": 1.027,
+      "status": "consistent"
+    },
+    {
+      "district": "Kannur",
+      "state": "Kerala",
+      "model2020": 2570893,
+      "census2011": 2523003,
+      "expectedAtStateGrowth": 2560698,
+      "ratio": 1.004,
+      "status": "consistent"
+    },
+    {
+      "district": "Pathanamthitta",
+      "state": "Kerala",
+      "model2020": 1287733,
+      "census2011": 1197412,
+      "expectedAtStateGrowth": 1215302,
+      "ratio": 1.06,
+      "status": "consistent"
+    },
+    {
+      "district": "Alappuzha",
+      "state": "Kerala",
+      "model2020": 2099677,
+      "census2011": 2127789,
+      "expectedAtStateGrowth": 2159579,
+      "ratio": 0.972,
+      "status": "consistent"
+    },
+    {
+      "district": "Ernakulam",
+      "state": "Kerala",
+      "model2020": 3367294,
+      "census2011": 3282388,
+      "expectedAtStateGrowth": 3331428,
+      "ratio": 1.011,
+      "status": "consistent"
+    },
+    {
+      "district": "Kollam",
+      "state": "Kerala",
+      "model2020": 2450539,
+      "census2011": 2635375,
+      "expectedAtStateGrowth": 2674748,
+      "ratio": 0.916,
+      "status": "consistent"
+    },
+    {
+      "district": "Kasaragod",
+      "state": "Kerala",
+      "model2020": 1300654,
+      "census2011": 1307375,
+      "expectedAtStateGrowth": 1326908,
+      "ratio": 0.98,
+      "status": "consistent"
+    },
+    {
+      "district": "Idukki",
+      "state": "Kerala",
+      "model2020": 1024443,
+      "census2011": 1108974,
+      "expectedAtStateGrowth": 1125542,
+      "ratio": 0.91,
+      "status": "consistent"
+    },
+    {
+      "district": "Kozhikode",
+      "state": "Kerala",
+      "model2020": 3290833,
+      "census2011": 3086293,
+      "expectedAtStateGrowth": 3132403,
+      "ratio": 1.051,
+      "status": "consistent"
+    },
+    {
+      "district": "Kottayam",
+      "state": "Kerala",
+      "model2020": 1970807,
+      "census2011": 1974551,
+      "expectedAtStateGrowth": 2004052,
+      "ratio": 0.983,
+      "status": "consistent"
+    },
+    {
+      "district": "Thrissur",
+      "state": "Kerala",
+      "model2020": 3235792,
+      "census2011": 3121200,
+      "expectedAtStateGrowth": 3167832,
+      "ratio": 1.021,
+      "status": "consistent"
+    },
+    {
+      "district": "Palakkad",
+      "state": "Kerala",
+      "model2020": 2954153,
+      "census2011": 2809934,
+      "expectedAtStateGrowth": 2851915,
+      "ratio": 1.036,
+      "status": "consistent"
+    },
+    {
+      "district": "Thiruvananthapuram",
+      "state": "Kerala",
+      "model2020": 3222897,
+      "census2011": 3301427,
+      "expectedAtStateGrowth": 3350752,
+      "ratio": 0.962,
+      "status": "consistent"
+    },
+    {
+      "district": "Malappuram",
+      "state": "Kerala",
+      "model2020": 4305815,
+      "census2011": 4112920,
+      "expectedAtStateGrowth": 4174369,
+      "ratio": 1.031,
+      "status": "consistent"
+    },
+    {
+      "district": "Wayanad",
+      "state": "Kerala",
+      "model2020": 823630,
+      "census2011": 817420,
+      "expectedAtStateGrowth": 829633,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Chandigarh",
+      "state": "Chandigarh",
+      "model2020": 881026,
+      "census2011": 1055450,
+      "expectedAtStateGrowth": 881026,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "North  & Middle Andaman",
+      "state": "Andaman and Nicobar Islands",
+      "model2020": 99231,
+      "census2011": 105597,
+      "expectedAtStateGrowth": 101688,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "South Andaman",
+      "state": "Andaman and Nicobar Islands",
+      "model2020": 238860,
+      "census2011": 238142,
+      "expectedAtStateGrowth": 229325,
+      "ratio": 1.042,
+      "status": "consistent"
+    },
+    {
+      "district": "Nicobars",
+      "state": "Andaman and Nicobar Islands",
+      "model2020": 28400,
+      "census2011": 36842,
+      "expectedAtStateGrowth": 35478,
+      "ratio": 0.8,
+      "status": "consistent"
+    },
+    {
+      "district": "Una",
+      "state": "Himachal Pradesh",
+      "model2020": 563535,
+      "census2011": 521173,
+      "expectedAtStateGrowth": 572489,
+      "ratio": 0.984,
+      "status": "consistent"
+    },
+    {
+      "district": "Solan",
+      "state": "Himachal Pradesh",
+      "model2020": 662675,
+      "census2011": 580320,
+      "expectedAtStateGrowth": 637459,
+      "ratio": 1.04,
+      "status": "consistent"
+    },
+    {
+      "district": "Sirmaur",
+      "state": "Himachal Pradesh",
+      "model2020": 558158,
+      "census2011": 529855,
+      "expectedAtStateGrowth": 582025,
+      "ratio": 0.959,
+      "status": "consistent"
+    },
+    {
+      "district": "Kinnaur",
+      "state": "Himachal Pradesh",
+      "model2020": 85986,
+      "census2011": 84121,
+      "expectedAtStateGrowth": 92404,
+      "ratio": 0.931,
+      "status": "consistent"
+    },
+    {
+      "district": "Kullu",
+      "state": "Himachal Pradesh",
+      "model2020": 448962,
+      "census2011": 437903,
+      "expectedAtStateGrowth": 481020,
+      "ratio": 0.933,
+      "status": "consistent"
+    },
+    {
+      "district": "Chamba",
+      "state": "Himachal Pradesh",
+      "model2020": 565545,
+      "census2011": 519080,
+      "expectedAtStateGrowth": 570190,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Shimla",
+      "state": "Himachal Pradesh",
+      "model2020": 887587,
+      "census2011": 814010,
+      "expectedAtStateGrowth": 894159,
+      "ratio": 0.993,
+      "status": "consistent"
+    },
+    {
+      "district": "Bilaspur",
+      "state": "Himachal Pradesh",
+      "model2020": 510428,
+      "census2011": 381956,
+      "expectedAtStateGrowth": 419564,
+      "ratio": 1.217,
+      "status": "consistent"
+    },
+    {
+      "district": "Kangra",
+      "state": "Himachal Pradesh",
+      "model2020": 1628703,
+      "census2011": 1510075,
+      "expectedAtStateGrowth": 1658760,
+      "ratio": 0.982,
+      "status": "consistent"
+    },
+    {
+      "district": "Lahul & Spiti",
+      "state": "Himachal Pradesh",
+      "model2020": 30178,
+      "census2011": 31564,
+      "expectedAtStateGrowth": 34672,
+      "ratio": 0.87,
+      "status": "consistent"
+    },
+    {
+      "district": "Mandi",
+      "state": "Himachal Pradesh",
+      "model2020": 1103358,
+      "census2011": 999777,
+      "expectedAtStateGrowth": 1098217,
+      "ratio": 1.005,
+      "status": "consistent"
+    },
+    {
+      "district": "Hamirpur",
+      "state": "Himachal Pradesh",
+      "model2020": 495388,
+      "census2011": 454768,
+      "expectedAtStateGrowth": 499545,
+      "ratio": 0.992,
+      "status": "consistent"
+    },
+    {
+      "district": "Anantnag",
+      "state": "Jammu and Kashmir",
+      "model2020": 1206169,
+      "census2011": 1078692,
+      "expectedAtStateGrowth": 1275965,
+      "ratio": 0.945,
+      "status": "consistent"
+    },
+    {
+      "district": "Baramula",
+      "state": "Jammu and Kashmir",
+      "model2020": 1084629,
+      "census2011": 1008039,
+      "expectedAtStateGrowth": 1192391,
+      "ratio": 0.91,
+      "status": "consistent"
+    },
+    {
+      "district": "Kulgam",
+      "state": "Jammu and Kashmir",
+      "model2020": 580657,
+      "census2011": 424483,
+      "expectedAtStateGrowth": 502113,
+      "ratio": 1.156,
+      "status": "consistent"
+    },
+    {
+      "district": "Shupiyan",
+      "state": "Jammu and Kashmir",
+      "model2020": 332913,
+      "census2011": 266215,
+      "expectedAtStateGrowth": 314901,
+      "ratio": 1.057,
+      "status": "consistent"
+    },
+    {
+      "district": "Reasi",
+      "state": "Jammu and Kashmir",
+      "model2020": 387995,
+      "census2011": 314667,
+      "expectedAtStateGrowth": 372214,
+      "ratio": 1.042,
+      "status": "consistent"
+    },
+    {
+      "district": "Rajouri",
+      "state": "Jammu and Kashmir",
+      "model2020": 589044,
+      "census2011": 642415,
+      "expectedAtStateGrowth": 759901,
+      "ratio": 0.775,
+      "status": "consistent"
+    },
+    {
+      "district": "Jammu",
+      "state": "Jammu and Kashmir",
+      "model2020": 1648335,
+      "census2011": 1529958,
+      "expectedAtStateGrowth": 1809760,
+      "ratio": 0.911,
+      "status": "consistent"
+    },
+    {
+      "district": "Srinagar",
+      "state": "Jammu and Kashmir",
+      "model2020": 1235967,
+      "census2011": 1236829,
+      "expectedAtStateGrowth": 1463023,
+      "ratio": 0.845,
+      "status": "consistent"
+    },
+    {
+      "district": "Doda",
+      "state": "Jammu and Kashmir",
+      "model2020": 537373,
+      "census2011": 409936,
+      "expectedAtStateGrowth": 484906,
+      "ratio": 1.108,
+      "status": "consistent"
+    },
+    {
+      "district": "Pulwama",
+      "state": "Jammu and Kashmir",
+      "model2020": 760029,
+      "census2011": 560440,
+      "expectedAtStateGrowth": 662934,
+      "ratio": 1.146,
+      "status": "consistent"
+    },
+    {
+      "district": "Ramban",
+      "state": "Jammu and Kashmir",
+      "model2020": 288634,
+      "census2011": 283713,
+      "expectedAtStateGrowth": 335599,
+      "ratio": 0.86,
+      "status": "consistent"
+    },
+    {
+      "district": "Ganderbal",
+      "state": "Jammu and Kashmir",
+      "model2020": 497499,
+      "census2011": 297446,
+      "expectedAtStateGrowth": 351843,
+      "ratio": 1.414,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Udhampur",
+      "state": "Jammu and Kashmir",
+      "model2020": 719973,
+      "census2011": 554985,
+      "expectedAtStateGrowth": 656482,
+      "ratio": 1.097,
+      "status": "consistent"
+    },
+    {
+      "district": "Badgam",
+      "state": "Jammu and Kashmir",
+      "model2020": 862520,
+      "census2011": 753745,
+      "expectedAtStateGrowth": 891591,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Punch",
+      "state": "Jammu and Kashmir",
+      "model2020": 746240,
+      "census2011": 476835,
+      "expectedAtStateGrowth": 564040,
+      "ratio": 1.323,
+      "status": "consistent"
+    },
+    {
+      "district": "Kupwara",
+      "state": "Jammu and Kashmir",
+      "model2020": 1154722,
+      "census2011": 870354,
+      "expectedAtStateGrowth": 1029526,
+      "ratio": 1.122,
+      "status": "consistent"
+    },
+    {
+      "district": "Samba",
+      "state": "Jammu and Kashmir",
+      "model2020": 395709,
+      "census2011": 318898,
+      "expectedAtStateGrowth": 377219,
+      "ratio": 1.049,
+      "status": "consistent"
+    },
+    {
+      "district": "Bandipore",
+      "state": "Jammu and Kashmir",
+      "model2020": 536253,
+      "census2011": 392232,
+      "expectedAtStateGrowth": 463964,
+      "ratio": 1.156,
+      "status": "consistent"
+    },
+    {
+      "district": "Kathua",
+      "state": "Jammu and Kashmir",
+      "model2020": 686347,
+      "census2011": 616435,
+      "expectedAtStateGrowth": 729170,
+      "ratio": 0.941,
+      "status": "consistent"
+    },
+    {
+      "district": "Kishtwar",
+      "state": "Jammu and Kashmir",
+      "model2020": 213319,
+      "census2011": 230696,
+      "expectedAtStateGrowth": 272886,
+      "ratio": 0.782,
+      "status": "consistent"
+    },
+    {
+      "district": "Gurdaspur",
+      "state": "Punjab",
+      "model2020": 1722866,
+      "census2011": 2298323,
+      "expectedAtStateGrowth": 2554286,
+      "ratio": 0.674,
+      "status": "consistent"
+    },
+    {
+      "district": "Patiala",
+      "state": "Punjab",
+      "model2020": 2242398,
+      "census2011": 1895686,
+      "expectedAtStateGrowth": 2106808,
+      "ratio": 1.064,
+      "status": "consistent"
+    },
+    {
+      "district": "Tarn Taran",
+      "state": "Punjab",
+      "model2020": 1228637,
+      "census2011": 1119627,
+      "expectedAtStateGrowth": 1244319,
+      "ratio": 0.987,
+      "status": "consistent"
+    },
+    {
+      "district": "Kapurthala",
+      "state": "Punjab",
+      "model2020": 868629,
+      "census2011": 815168,
+      "expectedAtStateGrowth": 905953,
+      "ratio": 0.959,
+      "status": "consistent"
+    },
+    {
+      "district": "Fatehgarh Sahib",
+      "state": "Punjab",
+      "model2020": 622773,
+      "census2011": 600163,
+      "expectedAtStateGrowth": 667003,
+      "ratio": 0.934,
+      "status": "consistent"
+    },
+    {
+      "district": "Sangrur",
+      "state": "Punjab",
+      "model2020": 1790993,
+      "census2011": 1655169,
+      "expectedAtStateGrowth": 1839505,
+      "ratio": 0.974,
+      "status": "consistent"
+    },
+    {
+      "district": "Mansa",
+      "state": "Punjab",
+      "model2020": 731163,
+      "census2011": 769751,
+      "expectedAtStateGrowth": 855478,
+      "ratio": 0.855,
+      "status": "consistent"
+    },
+    {
+      "district": "Amritsar",
+      "state": "Punjab",
+      "model2020": 2701133,
+      "census2011": 2490656,
+      "expectedAtStateGrowth": 2768039,
+      "ratio": 0.976,
+      "status": "consistent"
+    },
+    {
+      "district": "Faridkot",
+      "state": "Punjab",
+      "model2020": 642797,
+      "census2011": 617508,
+      "expectedAtStateGrowth": 686280,
+      "ratio": 0.937,
+      "status": "consistent"
+    },
+    {
+      "district": "Ludhiana",
+      "state": "Punjab",
+      "model2020": 3886719,
+      "census2011": 3498739,
+      "expectedAtStateGrowth": 3888392,
+      "ratio": 1,
+      "status": "consistent"
+    },
+    {
+      "district": "Bathinda",
+      "state": "Punjab",
+      "model2020": 1662530,
+      "census2011": 1388525,
+      "expectedAtStateGrowth": 1543165,
+      "ratio": 1.077,
+      "status": "consistent"
+    },
+    {
+      "district": "Jalandhar",
+      "state": "Punjab",
+      "model2020": 2371253,
+      "census2011": 2193590,
+      "expectedAtStateGrowth": 2437889,
+      "ratio": 0.973,
+      "status": "consistent"
+    },
+    {
+      "district": "Muktsar",
+      "state": "Punjab",
+      "model2020": 1128043,
+      "census2011": 901896,
+      "expectedAtStateGrowth": 1002340,
+      "ratio": 1.125,
+      "status": "consistent"
+    },
+    {
+      "district": "Moga",
+      "state": "Punjab",
+      "model2020": 1008008,
+      "census2011": 995746,
+      "expectedAtStateGrowth": 1106642,
+      "ratio": 0.911,
+      "status": "consistent"
+    },
+    {
+      "district": "Hoshiarpur",
+      "state": "Punjab",
+      "model2020": 1706625,
+      "census2011": 1586625,
+      "expectedAtStateGrowth": 1763327,
+      "ratio": 0.968,
+      "status": "consistent"
+    },
+    {
+      "district": "Rupnagar",
+      "state": "Punjab",
+      "model2020": 698960,
+      "census2011": 684627,
+      "expectedAtStateGrowth": 760874,
+      "ratio": 0.919,
+      "status": "consistent"
+    },
+    {
+      "district": "Firozpur",
+      "state": "Punjab",
+      "model2020": 919090,
+      "census2011": 2029074,
+      "expectedAtStateGrowth": 2255051,
+      "ratio": 0.408,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Barnala",
+      "state": "Punjab",
+      "model2020": 661124,
+      "census2011": 595527,
+      "expectedAtStateGrowth": 661851,
+      "ratio": 0.999,
+      "status": "consistent"
+    },
+    {
+      "district": "Sahibzada Ajit Singh Nagar",
+      "state": "Punjab",
+      "model2020": 1632841,
+      "census2011": 994628,
+      "expectedAtStateGrowth": 1105399,
+      "ratio": 1.477,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Shahid Bhagat Singh Nagar",
+      "state": "Punjab",
+      "model2020": 627170,
+      "census2011": 612310,
+      "expectedAtStateGrowth": 680503,
+      "ratio": 0.922,
+      "status": "consistent"
+    },
+    {
+      "district": "Gurgaon",
+      "state": "Haryana",
+      "model2020": 2458917,
+      "census2011": 1514432,
+      "expectedAtStateGrowth": 1755930,
+      "ratio": 1.4,
+      "status": "flagged_possible_boundary_change"
+    },
+    {
+      "district": "Yamunanagar",
+      "state": "Haryana",
+      "model2020": 1339214,
+      "census2011": 1214205,
+      "expectedAtStateGrowth": 1407827,
+      "ratio": 0.951,
+      "status": "consistent"
+    },
+    {
+      "district": "Palwal",
+      "state": "Haryana",
+      "model2020": 1283785,
+      "census2011": 1042708,
+      "expectedAtStateGrowth": 1208983,
+      "ratio": 1.062,
+      "status": "consistent"
+    },
+    {
+      "district": "Panchkula",
+      "state": "Haryana",
+      "model2020": 594448,
+      "census2011": 561293,
+      "expectedAtStateGrowth": 650799,
+      "ratio": 0.913,
+      "status": "consistent"
+    },
+    {
+      "district": "Mewat",
+      "state": "Haryana",
+      "model2020": 1278541,
+      "census2011": 1089263,
+      "expectedAtStateGrowth": 1262962,
+      "ratio": 1.012,
+      "status": "consistent"
+    },
+    {
+      "district": "Jhajjar",
+      "state": "Haryana",
+      "model2020": 1030745,
+      "census2011": 958405,
+      "expectedAtStateGrowth": 1111236,
+      "ratio": 0.928,
+      "status": "consistent"
+    },
+    {
+      "district": "Bhiwani",
+      "state": "Haryana",
+      "model2020": 1777604,
+      "census2011": 1634445,
+      "expectedAtStateGrowth": 1895081,
+      "ratio": 0.938,
+      "status": "consistent"
+    },
+    {
+      "district": "Kaithal",
+      "state": "Haryana",
+      "model2020": 1204713,
+      "census2011": 1074304,
+      "expectedAtStateGrowth": 1245617,
+      "ratio": 0.967,
+      "status": "consistent"
+    },
+    {
+      "district": "Sonipat",
+      "state": "Haryana",
+      "model2020": 1691452,
+      "census2011": 1450001,
+      "expectedAtStateGrowth": 1681224,
+      "ratio": 1.006,
+      "status": "consistent"
+    },
+    {
+      "district": "Karnal",
+      "state": "Haryana",
+      "model2020": 1692256,
+      "census2011": 1505324,
+      "expectedAtStateGrowth": 1745369,
+      "ratio": 0.97,
+      "status": "consistent"
+    },
+    {
+      "district": "Kurukshetra",
+      "state": "Haryana",
+      "model2020": 1051756,
+      "census2011": 964655,
+      "expectedAtStateGrowth": 1118483,
+      "ratio": 0.94,
+      "status": "consistent"
+    },
+    {
+      "district": "Jind",
+      "state": "Haryana",
+      "model2020": 1457512,
+      "census2011": 1334152,
+      "expectedAtStateGrowth": 1546902,
+      "ratio": 0.942,
+      "status": "consistent"
+    },
+    {
+      "district": "Panipat",
+      "state": "Haryana",
+      "model2020": 1413630,
+      "census2011": 1205437,
+      "expectedAtStateGrowth": 1397661,
+      "ratio": 1.011,
+      "status": "consistent"
+    },
+    {
+      "district": "Mahendragarh",
+      "state": "Haryana",
+      "model2020": 954285,
+      "census2011": 922088,
+      "expectedAtStateGrowth": 1069128,
+      "ratio": 0.893,
+      "status": "consistent"
+    },
+    {
+      "district": "Fatehabad",
+      "state": "Haryana",
+      "model2020": 1006424,
+      "census2011": 942011,
+      "expectedAtStateGrowth": 1092228,
+      "ratio": 0.921,
+      "status": "consistent"
+    },
+    {
+      "district": "Faridabad",
+      "state": "Haryana",
+      "model2020": 2316104,
+      "census2011": 1809733,
+      "expectedAtStateGrowth": 2098321,
+      "ratio": 1.104,
+      "status": "consistent"
+    },
+    {
+      "district": "Sirsa",
+      "state": "Haryana",
+      "model2020": 1475541,
+      "census2011": 1295189,
+      "expectedAtStateGrowth": 1501725,
+      "ratio": 0.983,
+      "status": "consistent"
+    },
+    {
+      "district": "Hisar",
+      "state": "Haryana",
+      "model2020": 1931900,
+      "census2011": 1743931,
+      "expectedAtStateGrowth": 2022026,
+      "ratio": 0.955,
+      "status": "consistent"
+    },
+    {
+      "district": "Rewari",
+      "state": "Haryana",
+      "model2020": 979546,
+      "census2011": 900332,
+      "expectedAtStateGrowth": 1043903,
+      "ratio": 0.938,
+      "status": "consistent"
+    },
+    {
+      "district": "Rohtak",
+      "state": "Haryana",
+      "model2020": 1210799,
+      "census2011": 1061204,
+      "expectedAtStateGrowth": 1230428,
+      "ratio": 0.984,
+      "status": "consistent"
+    },
+    {
+      "district": "Ambala",
+      "state": "Haryana",
+      "model2020": 1244942,
+      "census2011": 1128350,
+      "expectedAtStateGrowth": 1308281,
+      "ratio": 0.952,
+      "status": "consistent"
+    }
+  ],
+  "warnings": [
+    "Maharashtra: corrected Mumbai for dense-core undercount; other districts rescaled by 0.9933 to keep the state total.",
+    "Tamil Nadu: corrected Chennai for dense-core undercount; other districts rescaled by 0.9852 to keep the state total.",
+    "Delhi: no dense-core correction because district boundaries were redrawn after 2011 (New Delhi, North, Central grew more than 1.5×).",
+    "West Bengal: corrected Kolkata for dense-core undercount; other districts rescaled by 0.9808 to keep the state total.",
+    "Lakshadweep: districts sum to 42,512 vs state 38,722 on the same grid (9.79% gap).",
+    "Dadra and Nagar Haveli and Daman and Diu: districts sum to 8,87,146 vs state 8,23,503 on the same grid (7.73% gap)."
+  ],
+  "adm2Sha256": "d68db39cd3e2d0892af268e2b0454166368ce3b5b8a78fcda63069ec92a641db"
+}

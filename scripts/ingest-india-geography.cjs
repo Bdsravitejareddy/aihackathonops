@@ -13,6 +13,7 @@ function ingest({ rootDir = path.resolve(__dirname,'..'), outputDir = path.join(
   const geographies = [...(manifest.geographies || [])], relationships = [...(manifest.relationships || [])];
   const datasets = manifest.datasets.map(dataset => {
     if (dataset.status !== 'available') return { id:dataset.id, status:'unavailable', coverage:dataset.coverage, knownGaps:dataset.knownGaps };
+    if (dataset.ingest === 'seed-script') return { id:dataset.id, status:'available', ingest:'seed-script', artifact:dataset.artifact, sha256:dataset.sha256, coverage:dataset.coverage };
     const artifactPath = resolveArtifact(rootDir,dataset.artifact), artifactBytes=fs.readFileSync(artifactPath);
     if (dataset.sha256 && crypto.createHash('sha256').update(artifactBytes).digest('hex') !== dataset.sha256) throw new Error(`Checksum mismatch for ${dataset.id}`);
     const collection=JSON.parse(artifactBytes.toString('utf8'));

@@ -3,7 +3,7 @@
 const LEVELS = ['state', 'district', 'city', 'pin', 'catchment'];
 const CHILD = { state: 'district', district: 'city', city: 'pin', pin: 'catchment' };
 const MAX_BY_LEVEL = { state: 40, district: 250, city: 750, pin: 1200, catchment: 500 };
-const ALLOWED_METRICS = new Set(['population','potentialCustomers','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','idealInvestmentPerStore','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+const ALLOWED_METRICS = new Set(['potentialRevenue','population','potentialCustomers','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','idealInvestmentPerStore','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
 const canonicalId = (kind, id) => String(id).startsWith(`${kind}:`) ? String(id) : `${kind}:${id}`;
 const priorityCatalog = require('../data/india-geography/karnataka-priority-places.json');
 const priorityPlaces = priorityCatalog.places;
@@ -43,7 +43,7 @@ function metric(value, unit, evidenceClass, source = null, warnings = []) {
 const gapFor = key => {
   if (['population','households'].includes(key)) return missingEvidence('geography_mismatch', 'Use a supported census geography or add a validated crosswalk for this location.');
   if (key === 'competitorCount') return missingEvidence('not_integrated', 'Add a verified competitor dataset or record a dated local store survey.');
-  if (['tam','sam','som','apparelExpenditure','populationDensity','revenue'].includes(key)) return missingEvidence('missing_calculation_dependency', 'Provide the supported source metrics and explicit assumptions this calculation requires.');
+  if (['potentialRevenue','tam','sam','som','apparelExpenditure','populationDensity','revenue'].includes(key)) return missingEvidence('missing_calculation_dependency', 'Provide the supported source metrics and explicit assumptions this calculation requires.');
   if (['monthlyPerCapitaSpend','incomeProxy','ageGroups','malePopulation','femalePopulation'].includes(key)) return missingEvidence('source_unavailable', 'Use a compatible cited source when available; keep this metric blank until then.');
   return missingEvidence('user_input_required', 'Provide a supported value or required assumption, then recalculate.');
 };
@@ -73,6 +73,11 @@ function normalizeFeature(row, metricKey, scenario = {}) {
   const density = population !== null && area !== null ? population / area : null;
   const income = localIncome;
   const revenue = Number.isFinite(Number(p.expectedRevenueAnnual)) ? Number(p.expectedRevenueAnnual) : som;
+  // Potential revenue uses the modelled 2020 population at every level so states, districts and PINs add up.
+  const modelAnnual = Number.isFinite(Number(p.modelAnnualApparelExpenditure)) && p.modelAnnualApparelExpenditure !== null ? Number(p.modelAnnualApparelExpenditure)
+    : p.populationReferenceYear === 2020 && Number.isFinite(Number(p.annualApparelExpenditure)) && p.annualApparelExpenditure !== null ? Number(p.annualApparelExpenditure) : null;
+  const storeShare = Number.isFinite(Number(p.organisedStoreShare)) && p.organisedStoreShare !== null ? Number(p.organisedStoreShare) : null;
+  const potentialRevenue = modelAnnual !== null && storeShare !== null ? modelAnnual * storeShare : null;
   const metrics = {
     population: metric(population, 'people', evidenceClass, sourceFor('population')),
     potentialCustomers: metric(Number.isFinite(Number(p.potentialCustomers)) && p.potentialCustomers !== null ? Number(p.potentialCustomers) : null, 'people', p.potentialCustomersEvidenceClass || evidenceClass, sourceFor('potentialCustomers'), ['Estimated relevant customers require a sourced participation rate; population is not substituted.']),
@@ -96,6 +101,8 @@ function normalizeFeature(row, metricKey, scenario = {}) {
     growthPotential5Year: metric(p.growth5Year ?? null, '% nominal / 5 years', 'forecast', sourceFor('growth5Year')),
     breakEvenRevenue: metric(p.breakEvenRevenue ?? null, 'INR/year', 'model_assumption', sourceFor('breakEvenRevenue')),
     paybackMonths: metric(p.paybackMonths ?? null, 'months', 'model_assumption', sourceFor('paybackMonths')),
+    potentialRevenue: { ...metric(potentialRevenue, 'INR/year', 'derived_estimate', sourceFor('organisedStoreShare'), [`Potential revenue = modelled 2020 population (${p.modelPopulation ?? p.population ?? 'n/a'}) × rural/urban HCES 2023-24 clothing & footwear spend × 12 × organised physical-store share (${storeShare ?? 'n/a'}: 41% organised × 78% offline, CareEdge FY25). Area-wide demand, not one store's sales.`]),
+      evidence: sourceRows.filter(item => ['population','apparelSpendPerPersonMonthly','organisedStoreShare'].includes(item.metric)), components: { population2020: p.modelPopulation ?? (p.populationReferenceYear === 2020 ? population : null), annualApparelExpenditure2020: modelAnnual, organisedStoreShare: storeShare } },
     viability: metric(p.viability ?? null, 'score / 100', 'derived_estimate', sourceFor('viability'))
   };
   for (const [key, value] of Object.entries(metrics)) if (value.value === null) value.missing = gapFor(key);
@@ -177,7 +184,7 @@ function createMarketMapStore(pool) {
       const where = [];
       if (parentId) {
         params.push(parentId);
-        where.push(`EXISTS (SELECT 1 FROM market_geo_relationships r JOIN market_geographies p ON p.id = r.parent_id WHERE r.child_id = g.id AND r.relationship = 'contains' AND p.external_id = $${params.length} AND g.kind = CASE p.kind WHEN 'state' THEN 'district' WHEN 'district' THEN 'city' WHEN 'city' THEN 'pin' WHEN 'pin' THEN 'catchment' ELSE 'unsupported' END)`);
+        where.push(`EXISTS (SELECT 1 FROM market_geo_relationships r JOIN market_geographies p ON p.id = r.parent_id WHERE r.child_id = g.id AND r.relationship = 'contains' AND p.external_id = $${params.length} AND g.kind = CASE p.kind WHEN 'state' THEN 'district' WHEN 'district' THEN 'pin' WHEN 'city' THEN 'pin' WHEN 'pin' THEN 'catchment' ELSE 'unsupported' END)`);
       } else if (wanted) {
         params.push(wanted); where.push(`g.kind = $${params.length}`);
       }
@@ -192,7 +199,8 @@ function createMarketMapStore(pool) {
       const result = await pool.query(sql, params);
       const rows=result.rows.map(row => normalizeFeature(row, metricKey, scenario));
       if (parentId) for (const place of priorityPlaces.filter(place=>place.parentId===parentId && (!wanted || place.level===wanted))) {
-        if (!rows.some(row=>row.id===place.id)) rows.push(normalizeFeature({...placeRow(place),geometry:includeGeometry?place.geometry:null},metricKey,scenario));
+        const sameName=row=>row.level===place.level&&normalizeSearch(row.name)===normalizeSearch(place.name);
+        if (!rows.some(row=>row.id===place.id||sameName(row))) rows.push(normalizeFeature({...placeRow(place),geometry:includeGeometry?place.geometry:null},metricKey,scenario));
       }
       return rows;
       });
@@ -207,7 +215,7 @@ function createMarketMapStore(pool) {
     async getMapLevel(parentId = null) {
       if (!parentId) return 'state';
       if (priorityById.has(parentId)) return CHILD[priorityById.get(parentId).level] || null;
-      const result = await pool.query(`SELECT CASE kind WHEN 'state' THEN 'district' WHEN 'district' THEN 'city' WHEN 'city' THEN 'pin' WHEN 'pin' THEN 'catchment' ELSE NULL END AS child_level FROM market_geographies WHERE external_id=$1 LIMIT 1`, [parentId]);
+      const result = await pool.query(`SELECT CASE kind WHEN 'state' THEN 'district' WHEN 'district' THEN 'pin' WHEN 'city' THEN 'pin' WHEN 'pin' THEN 'catchment' ELSE NULL END AS child_level FROM market_geographies WHERE external_id=$1 LIMIT 1`, [parentId]);
       return result.rows[0]?.child_level || null;
     },
 

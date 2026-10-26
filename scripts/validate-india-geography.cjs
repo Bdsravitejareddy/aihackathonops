@@ -104,7 +104,7 @@ function validateRepository({ rootDir = ROOT } = {}) {
     const file = resolveArtifact(rootDir,dataset.artifact), bytes = fs.readFileSync(file);
     const checksum = crypto.createHash('sha256').update(bytes).digest('hex');
     if (dataset.sha256 && checksum !== dataset.sha256) throw new Error(`Checksum mismatch for ${dataset.artifact}`);
-    const collection = JSON.parse(bytes.toString('utf8'));
+    const collection = JSON.parse((file.endsWith('.gz') ? require('node:zlib').gunzipSync(bytes) : bytes).toString('utf8'));
     const measured = validateFeatures(collection,{level:dataset.featureLevel || dataset.level,expectedCount:dataset.coverage.featureCount,expectedPopulationTotal:dataset.coverage.populationTotal});
     if (dataset.coverage.populationTotal !== null && measured.populationTotal !== dataset.coverage.populationTotal) throw new Error(`Population coverage total mismatch for ${dataset.id}`);
     checksums.push({path:dataset.artifact,sha256:checksum});

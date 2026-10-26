@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": "1.1.2",
-  "retrievedAt": "2026-10-25",
+  "version": "1.2.0",
+  "retrievedAt": "2026-10-26",
   "datasets": [
     {
       "id": "india-post-pin-boundaries",
@@ -283,26 +283,101 @@
       },
       "status": "available",
       "artifact": "data/india-geography/india-state-features.geojson",
-      "sha256": "d7bf21b53522c69dec63129422e04122a4e97e9f38d77fafd659ee95d7c5bb92",
+      "sha256": "6c80972d882f98e40531a1919ebc4df611153e8c33ebaa8bfd9d8d38074c2936",
       "coverage": {
         "featureCount": 36,
         "rowCount": 36,
-        "populationTotal": 1112978963,
-        "mappedPopulationGeographies": 32,
-        "sourcePopulationTotal": 1210193422,
+        "populationTotal": 1210854977,
+        "mappedPopulationGeographies": 36,
+        "sourcePopulationTotal": 1210854977,
         "hcesStateSectorRows": 36
       },
       "knownGaps": [
         "Boundary is simplified and is for cartographic display, not cadastral/legal determination.",
-        "Population coverage is partial: legacy Andhra Pradesh and Jammu and Kashmir cannot be split into later boundaries from the state-level table; their successor geographies remain missing.",
+        "Population is the final Census 2011 PCA. Andhra Pradesh, Telangana, Jammu and Kashmir and Ladakh use official successor totals (Telangana after the 2014 transfer of seven Khammam mandals; Ladakh = Leh + Kargil) that reconcile exactly to their 2011 parents.",
         "Population is Census 2011, while apparel expenditure is HCES 2023-24; annual estimates are hybrid and high uncertainty.",
         "Households, age bands, income proxies, district and PIN mappings, local competition and observed footfall are not integrated."
       ],
       "variables": [
         "state/UT geometry",
-        "Census 2011 population rural/urban where geography matches",
+        "Census 2011 final PCA population rural/urban for all 36 states/UTs",
         "HCES 2023-24 rural/urban clothing+bedding and footwear MPCE",
         "derived annual clothing/footwear expenditure"
+      ]
+    },
+    {
+      "id": "geoboundaries-india-adm2-worldpop-2020",
+      "sourceId": "geoboundaries-ind-adm2",
+      "title": "India districts (geoBoundaries ADM2) with WorldPop 2020 population and HCES apparel spend",
+      "publisher": "geoBoundaries / Pathways Data / Local Government Directory; WorldPop; MoSPI",
+      "sourceUrl": "https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/",
+      "downloadUrl": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+      "sourceVintage": "2021 boundaries; WorldPop 2020; HCES 2023-24",
+      "level": "district",
+      "featureLevel": "district",
+      "codeScheme": "district:<state ISO>-<slug>; geoBoundaries shapeID retained as sourceCode",
+      "license": {
+        "status": "verified",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "note": "Boundaries ODbL 1.0 (attribute geoBoundaries and Pathways Data / lgdirectory.gov.in; share-alike applies to the boundary database). WorldPop CC BY 4.0."
+      },
+      "status": "available",
+      "artifact": "data/india-geography/india-district-features.geojson",
+      "sha256": "3ac48a7b362e3765380c0f78cf2caae4940c1461f8dc0001dbfdde7cb7cd92a5",
+      "coverage": {
+        "featureCount": 735,
+        "rowCount": 735,
+        "populationTotal": 1377492172
+      },
+      "knownGaps": [
+        "Population is a modelled 2020 estimate (WorldPop), validated against same-named Census 2011 districts; see india-district-reconciliation.json.",
+        "Apparel spend applies state HCES rural/urban rates to the modelled urban mix.",
+        "One source polygon is labelled \"DATA NOT AVAILABLE\" by geoBoundaries and has no PINs."
+      ],
+      "variables": [
+        "district geometry",
+        "modelled 2020 population (total/urban/rural)",
+        "households scaled from Census 2011",
+        "apparel spend per person",
+        "annual apparel expenditure"
+      ]
+    },
+    {
+      "id": "india-post-pin-directory-areas",
+      "sourceId": "india-post-pin-directory",
+      "title": "Approximate PIN areas from the All India Pincode Directory with WorldPop 2020 population",
+      "publisher": "Department of Posts (directory); WorldPop; MoSPI",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "downloadUrl": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+      "sourceVintage": "Directory downloaded 2026-10-26; WorldPop 2020",
+      "level": "pin",
+      "featureLevel": "pin",
+      "codeScheme": "pin:<6-digit PIN>",
+      "license": {
+        "status": "verified",
+        "url": "https://data.gov.in/government-open-data-license-india",
+        "note": "Government Open Data License - India (directory); WorldPop CC BY 4.0."
+      },
+      "status": "available",
+      "ingest": "seed-script",
+      "artifact": "data/india-geography/india-pin-features.geojson.gz",
+      "sha256": "da58b81ef52680f64fa75ec0f4b1d9322e4b2c770b4882dd74e168fbd1b85c73",
+      "coverage": {
+        "featureCount": 19426,
+        "rowCount": 19586,
+        "populationTotal": 1377026253
+      },
+      "knownGaps": [
+        "PIN areas are approximate Voronoi cells of cleaned post-office locations, not official delivery boundaries; replace with the India Post PIN boundary GeoJSON when available.",
+        "151 PINs have no valid office location and are unmapped.",
+        "PINs that the directory places at the same coordinates share one area and split its population equally."
+      ],
+      "variables": [
+        "approximate PIN geometry",
+        "modelled 2020 population constrained to district totals",
+        "post offices",
+        "apparel spend per person",
+        "annual apparel expenditure"
       ]
     }
   ],
@@ -317,14 +392,24 @@
       "sha256": "4c63fe43294a391e8f2de4e9f86f3edb60f8688275b9fee90c61fb2aa0c26061"
     },
     {
-      "id": "census-state-population-2011",
-      "title": "State-wise Rural and Urban Population as per 2001 and 2011 Census",
-      "publisher": "Ministry of Health and Family Welfare, Government of India; source data attributed to the Office of the Registrar General & Census Commissioner, India",
-      "path": "data/india-geography/census-state-population-2011.json",
-      "sourceUrl": "https://nhm.gov.in/images/pdf/monitoring/rhs/rhs-march-2011-tables-final-9-4-2012.pdf",
+      "id": "census-state-population-2011-final-pca-source",
+      "title": "PCA SD: Primary census abstract (PCA) data, India & States/UTs - State and district level - 2011 (DDW_PCA0000_2011_Indiastatedist.xlsx)",
+      "publisher": "Office of the Registrar General & Census Commissioner, India (Census of India 2011)",
+      "path": "data/india-geography/sources/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
       "referencePeriod": "2011",
-      "license": "Government publication; numeric observations are attributed to Census of India. No open-data license was established for redistribution of the report itself.",
-      "sha256": "1fb13466f5edc0ce9532b344410521e58899ed108224a41dae2e0cb72b31335c"
+      "license": "Census of India 2011 data published by ORGI; attribute Office of the Registrar General & Census Commissioner, India.",
+      "sha256": "7a8f70d46c43b5dd30eefe920f251752f69f6af8589594c21ac06499074646f5"
+    },
+    {
+      "id": "census-state-population-2011",
+      "title": "PCA SD: Primary census abstract (PCA) data, India & States/UTs - State and district level - 2011 (DDW_PCA0000_2011_Indiastatedist.xlsx)",
+      "publisher": "Office of the Registrar General & Census Commissioner, India (Census of India 2011)",
+      "path": "data/india-geography/census-state-population-2011-final.json",
+      "sourceUrl": "https://censusindia.gov.in/nada/index.php/catalog/6191/download/9268/DDW_PCA0000_2011_Indiastatedist.xlsx",
+      "referencePeriod": "2011",
+      "license": "Census of India 2011 data published by ORGI; attribute Office of the Registrar General & Census Commissioner, India.",
+      "sha256": "6d4bafb729cc40eecb197b515a02b18fbf3671e5a740a286140147814efefde7"
     },
     {
       "id": "hces-state-sector-2023-24",

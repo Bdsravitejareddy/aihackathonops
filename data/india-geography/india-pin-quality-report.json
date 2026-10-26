@@ -1,0 +1,802 @@
+{
+  "source": {
+    "sourceId": "india-post-pin-directory",
+    "title": "All India Pincode Directory (post office name, PIN, office type, delivery status, district, state, latitude, longitude)",
+    "publisher": "Department of Posts, Ministry of Communications",
+    "url": "https://www.data.gov.in/catalog/all-india-pincode-directory",
+    "referencePeriod": "Downloaded 2026-10-26",
+    "license": "Government Open Data License - India",
+    "evidenceClass": "official_observed",
+    "path": "data/india-geography/sources/pin-directory/all-india-pincode-directory.csv.gz",
+    "sha256": "701ee84ba125a914e7ffc979c0308b3a041b8adffa85ec9d5f4e0579ecf062e5"
+  },
+  "officeQuality": {
+    "offices": 165627,
+    "invalidPin": 0,
+    "missingCoordinates": 12015,
+    "swappedRepaired": 661,
+    "outsideIndia": 3421,
+    "wrongState": 4521,
+    "stateInferred": 602,
+    "valid": 145670
+  },
+  "pins": {
+    "inDirectory": 19586,
+    "mapped": 19426,
+    "noValidLocation": [
+      {
+        "pin": "782470",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "782101",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "521125",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "522268",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "533216",
+        "offices": 13,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "804423",
+        "offices": 3,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "854112",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "854107",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "841302",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "841439",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "824114",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "824127",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "824129",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "824103",
+        "offices": 17,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785616",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785633",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785681",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785661",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785696",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785674",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785671",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785673",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785689",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "786154",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "783123",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "783124",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "783136",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "783130",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "781127",
+        "offices": 16,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "788801",
+        "offices": 8,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "825101",
+        "offices": 21,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "585417",
+        "offices": 14,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "185233",
+        "offices": 12,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "185156",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "185212",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "182145",
+        "offices": 10,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "182203",
+        "offices": 12,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581315",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581322",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581329",
+        "offices": 16,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581331",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581337",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581187",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581355",
+        "offices": 23,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581358",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "122413",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "125052",
+        "offices": 23,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "176064",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "791701",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "689104",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "483222",
+        "offices": 17,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "483336",
+        "offices": 10,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "483334",
+        "offices": 14,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "483225",
+        "offices": 20,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "461445",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "416552",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "799103",
+        "offices": 15,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "799141",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "799105",
+        "offices": 20,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "799260",
+        "offices": 20,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "793103",
+        "offices": 6,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "762030",
+        "offices": 13,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600132",
+        "offices": 3,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "744206",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "230132",
+        "offices": 14,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "284124",
+        "offices": 11,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "212110",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "283113",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "560051",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581129",
+        "offices": 3,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "400113",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "799001",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "384316",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "121014",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "160004",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "160059",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "210122",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "711110",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "632057",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "628006",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "284136",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "846010",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "824123",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "504314",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "504300",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "781350",
+        "offices": 9,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785663",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785667",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785688",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "783122",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "841509",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581121",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581186",
+        "offices": 5,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581450",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581453",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581356",
+        "offices": 7,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "160071",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "400193",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "395017",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "124515",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "571202",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "515006",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "785698",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "851110",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "800021",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "829115",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "132102",
+        "offices": 4,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "796246",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "793111",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "440005",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "796006",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "800024",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "631152",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600088",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600051",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600110",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "585107",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "682026",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "208028",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "233234",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "900056",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "361330",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "123110",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "682555",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "786179",
+        "offices": 2,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "389135",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "577009",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "425314",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "500119",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "581412",
+        "offices": 3,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "680565",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600094",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600046",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "637415",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "643233",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "209726",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "744112",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "713369",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "502034",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "781041",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "394327",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "176057",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "690539",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "798617",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "160025",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "334002",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "600028",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "612906",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "244717",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "262526",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      },
+      {
+        "pin": "732215",
+        "offices": 1,
+        "reason": "no office with a valid location in its state"
+      }
+    ],
+    "outsideDistricts": [],
+    "emptyAfterClipping": 9
+  },
+  "population": {
+    "pinTotal": 1377026253,
+    "districtTotal": 1377492172,
+    "districtsWithoutPins": [
+      "DATA NOT AVAILABLE",
+      "Kishtwar",
+      "Anjaw",
+      "Dibang Valley",
+      "Yanam",
+      "Kra Daadi",
+      "Kamle",
+      "Shi Yomi",
+      "Lower Siang"
+    ],
+    "districtGaps": []
+  }
+}

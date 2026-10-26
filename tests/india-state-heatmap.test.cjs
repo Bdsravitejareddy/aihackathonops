@@ -8,24 +8,26 @@ const { assembleIndiaStates } = require('../scripts/assemble-india-state-data.cj
 
 const root = path.resolve(__dirname, '..');
 
-test('state assembly covers 36 real boundaries and preserves unsupported Census crosswalks as missing', () => {
+test('state assembly covers all 36 states/UTs with final Census 2011 and reconciled successor states', () => {
   const result = assembleIndiaStates({ rootDir: root, write: false });
   assert.equal(result.features.length, 36);
   assert.equal(new Set(result.features.map(f => f.properties.code)).size, 36);
-  for (const name of ['Karnataka','Maharashtra','Tamil Nadu','Delhi']) {
-    const state = result.features.find(f => f.properties.name === name);
-    assert.ok(state?.properties.population > 0, `${name} should have Census population`);
-    assert.ok(state.properties.annualApparelExpenditure > 0, `${name} should have expenditure estimate`);
-    assert.equal(state.properties.demographics.ruralPopulation + state.properties.demographics.urbanPopulation, state.properties.population);
-    assert.ok(state.properties.evidence.some(e => e.sourceId === 'mospi-hces-2023-24-report-592'));
+  for (const feature of result.features) {
+    const p = feature.properties;
+    assert.ok(p.population > 0, `${p.name} should have Census population`);
+    assert.ok(p.annualApparelExpenditure > 0, `${p.name} should have expenditure estimate`);
+    assert.equal(p.demographics.ruralPopulation + p.demographics.urbanPopulation, p.population);
+    assert.ok(p.evidence.some(e => e.sourceId === 'mospi-hces-2023-24-report-592'));
   }
-  for (const name of ['Andhra Pradesh','Telangana','Jammu and Kashmir','Ladakh']) {
-    const state = result.features.find(f => f.properties.name === name);
-    assert.equal(state.properties.population, null);
-    assert.equal(state.properties.annualApparelExpenditure, null);
-    assert.ok(state.properties.warnings.some(w => /crosswalk/i.test(w)));
-  }
-  assert.equal(result.reconciliation.censusSourcePopulation, 1210193422);
+  const population = name => result.features.find(f => f.properties.name === name).properties.population;
+  assert.equal(population('Telangana'), 35003674);
+  assert.equal(population('Andhra Pradesh'), 49577103);
+  assert.equal(population('Telangana') + population('Andhra Pradesh'), 84580777);
+  assert.equal(population('Ladakh'), 274289);
+  assert.equal(population('Jammu and Kashmir') + population('Ladakh'), 12541302);
+  for (const name of ['Andhra Pradesh','Telangana','Jammu and Kashmir','Ladakh']) assert.ok(result.features.find(f => f.properties.name === name).properties.evidence.some(e => e.crosswalk));
+  assert.equal(result.reconciliation.censusSourcePopulation, 1210854977);
+  assert.equal(result.reconciliation.mappedPopulation, 1210854977);
   assert.equal(result.reconciliation.censusSourceRural + result.reconciliation.censusSourceUrban, result.reconciliation.censusSourcePopulation);
 });
 

@@ -95,8 +95,15 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
     if (url.pathname.startsWith('/api/market/')) {
       if (url.pathname.startsWith('/api/market/map/')) {
         if (!marketMapStore) return reply(res, 503, { error: 'Map geography catalog is unavailable' });
-        const allowedMetrics = new Set(['population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
-        const legendFor = (metric, year) => {
+        const allowedMetrics = new Set(['potentialRevenue','population','populationDensity','households','monthlyPerCapitaSpend','incomeProxy','apparelExpenditure','tam','sam','som','competitorCount','saturation','revenue','revenuePerKm2','growthPotential3Year','growthPotential5Year','breakEvenRevenue','paybackMonths','viability']);
+        // Revenue legends follow the map level: a PIN is ~1/1000 of a state, so one national scale would wash out.
+        const LEVEL_LEGENDS = {
+          potentialRevenue: { state: [2.5e9, 1.3e10, 4.5e10, 9e10], district: [7.5e8, 1.4e9, 2.1e9, 3.4e9], pin: [2.5e7, 4.5e7, 7e7, 1.2e8] },
+          apparelExpenditure: { state: [2.5e10, 1e11, 3e11, 7.5e11], district: [2.4e9, 4.5e9, 6.5e9, 1.05e10], pin: [8e7, 1.4e8, 2.2e8, 3.8e8] }
+        };
+        const legendFor = (metric, year, level = 'state') => {
+          const byLevel = LEVEL_LEGENDS[metric]?.[level === 'city' ? 'district' : level === 'catchment' ? 'pin' : level];
+          if (byLevel) return { scope: 'national', level, metric, year, unit: 'INR/year', thresholds: byLevel, colors: ['#8dbdd2','#f1da5b','#f28e2b','#b4232b','#7a0019'] };
           const defs = {
             population: ['people', [10000, 50000, 200000, 1000000]], populationDensity: ['people/km²', [100, 500, 1500, 5000]], households: ['households', [2000, 10000, 40000, 200000]],
             monthlyPerCapitaSpend: ['INR/person/month', [100, 250, 500, 1000]], incomeProxy: ['INR/person/month', [10000, 20000, 40000, 80000]],
@@ -234,17 +241,20 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const bbox = rawBbox ? rawBbox.split(',').map(Number) : null;
             if (bbox && (bbox.length !== 4 || !bbox.every(Number.isFinite) || bbox[0] < -180 || bbox[2] > 180 || bbox[1] < -90 || bbox[3] > 90 || bbox[0] >= bbox[2] || bbox[1] >= bbox[3])) return reply(res, 400, { error: 'Invalid map bounding box' });
             const validBbox = bbox;
-            const level = await marketMapStore.getMapLevel(parentId);
+            const requestedLevel = url.searchParams.get('level');
+            if (requestedLevel !== null && (parentId || !['state','district','pin'].includes(requestedLevel))) return reply(res, 400, { error: 'level must be state, district or pin, without parentId' });
+            if (['district','pin'].includes(requestedLevel) && !validBbox) return reply(res, 400, { error: 'A bbox is required for district and PIN levels' });
+            const level = requestedLevel || await marketMapStore.getMapLevel(parentId);
             if (!level) return reply(res, 400, { error: 'Unknown map parent geography' });
             const scenario = { captureRate: null };
             const includeGeometry=url.searchParams.get('geometry') !== 'none';
             const features = await marketMapStore.listMapGeographies({ parentId, level, bbox: validBbox, metric, scenario, includeGeometry });
-            const missingExpenditure = metric === 'apparelExpenditure' ? features.filter(feature => feature.metrics.apparelExpenditure.value === null).length : 0;
-            const warnings = features.length ? [] : ['No verified child boundaries are available at this level.'];
-            if (missingExpenditure) warnings.push(`${missingExpenditure} of ${features.length} state/UTs have no annual expenditure value because the 2011 Census population cannot be defensibly crosswalked to those later boundaries.`);
-            if (features.some(feature => feature.evidence.some(item => item.sourceId === 'census-of-india-2011-state-sector'))) warnings.push('Annual market expenditure combines Census 2011 population with HCES 2023-24 spending. It is a high-uncertainty market estimate, not actual franchise sales.');
+            const missing = features.filter(feature => feature.metrics[metric]?.value === null).length;
+            const warnings = features.length ? [] : ['No verified boundaries are available for this area at this level.'];
+            if (missing) warnings.push(`${missing} of ${features.length} areas have no ${metric} value; they are shown as unavailable.`);
+            if (features.some(feature => feature.level === 'pin')) warnings.push('PIN areas are approximate (built from India Post office locations) and their populations are modelled 2020 estimates constrained to district totals.');
             const version=marketMapStore.sourceVersion || 'india-geography-1.1.2';
-            const values={ level, features:includeGeometry?features:features.map(feature=>({...feature,geometry:null})), sourceVersion:version, legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026), warnings };
+            const values={ level, features:includeGeometry?features:features.map(feature=>({...feature,geometry:null})), sourceVersion:version, legend: legendFor(metric, Number(url.searchParams.get('year')) || 2026, level), warnings };
             return replyPublic(req,res,values,version,includeGeometry?3600:300);
           }
           if (req.method === 'GET' && url.pathname === '/api/market/map/search') {

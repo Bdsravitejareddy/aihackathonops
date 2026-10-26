@@ -140,3 +140,10 @@ body.expansion-fullscreen #main{background:none;-webkit-backdrop-filter:none;bac
 .guard-row p{margin:4px 0;font-size:13px;color:var(--lq-ink)}.guard-row small{color:var(--lq-muted)}
 .guard-tag{min-width:72px;text-align:center}.guard-high .guard-tag{color:#9b1c1c;background:#fde8e8}.guard-medium .guard-tag{color:#8a5300;background:#fdf1dc}.guard-low .guard-tag{color:#4b3bb0;background:#ece8fb}
 @media (max-width:560px){.guard-row{grid-template-columns:1fr;padding:12px 14px}}
+
+.guard-filters{display:flex;flex-wrap:wrap;gap:8px;padding:12px 22px 4px}
+.guard-chip{border:1px solid rgba(120,104,190,.2);background:rgba(255,255,255,.7);border-radius:999px;padding:6px 14px;font:500 13px var(--lq-sans);color:var(--lq-ink-2);cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.guard-chip span{display:inline-block;min-width:20px;margin-left:4px;padding:1px 7px;border-radius:999px;background:rgba(120,104,190,.12);font-size:12px}
+.guard-chip:hover{background:#fff;box-shadow:0 6px 16px -10px rgba(76,56,150,.5)}
+.guard-chip.is-active{background:var(--lq-ink);color:#fff;border-color:var(--lq-ink)}.guard-chip.is-active span{background:rgba(255,255,255,.2)}
+.guard-chip-high.is-active{background:#9b1c1c;border-color:#9b1c1c}.guard-chip-medium.is-active{background:#8a5300;border-color:#8a5300}.guard-chip-low.is-active{background:#4b3bb0;border-color:#4b3bb0}

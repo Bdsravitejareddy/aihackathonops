@@ -253,24 +253,13 @@ test('saved assessment selection restores its location and deterministic results
   assert.match(w.document.querySelector('[data-mi-results]').textContent,/₹22\.45 Cr/);
 });
 
-test('Franchise bot approval-stage answer offers safe navigation to onboarding', async t => {
-  const dom=new JSDOM(html,{url:'http://localhost/',runScripts:'outside-only'});t.after(()=>dom.window.close());const w=dom.window;
+test('the Franchise bot page is gone from navigation and old #assistant links land on Overview', async t => {
+  const dom=new JSDOM(html,{url:'http://localhost/#assistant',runScripts:'outside-only'});t.after(()=>dom.window.close());const w=dom.window;
   w.fetch=async url=>({ok:true,status:200,json:async()=>String(url)==='demo.json'?JSON.parse(fs.readFileSync(path.join(root,'dist/demo.json'),'utf8')):{}});
   for(const file of ['engine.js','display-format.js','bot.js','persistence.js','market-map.js','market-intelligence.js','territory-screening.js','app.js'])w.eval(fs.readFileSync(path.join(root,'dist',file),'utf8'));
   await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>setImmediate(resolve));
-  w.document.querySelector('[data-tab="assistant"]').click();
-  const input=w.document.querySelector('#chat-text');input.value='Where do I find approval stages?';
-  w.document.querySelector('#chat-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
-  assert.match(w.document.querySelector('#chat-log').textContent,/Onboarding/i);
-  const action=w.document.querySelector('[data-bot-navigation]');assert.ok(action,'bot answer includes a navigation action');
-  action.click();
-  assert.equal(w.document.querySelector('#crumb').textContent,'Onboarding');
-  assert.match(w.document.querySelector('#main').textContent,/Recommended partners/);
-  w.document.querySelector('[data-tab="assistant"]').click();
-  const next=w.document.querySelector('#chat-text');next.value='Show me TAM for Bengaluru';
-  w.document.querySelector('#chat-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
-  [...w.document.querySelectorAll('[data-bot-navigation]')].at(-1).click();
-  assert.equal(w.document.querySelector('#crumb').textContent,'Market Intelligence');
-  assert.equal(w.document.querySelector('#market-form [name="locationQuery"]').value,'bengaluru');
-  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(w.document.querySelector('#nav [data-tab="assistant"]'),null);
+  assert.doesNotMatch(w.document.querySelector('#nav').textContent,/Franchise bot/);
+  assert.equal(w.document.querySelector('#crumb').textContent,'Overview');
+  assert.equal(w.document.querySelector('#chat-form'),null);
 });

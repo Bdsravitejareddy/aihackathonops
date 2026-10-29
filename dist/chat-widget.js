@@ -27,9 +27,9 @@
   function overviewData({ state = {}, results = [] }) {
     const count = status => results.filter(a => a.status === status).length, inCategory = name => results.filter(a => a.category === name).length;
     const slotsTotal = (state.territories || []).reduce((n, t) => n + (Number.isInteger(t.slots) ? t.slots : 0), 0);
-    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), futureExpansion: inCategory('Future expansion'), notAccepted: inCategory('Not accepted'),
+    const data = { applications: results.length, recommended: count('Recommended'), clarification: count('Clarification needed'), siteNeeded: count('Site needed'), waitlisted: count('Waitlisted'), dataRequired: inCategory('Data required'), belowRequirements: inCategory('Below requirements'), futureExpansion: inCategory('Future expansion'), notAccepted: inCategory('Not accepted'),
       territories: (state.territories || []).length, pendingCorrections: (state.apps || []).reduce((n, a) => n + (a.pending?.length || 0), 0), source: state.source || null, slotsTotal, slotsRecommended: count('Recommended') };
-    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Data required', data.dataRequired),
+    return { data, facts: [fieldOf('Total applications', data.applications), fieldOf('Recommended partners', data.recommended), fieldOf('Data required', data.dataRequired), fieldOf('Below requirements', data.belowRequirements),
       fieldOf('Future expansion', data.futureExpansion), fieldOf('Not accepted', data.notAccepted), fieldOf('Territories uploaded', data.territories),
       fieldOf('Pending data corrections', data.pendingCorrections), fieldOf('Data source', data.source)].filter(Boolean), gaps: [] };
   }
